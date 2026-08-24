@@ -1,0 +1,47 @@
+[
+  {
+    "id": "VCI000001",
+    "codigo": "VCI000001",
+
+    "ativo": false,
+    "destaque": true,
+
+    "titulo": "",
+    "slug": "",
+
+    "finalidade": "venda",
+
+    "tipo": "",
+
+    "descricao": "",
+
+    "preco": null,
+
+    "cidade": "Lucas do Rio Verde",
+    "estado": "MT",
+    "bairro": "",
+
+    "enderecoExibir": "",
+
+    "areaTotal": null,
+    "areaConstruida": null,
+
+    "quartos": null,
+    "suites": null,
+    "banheiros": null,
+    "vagas": null,
+
+    "caracteristicas": [],
+
+    "imagens": [],
+
+    "video": "",
+
+    "dataPublicacao": "",
+
+    "corretor": {
+      "nome": "Valdiney Capistrano",
+      "creci": "CRECI-MT 15368"
+    }
+  }
+]
