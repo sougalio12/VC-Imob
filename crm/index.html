@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VC Imob | CRM</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="stylesheet" href="./css/crm.css">
+</head>
+<body class="crm-app" data-view="dashboard">
+  <div class="crm-shell">
+    <aside class="crm-sidebar" id="crmSidebar">
+      <a class="crm-brand" href="../index.html"><span>VC</span><strong>Imob</strong></a>
+      <p class="sidebar-caption">CRM imobiliário</p>
+      <nav class="crm-nav" aria-label="Navegação do CRM">
+        <button data-view-link="dashboard" class="is-active">Visão geral</button>
+        <button data-view-link="leads">Leads</button>
+        <button data-view-link="kanban">Funil</button>
+        <button data-view-link="properties">Imóveis</button>
+        <button data-view-link="agenda">Agenda</button>
+      </nav>
+      <div class="sidebar-bottom"><a href="../index.html" class="sidebar-site-link">Ver site público ↗</a><button id="logoutButton" class="sidebar-logout" type="button">Sair</button></div>
+    </aside>
+    <div class="crm-backdrop" id="crmBackdrop"></div>
+    <section class="crm-main">
+      <header class="crm-topbar">
+        <button class="menu-toggle" id="menuToggle" type="button" aria-label="Abrir menu">☰</button>
+        <div><p class="eyebrow" id="pageEyebrow">VC Imob</p><h1 id="pageTitle">Visão geral</h1></div>
+        <div class="topbar-actions"><span class="demo-badge" id="demoBadge" hidden>Modo demonstração</span><button id="quickLeadButton" class="crm-button crm-button-primary" type="button">+ Novo lead</button></div>
+      </header>
+      <main id="crmContent" class="crm-content" tabindex="-1"></main>
+    </section>
+  </div>
+  <div id="crmToast" class="crm-toast" role="status"></div>
+  <div id="crmModal" class="crm-modal" aria-hidden="true"></div>
+  <script src="./js/config.js"></script>
+  <script src="./js/utils.js"></script>
+  <script src="./js/supabase.js"></script>
+  <script src="./js/auth.js"></script>
+  <script src="./js/demo-data.js"></script>
+  <script src="./js/data.js"></script>
+  <script src="./js/dashboard.js"></script>
+  <script src="./js/leads.js"></script>
+  <script src="./js/kanban.js"></script>
+  <script src="./js/properties.js"></script>
+  <script src="./js/agenda.js"></script>
+  <script src="./js/app.js"></script>
+</body>
+</html>

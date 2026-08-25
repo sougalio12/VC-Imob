@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Entrar | VC Imob</title>
+  <link rel="stylesheet" href="./css/crm.css">
+</head>
+<body class="crm-login-page">
+  <main class="login-shell">
+    <section class="login-panel">
+      <a class="crm-brand" href="../index.html"><span>VC</span><strong>Imob</strong></a>
+      <p class="eyebrow">Área administrativa</p>
+      <h1>Gerencie seus leads e negociações.</h1>
+      <p class="muted">Entre com sua conta do Supabase ou use a demonstração, que não armazena dados permanentemente.</p>
+      <form id="loginForm" class="crm-form" novalidate>
+        <label>E-mail<input type="email" name="email" autocomplete="email" required></label>
+        <label>Senha<input type="password" name="password" autocomplete="current-password" required minlength="6"></label>
+        <p id="loginError" class="form-error" role="alert"></p>
+        <button class="crm-button crm-button-primary" type="submit">Entrar</button>
+      </form>
+      <div class="login-divider"><span>ou</span></div>
+      <button id="demoLoginButton" class="crm-button crm-button-outline" type="button">Entrar em modo demonstração</button>
+      <p id="configHint" class="login-hint"></p>
+    </section>
+  </main>
+  <script src="./js/config.js"></script>
+  <script src="./js/supabase.js"></script>
+  <script src="./js/auth.js"></script>
+  <script>
+    (async () => { if (isDemoMode() || await getValidSession()) window.location.replace('./index.html'); })();
+    const form = document.getElementById('loginForm');
+    const error = document.getElementById('loginError');
+    document.getElementById('configHint').textContent = isSupabaseConfigured() ? '' : 'Modo demonstração disponível: configure o Supabase para habilitar o login real.';
+    form.addEventListener('submit', async event => {
+      event.preventDefault(); error.textContent = '';
+      if (!isSupabaseConfigured()) { error.textContent = 'Configure SUPABASE_URL e a Publishable Key para usar o login real.'; return; }
+      const data = new FormData(form);
+      try { await signInWithPassword(data.get('email').trim(), data.get('password')); window.location.replace('./index.html'); }
+      catch (err) { error.textContent = err.message || 'Não foi possível entrar.'; }
+    });
+    document.getElementById('demoLoginButton').addEventListener('click', () => { enterDemoMode(); window.location.replace('./index.html'); });
+  </script>
+</body>
+</html>
