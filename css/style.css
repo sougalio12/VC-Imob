@@ -916,6 +916,21 @@ li {
   font-size: 1.35rem;
 }
 
+.property-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+
+  gap: 8px;
+}
+
+.property-actions .btn {
+  min-height: 40px;
+  padding: 0 14px;
+
+  font-size: 0.82rem;
+}
+
 
 /* =========================================================
    CATEGORIAS

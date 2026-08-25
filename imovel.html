@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Imóvel | Valdiney Capistrano Imóveis</title>
+  <meta name="description" content="Detalhes do imóvel anunciado pela Valdiney Capistrano Imóveis.">
+  <meta name="robots" content="index, follow">
+  <meta name="theme-color" content="#0b0b0b">
+  <link rel="stylesheet" href="./css/style.css">
+  <link rel="stylesheet" href="./css/imovel.css">
+</head>
+<body>
+  <div class="topbar">
+    <div class="container topbar-inner">
+      <span>Segurança e transparência em negócios imobiliários</span>
+      <a href="https://instagram.com/valdiney_capistrano_corretor" target="_blank" rel="noopener noreferrer">@valdiney_capistrano_corretor</a>
+    </div>
+  </div>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="./index.html" class="site-logo" aria-label="Voltar à página inicial">
+        <img src="./assets/images/4d6f85cd-fe07-4c5c-bbbf-be216a48a1b1.jpeg" alt="Valdiney Capistrano Imóveis">
+        <span class="site-logo-text"><strong>Valdiney Capistrano</strong><span>IMÓVEIS</span></span>
+      </a>
+
+      <nav class="main-nav" id="mainNav" aria-label="Menu principal">
+        <ul>
+          <li><a href="./index.html#inicio">Início</a></li>
+          <li><a href="./index.html#imoveis">Imóveis</a></li>
+          <li><a href="./index.html#anunciar">Anuncie seu imóvel</a></li>
+          <li><a href="./index.html#atendimento">Atendimento</a></li>
+        </ul>
+      </nav>
+
+      <div class="header-actions">
+        <button class="header-icon-button" type="button" id="headerWhatsAppButton" aria-label="WhatsApp">☎</button>
+        <button class="header-icon-button mobile-menu-button" type="button" id="mobileMenuButton" aria-label="Abrir menu">☰</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="property-detail-page">
+    <div class="container" id="propertyDetailRoot" aria-live="polite">
+      <div class="property-empty-state">
+        <p class="section-label">Carregando</p>
+        <h1>Carregando imóvel...</h1>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-main">
+      <div class="footer-grid">
+        <div class="footer-logo">
+          <img src="./assets/images/4d6f85cd-fe07-4c5c-bbbf-be216a48a1b1.jpeg" alt="Valdiney Capistrano Imóveis">
+          <p class="footer-about">Segurança e transparência em negócios imobiliários em Lucas do Rio Verde.</p>
+          <div class="footer-credentials"><span>CRECI-MT 15368</span><span>CNAI 43379</span></div>
+        </div>
+        <div class="footer-column">
+          <h4>Imóveis</h4>
+          <ul><li><a href="./index.html#imoveis">Ver imóveis disponíveis</a></li><li><a href="./index.html#anunciar">Anunciar imóvel</a></li></ul>
+        </div>
+        <div class="footer-column">
+          <h4>Atendimento</h4>
+          <ul><li><button class="footer-link-button" type="button" id="footerWhatsAppButton">WhatsApp</button></li><li><a href="mailto:valdiney.corretorlrv@gmail.com">E-mail</a></li></ul>
+        </div>
+      </div>
+    </div>
+    <div class="container footer-bottom">
+      <span>© <span id="currentYear"></span> Valdiney Capistrano Imóveis. Todos os direitos reservados.</span>
+      <span>Lucas do Rio Verde - MT</span>
+    </div>
+  </footer>
+
+  <div class="property-lightbox" id="propertyLightbox" aria-hidden="true" role="dialog" aria-label="Visualização ampliada das fotos">
+    <button class="property-lightbox-control property-lightbox-close" type="button" id="lightboxClose" aria-label="Fechar visualização">×</button>
+    <button class="property-lightbox-control property-lightbox-prev" type="button" id="lightboxPrev" aria-label="Foto anterior">‹</button>
+    <img class="property-lightbox-image" id="lightboxImage" src="" alt="">
+    <button class="property-lightbox-control property-lightbox-next" type="button" id="lightboxNext" aria-label="Próxima foto">›</button>
+  </div>
+
+  <script src="./js/config.js"></script>
+  <script src="./js/imovel.js"></script>
+</body>
+</html>

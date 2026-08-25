@@ -2536,6 +2536,10 @@ function renderizarImoveis(
             );
 
 
+          const detalhesUrl =
+            `./imovel.html?codigo=${encodeURIComponent(imovel.codigo || "")}`;
+
+
           const titulo =
             escaparHTML(
               imovel.titulo ||
@@ -2664,13 +2668,24 @@ function renderizarImoveis(
                   </div>
 
 
-                  <button
-                    class="btn btn-outline property-interest-button"
-                    type="button"
-                    data-code="${codigo}"
-                  >
-                    Tenho interesse
-                  </button>
+                  <div class="property-actions">
+
+                    <a
+                      class="btn btn-outline property-details-link"
+                      href="${detalhesUrl}"
+                    >
+                      Ver imóvel
+                    </a>
+
+                    <button
+                      class="btn btn-outline property-interest-button"
+                      type="button"
+                      data-code="${codigo}"
+                    >
+                      Tenho interesse
+                    </button>
+
+                  </div>
 
                 </div>
 
