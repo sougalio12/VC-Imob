@@ -43,5 +43,62 @@
       "nome": "Valdiney Capistrano",
       "creci": "CRECI-MT 15368"
     }
+  },
+  {
+    "id": "VCI000002",
+    "codigo": "VCI000002",
+
+    "ativo": true,
+    "destaque": false,
+
+    "titulo": "Apartamento semimobiliado no Residencial Vida Azaléias",
+    "slug": "apartamento-residencial-vida-azaleias-bandeirantes-lucas-do-rio-verde",
+
+    "finalidade": "venda",
+
+    "tipo": "Apartamento",
+
+    "descricao": "Apartamento semimobiliado à venda no Residencial Vida Azaléias, no bairro Bandeirantes, em Lucas do Rio Verde. Com 54 m² de área privativa, possui 2 quartos, 1 banheiro e 1 vaga de garagem. Localizado no 3º andar do Bloco 2, recebe o sol da manhã.",
+
+    "preco": 520000,
+
+    "cidade": "Lucas do Rio Verde",
+    "estado": "MT",
+    "bairro": "Bandeirantes",
+
+    "enderecoExibir": "Residencial Vida Azaléias, Bandeirantes, Lucas do Rio Verde - MT",
+
+    "areaTotal": null,
+    "areaConstruida": 54,
+
+    "quartos": 2,
+    "suites": null,
+    "banheiros": 1,
+    "vagas": 1,
+
+    "caracteristicas": [
+      "Semimobiliado",
+      "Sol da manhã",
+      "3º andar",
+      "Bloco 2"
+    ],
+
+    "imagens": [
+      "./assets/images/imoveis/vida-azaleias/apartamento-vida-azaleias-01-capa.jpeg",
+      "./assets/images/imoveis/vida-azaleias/apartamento-vida-azaleias-02-cozinha.jpeg",
+      "./assets/images/imoveis/vida-azaleias/apartamento-vida-azaleias-03-cozinha-sala.jpeg",
+      "./assets/images/imoveis/vida-azaleias/apartamento-vida-azaleias-04-sala-cozinha.jpeg",
+      "./assets/images/imoveis/vida-azaleias/apartamento-vida-azaleias-05-quarto-sol.jpeg",
+      "./assets/images/imoveis/vida-azaleias/apartamento-vida-azaleias-06-quarto.jpeg"
+    ],
+
+    "video": "",
+
+    "dataPublicacao": "",
+
+    "corretor": {
+      "nome": "Valdiney Capistrano",
+      "creci": "CRECI-MT 15368"
+    }
   }
 ]
