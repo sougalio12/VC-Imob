@@ -4,7 +4,7 @@ Esta função recebe interesses do site público, valida os campos, limita tenta
 
 ## Pré-requisitos manuais
 
-1. Execute manualmente `supabase/20260825_add_site_lead_capture.sql` no SQL Editor.
+1. Execute manualmente `supabase/20260825_add_site_lead_capture.sql` e `supabase/20260825_add_site_lead_deduplication.sql` no SQL Editor.
 2. Defina os segredos no projeto Supabase (substitua os valores pelos valores reais):
 
 ```sh
@@ -23,3 +23,5 @@ supabase functions deploy site-lead --no-verify-jwt
 ```
 
 O site só envia nome, telefone, e-mail opcional, código do imóvel e um campo honeypot. A Publishable Key usada pelo navegador não concede `insert` público em `leads`; o insert é feito no ambiente protegido da função, após validação e rate limit.
+
+Antes de criar um lead, a função privada `capture_site_lead` procura apenas leads abertos da organização. Ela prioriza o telefone normalizado e usa o e-mail informado como correspondência complementar. Todo contato repetido cria uma nota de histórico com origem e data/hora, sem alterar a etapa; quando o imóvel muda, a nota também registra o interesse anterior antes da atualização do imóvel principal.

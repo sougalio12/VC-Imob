@@ -121,24 +121,19 @@ serve(async (request) => {
   const propertyTitle = cleanText(property?.titulo, 180);
   if (!property || !propertyTitle) return response({ error: "Imóvel não disponível." }, 404, headers);
 
-  const { error: insertError } = await admin.from("leads").insert({
-    organization_id: organizationId,
-    name,
-    phone,
-    whatsapp: phone,
-    email: email || null,
-    origin: "site",
-    property_code: propertyCode,
-    property_title: propertyTitle,
-    notes: "Lead recebido pelo site público.",
-    stage: "novo",
-    entered_at: new Date().toISOString()
+  const { data: captureResult, error: captureError } = await admin.rpc("capture_site_lead", {
+    target_organization: organizationId,
+    target_name: name,
+    target_phone: phone,
+    target_email: email,
+    target_property_code: propertyCode,
+    target_property_title: propertyTitle
   });
 
-  if (insertError) {
-    console.error("site-lead insert failed", insertError.code);
+  if (captureError || !Array.isArray(captureResult) || !captureResult[0]?.lead_id) {
+    console.error("site-lead capture failed", captureError?.code);
     return response({ error: "Não foi possível registrar o interesse." }, 503, headers);
   }
 
-  return response({ ok: true }, 201, headers);
+  return response({ ok: true, created: captureResult[0].created === true }, captureResult[0].created ? 201 : 200, headers);
 });

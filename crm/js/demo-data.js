@@ -6,3 +6,20 @@ const DEMO_LEADS = [
 ];
 
 let demoLeads = DEMO_LEADS.map(item => ({ ...item }));
+
+const DEMO_LEAD_NOTES = [
+  {
+    id: "demo-note-1",
+    lead_id: "demo-1",
+    content: "Novo interesse recebido pelo site no imóvel: VCI000002 — Apartamento semimobiliado no Residencial Vida Azaléias. Origem: site. Data/hora: 25/08/2026 09:30.",
+    created_at: new Date(Date.now() - 3600000).toISOString()
+  },
+  {
+    id: "demo-note-2",
+    lead_id: "demo-1",
+    content: "Cliente solicitou mais informações sobre o imóvel.",
+    created_at: new Date(Date.now() - 7200000).toISOString()
+  }
+];
+
+let demoLeadNotes = DEMO_LEAD_NOTES.map(item => ({ ...item }));

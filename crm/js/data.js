@@ -79,11 +79,29 @@ async function deleteLead(id) {
   await supabaseRequest(`/rest/v1/leads?id=eq.${encodeURIComponent(id)}`, { method: "DELETE" });
 }
 
+async function getLeadNotes(leadId) {
+  if (isDemoMode()) {
+    return demoLeadNotes
+      .filter(note => note.lead_id === leadId)
+      .sort((first, second) => new Date(second.created_at) - new Date(first.created_at))
+      .map(note => ({ ...note }));
+  }
+
+  const data = await supabaseRequest(
+    `/rest/v1/lead_notes?lead_id=eq.${encodeURIComponent(leadId)}&select=*&order=created_at.desc`
+  );
+  return Array.isArray(data) ? data : [];
+}
+
 async function saveLeadNote(leadId, content) {
   const note = String(content || "").trim();
   if (!note) throw new Error("Escreva uma observação antes de salvar.");
 
-  if (isDemoMode()) return { id: `note-${crypto.randomUUID()}`, lead_id: leadId, content: note, created_at: new Date().toISOString() };
+  if (isDemoMode()) {
+    const created = { id: `note-${crypto.randomUUID()}`, lead_id: leadId, content: note, created_at: new Date().toISOString() };
+    demoLeadNotes.unshift(created);
+    return created;
+  }
 
   const profile = await loadCrmProfile();
   return supabaseRequest("/rest/v1/lead_notes", {
