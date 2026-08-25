@@ -85,6 +85,8 @@
     href="./css/style.css"
   >
 
+  <link rel="stylesheet" href="./css/site-lead.css">
+
 </head>
 
 
@@ -2159,6 +2161,8 @@
 
 <script src="./js/caps.js"></script>
 
+<script src="./js/site-lead.js"></script>
+
 
 
 <script>
@@ -2530,14 +2534,12 @@ function renderizarImoveis(
               : "";
 
 
-          const codigo =
-            escaparHTML(
-              imovel.codigo || ""
-            );
+          const codigoBruto = String(imovel.codigo || "");
+          const codigo = escaparHTML(codigoBruto);
 
 
           const detalhesUrl =
-            `./imovel.html?codigo=${encodeURIComponent(imovel.codigo || "")}`;
+            `./imovel.html?codigo=${encodeURIComponent(codigoBruto)}`;
 
 
           const titulo =
@@ -2681,6 +2683,7 @@ function renderizarImoveis(
                       class="btn btn-outline property-interest-button"
                       type="button"
                       data-code="${codigo}"
+                      data-title="${escaparHTML(imovel.titulo || "Imóvel à venda")}"
                     >
                       Tenho interesse
                     </button>
@@ -2711,15 +2714,22 @@ function renderizarImoveis(
           "click",
           () => {
 
-            const codigo =
-              botao.dataset.code;
+            const codigo = botao.dataset.code || "";
+            const titulo = botao.dataset.title || "";
+            const mensagem = codigo
+              ? `Olá, Valdiney! Vim pelo site e tenho interesse no imóvel ${codigo}.`
+              : "Olá, Valdiney! Vim pelo site e tenho interesse em um dos imóveis anunciados.";
 
+            if (window.siteLeadCapture?.openInterestFlow && codigo) {
+              window.siteLeadCapture.openInterestFlow({
+                propertyCode: codigo,
+                propertyTitle: titulo,
+                onContinue: () => abrirWhatsApp(mensagem)
+              });
+              return;
+            }
 
-            abrirWhatsApp(
-              codigo
-                ? `Olá, Valdiney! Vim pelo site e tenho interesse no imóvel ${codigo}.`
-                : "Olá, Valdiney! Vim pelo site e tenho interesse em um dos imóveis anunciados."
-            );
+            abrirWhatsApp(mensagem);
 
           }
         );

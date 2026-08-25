@@ -1,0 +1,16 @@
+.site-lead-modal[hidden] { display: none; }
+.site-lead-modal { position: fixed; inset: 0; z-index: 1200; display: grid; place-items: center; padding: 1rem; background: rgba(0, 0, 0, .72); }
+.site-lead-dialog { width: min(100%, 31rem); max-height: calc(100vh - 2rem); overflow: auto; padding: 1.5rem; border: 1px solid rgba(199, 167, 111, .45); border-radius: 1rem; background: #111; color: #fff; box-shadow: 0 1.5rem 4rem rgba(0, 0, 0, .45); }
+.site-lead-dialog-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+.site-lead-dialog h2 { margin: 0; font-size: 1.35rem; }
+.site-lead-dialog p { color: #dedede; line-height: 1.55; }
+.site-lead-close { border: 0; background: transparent; color: #fff; font-size: 1.8rem; line-height: 1; cursor: pointer; }
+.site-lead-form { display: grid; gap: .9rem; }
+.site-lead-field { display: grid; gap: .35rem; font-weight: 600; }
+.site-lead-field input { width: 100%; box-sizing: border-box; padding: .78rem .85rem; border: 1px solid #666; border-radius: .45rem; background: #fff; color: #161616; font: inherit; }
+.site-lead-actions { display: grid; gap: .65rem; margin-top: .35rem; }
+.site-lead-submit { border: 0; cursor: pointer; }
+.site-lead-skip { border: 0; background: transparent; color: #e4c990; text-decoration: underline; font: inherit; cursor: pointer; }
+.site-lead-error { min-height: 1.25rem; margin: 0; color: #ffb4ad; font-size: .92rem; }
+.site-lead-honeypot { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+@media (max-width: 520px) { .site-lead-dialog { padding: 1.2rem; border-radius: .75rem; } .site-lead-submit { min-height: 3rem; } }

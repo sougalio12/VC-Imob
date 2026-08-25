@@ -67,8 +67,18 @@ function openWhatsAppForProperty() {
 
   const message = `Olá, tenho interesse no imóvel ${property.codigo || ""} - ${property.titulo || ""}.`;
   const url = `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
+  const continueToWhatsApp = () => window.open(url, "_blank", "noopener,noreferrer");
 
-  window.open(url, "_blank", "noopener,noreferrer");
+  if (window.siteLeadCapture?.openInterestFlow && property.codigo) {
+    window.siteLeadCapture.openInterestFlow({
+      propertyCode: property.codigo,
+      propertyTitle: property.titulo || "",
+      onContinue: continueToWhatsApp
+    });
+    return;
+  }
+
+  continueToWhatsApp();
 }
 
 function openGeneralWhatsApp() {
