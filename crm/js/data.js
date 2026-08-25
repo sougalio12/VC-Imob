@@ -8,7 +8,7 @@ const CRM_STAGES = [
 ];
 
 let crmProperties = [];
-let crmProfile = null;
+let crmOrganizationContext = null;
 
 async function loadProperties() {
   if (crmProperties.length) return crmProperties;
@@ -23,14 +23,62 @@ async function loadProperties() {
 
 async function loadCrmProfile() {
   if (isDemoMode()) return { full_name: "Valdiney Capistrano", organization_id: "demo" };
-  if (crmProfile) return crmProfile;
-  crmProfile = await getCurrentProfile();
-  return crmProfile;
+  return (await initializeOrganizationContext()).profile;
+}
+
+async function initializeOrganizationContext() {
+  if (isDemoMode()) {
+    crmOrganizationContext = {
+      profile: { full_name: "Valdiney Capistrano", organization_id: "demo" },
+      memberships: [{ organization_id: "demo", organization_name: "Modo demonstração", role: "owner", status: "active" }],
+      activeOrganizationId: "demo",
+      activeMembership: { organization_id: "demo", organization_name: "Modo demonstração", role: "owner", status: "active" }
+    };
+    return crmOrganizationContext;
+  }
+
+  if (crmOrganizationContext) return crmOrganizationContext;
+
+  const [profile, memberships] = await Promise.all([getCurrentProfile(), getMyActiveMemberships()]);
+  if (!profile) throw new Error("Perfil administrativo não encontrado.");
+  if (!memberships.length) throw new Error("Sua conta não possui uma organização ativa. Entre em contato com o administrador.");
+
+  const legacyMatch = memberships.find(membership => membership.organization_id === profile.organization_id);
+  if (!legacyMatch && memberships.length > 1) {
+    throw new Error("Sua conta possui mais de uma organização ativa. A seleção de organização ainda não está disponível.");
+  }
+
+  const activeMembership = legacyMatch || memberships[0];
+  crmOrganizationContext = {
+    profile,
+    memberships,
+    activeOrganizationId: activeMembership.organization_id,
+    activeMembership
+  };
+  return crmOrganizationContext;
+}
+
+async function getActiveOrganization() {
+  return initializeOrganizationContext();
+}
+
+async function getActiveOrganizationId() {
+  return (await initializeOrganizationContext()).activeOrganizationId;
+}
+
+async function getActiveMembership() {
+  return (await initializeOrganizationContext()).activeMembership;
+}
+
+function resetOrganizationContext() {
+  crmOrganizationContext = null;
+  clearOrganizationContext();
 }
 
 async function getLeads() {
   if (isDemoMode()) return demoLeads.map(item => ({ ...item }));
-  const data = await supabaseRequest("/rest/v1/leads?select=*&order=created_at.desc");
+  const organizationId = await getActiveOrganizationId();
+  const data = await supabaseRequest(`/rest/v1/leads?organization_id=eq.${encodeURIComponent(organizationId)}&select=*&order=created_at.desc`);
   return Array.isArray(data) ? data : [];
 }
 
@@ -43,12 +91,11 @@ async function createLead(payload) {
     return lead;
   }
 
-  const profile = await loadCrmProfile();
-  if (!profile?.organization_id) throw new Error("Perfil administrativo não encontrado.");
+  const organizationId = await getActiveOrganizationId();
   const result = await supabaseRequest("/rest/v1/leads", {
     method: "POST",
     headers: { Prefer: "return=representation" },
-    body: JSON.stringify([{ ...payload, organization_id: profile.organization_id, assigned_to: getStoredSession()?.user?.id }])
+    body: JSON.stringify([{ ...payload, organization_id: organizationId, assigned_to: getStoredSession()?.user?.id }])
   });
   return result?.[0];
 }
@@ -63,7 +110,8 @@ async function updateLead(id, payload) {
     return demoLeads[index];
   }
 
-  const result = await supabaseRequest(`/rest/v1/leads?id=eq.${encodeURIComponent(id)}`, {
+  const organizationId = await getActiveOrganizationId();
+  const result = await supabaseRequest(`/rest/v1/leads?id=eq.${encodeURIComponent(id)}&organization_id=eq.${encodeURIComponent(organizationId)}`, {
     method: "PATCH",
     headers: { Prefer: "return=representation" },
     body: JSON.stringify(payload)
@@ -76,7 +124,8 @@ async function deleteLead(id) {
     demoLeads = demoLeads.filter(item => item.id !== id);
     return;
   }
-  await supabaseRequest(`/rest/v1/leads?id=eq.${encodeURIComponent(id)}`, { method: "DELETE" });
+  const organizationId = await getActiveOrganizationId();
+  await supabaseRequest(`/rest/v1/leads?id=eq.${encodeURIComponent(id)}&organization_id=eq.${encodeURIComponent(organizationId)}`, { method: "DELETE" });
 }
 
 async function getLeadNotes(leadId) {
@@ -87,8 +136,9 @@ async function getLeadNotes(leadId) {
       .map(note => ({ ...note }));
   }
 
+  const organizationId = await getActiveOrganizationId();
   const data = await supabaseRequest(
-    `/rest/v1/lead_notes?lead_id=eq.${encodeURIComponent(leadId)}&select=*&order=created_at.desc`
+    `/rest/v1/lead_notes?lead_id=eq.${encodeURIComponent(leadId)}&organization_id=eq.${encodeURIComponent(organizationId)}&select=*&order=created_at.desc`
   );
   return Array.isArray(data) ? data : [];
 }
@@ -103,11 +153,11 @@ async function saveLeadNote(leadId, content) {
     return created;
   }
 
-  const profile = await loadCrmProfile();
+  const organizationId = await getActiveOrganizationId();
   return supabaseRequest("/rest/v1/lead_notes", {
     method: "POST",
     headers: { Prefer: "return=representation" },
-    body: JSON.stringify([{ lead_id: leadId, organization_id: profile.organization_id, author_id: (await getValidSession())?.user?.id, content: note }])
+    body: JSON.stringify([{ lead_id: leadId, organization_id: organizationId, author_id: (await getValidSession())?.user?.id, content: note }])
   });
 }
 

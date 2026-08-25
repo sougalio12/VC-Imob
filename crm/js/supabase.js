@@ -15,6 +15,10 @@ function clearStoredSession() {
   sessionStorage.removeItem("vc-imob-session");
 }
 
+function clearOrganizationContext() {
+  sessionStorage.removeItem("vc-imob-organization-context");
+}
+
 async function refreshStoredSession(session) {
   if (!session?.refresh_token || !isSupabaseConfigured()) return null;
 
@@ -91,6 +95,7 @@ async function signOutFromSupabase() {
     try { await supabaseRequest("/auth/v1/logout", { method: "POST" }); } catch { /* sessão local ainda será removida */ }
   }
   clearStoredSession();
+  clearOrganizationContext();
 }
 
 async function getCurrentProfile() {
@@ -99,4 +104,13 @@ async function getCurrentProfile() {
 
   const result = await supabaseRequest(`/rest/v1/profiles?id=eq.${encodeURIComponent(session.user.id)}&select=*`);
   return result?.[0] || null;
+}
+
+async function getMyActiveMemberships() {
+  const result = await supabaseRequest("/rest/v1/rpc/get_my_active_memberships", {
+    method: "POST",
+    body: JSON.stringify({})
+  });
+
+  return Array.isArray(result) ? result : [];
 }

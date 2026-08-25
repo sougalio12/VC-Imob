@@ -25,6 +25,7 @@ async function requireCrmSession() {
 
 async function logoutCrm() {
   leaveDemoMode();
+  resetOrganizationContext();
   await signOutFromSupabase();
   window.location.replace("./login.html");
 }
