@@ -7,9 +7,15 @@ const anonKey = process.env.SUPABASE_ANON_KEY;
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const password = process.env.PHASE_C_TEST_PASSWORD;
 
-if (confirmation !== "RUN_ON_STAGING_ONLY") throw new Error("Set PHASE_C_CONFIRM=RUN_ON_STAGING_ONLY");
-if (!supabaseUrl || !anonKey || !serviceKey || !password) throw new Error("Missing required staging environment variables");
+const isLocalRun = confirmation === "RUN_ON_LOCAL_ONLY";
+const isStagingRun = confirmation === "RUN_ON_STAGING_ONLY";
+
+if (!isLocalRun && !isStagingRun) throw new Error("Set PHASE_C_CONFIRM for an explicitly approved local or staging run");
+if (!supabaseUrl || !anonKey || !serviceKey || !password) throw new Error("Missing required test environment variables");
 if (supabaseUrl.includes(PRODUCTION_PROJECT_REF)) throw new Error("Refusing to run against the VC Imob production project");
+if (isLocalRun && !["http://127.0.0.1:54321", "http://localhost:54321"].includes(supabaseUrl)) {
+  throw new Error(`Refusing non-local URL in local mode: ${supabaseUrl}`);
+}
 
 const emails = {
   ownerA: "phase-c-owner-a@example.com",

@@ -33,7 +33,8 @@ delete from public.organizations
 where name in (
   '[PHASE_C_TEST] Organization A',
   '[PHASE_C_TEST] Organization B'
-);
+)
+or name like '[PHASE\_C\_TEST] Bootstrap %' escape '\';
 
 commit;
 
@@ -55,4 +56,5 @@ from public.organizations
 where name in (
   '[PHASE_C_TEST] Organization A',
   '[PHASE_C_TEST] Organization B'
-);
+)
+or name like '[PHASE\_C\_TEST] Bootstrap %' escape '\';
