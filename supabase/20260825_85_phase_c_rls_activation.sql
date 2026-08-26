@@ -130,7 +130,13 @@ create policy "phase_c_leads_select"
 on public.leads
 for select
 to authenticated
-using (public.can_access_lead(id, organization_id));
+using (
+  public.can_operate_organization(organization_id)
+  or (
+    public.current_membership_role(organization_id) = 'agent'
+    and assigned_to = auth.uid()
+  )
+);
 
 create policy "phase_c_leads_insert"
 on public.leads
