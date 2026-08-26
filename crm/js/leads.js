@@ -147,7 +147,8 @@ async function openLeadModal(lead, properties) {
     error.textContent = "";
     const values = new FormData(form);
     const selected = findPropertyByCode(values.get("property_code"));
-    const payload = { name: values.get("nome").trim(), phone: values.get("telefone").trim(), whatsapp: values.get("whatsapp").trim(), email: values.get("email").trim(), origin: values.get("origem").trim() || "manual", responsible_name: values.get("responsavel").trim(), property_code: values.get("property_code"), property_title: selected?.titulo || "", budget: values.get("orcamento").trim(), desired_region: values.get("regiao").trim(), notes: values.get("notes").trim(), stage: values.get("stage"), entered_at: lead?.entered_at || new Date().toISOString(), next_follow_up: values.get("proximo_retorno") || null, visit_date: values.get("data_visita") || null };
+    const payload = { name: values.get("nome").trim(), phone: values.get("telefone").trim(), whatsapp: values.get("whatsapp").trim(), email: values.get("email").trim(), origin: values.get("origem").trim() || "manual", responsible_name: values.get("responsavel").trim(), property_code: values.get("property_code"), property_title: selected?.titulo || "", budget: values.get("orcamento").trim(), desired_region: values.get("regiao").trim(), notes: values.get("notes").trim(), stage: values.get("stage"), next_follow_up: values.get("proximo_retorno") || null, visit_date: values.get("data_visita") || null };
+    if (!lead) payload.entered_at = new Date().toISOString();
     try {
       const saved = lead ? await updateLead(lead.id, payload) : await createLead(payload);
       if (noteInput?.value.trim()) await saveLeadNote(saved.id, noteInput.value.trim());
