@@ -71,7 +71,9 @@ async function supabaseRequest(path, options = {}) {
   try { data = text ? JSON.parse(text) : null; } catch { data = text; }
 
   if (!response.ok) {
-    const message = data?.message || data?.error_description || "Não foi possível concluir a operação.";
+    const rawMessage = data?.message || data?.error_description || "Não foi possível concluir a operação.";
+    const friendlyMessages = { "Team member limit reached": "O limite de pessoas do seu plano foi atingido. Consulte Plano / Assinatura para ver as opções.", "Acesso comercial negado": "Sua conta não tem acesso a este recurso no plano atual.", "Acesso ao plano negado": "Somente proprietários e gerentes podem consultar a assinatura." };
+    const message = friendlyMessages[rawMessage] || rawMessage;
     throw new Error(message);
   }
 

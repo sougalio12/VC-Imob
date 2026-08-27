@@ -83,6 +83,12 @@ async function setTeamMemberEnabled(userId, enabled) { return callCrmRpc(enabled
 async function removeTeamMember(userId) { return callCrmRpc("remove_member", { target_organization: await getActiveOrganizationId(), target_user: userId }); }
 async function assignLead(leadId, userId) { return callCrmRpc("assign_lead", { target_organization: await getActiveOrganizationId(), target_lead: leadId, target_user: userId || null }); }
 async function acceptTeamInvitation(token) { return callCrmRpc("accept_invitation", { invitation_token: token }); }
+async function getBillingOverview() {
+  if (isDemoMode()) return { subscription: { plan_code: "equipe", plan_name: "EQUIPE", status: "active", is_entitled: true }, entitlements: [{ entitlement_key: "team.members", enabled: true, limit_value: 30, used_value: 4 }], plans: [{ plan_code: "start", plan_name: "START", monthly_price_cents: 3990, currency: "BRL", trial_days: 7, team_member_limit: 1 }, { plan_code: "pro", plan_name: "PRO", monthly_price_cents: 7990, currency: "BRL", trial_days: 14, team_member_limit: 1 }, { plan_code: "equipe", plan_name: "EQUIPE", monthly_price_cents: 14990, currency: "BRL", trial_days: 14, team_member_limit: 30 }] };
+  const organization = await getActiveOrganizationId();
+  const [subscriptions, entitlements, plans] = await Promise.all([callCrmRpc("get_my_subscription", { target_organization: organization }), callCrmRpc("get_my_entitlements", { target_organization: organization }), callCrmRpc("list_available_plans", { target_organization: organization })]);
+  return { subscription: subscriptions?.[0] || null, entitlements: entitlements || [], plans: plans || [] };
+}
 
 function resetOrganizationContext() {
   crmOrganizationContext = null;

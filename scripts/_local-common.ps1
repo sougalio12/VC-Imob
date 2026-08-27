@@ -161,6 +161,7 @@ function Test-MigrationSourceParity {
         'supabase/20260825_85_phase_c_rls_activation.sql' = 'supabase/migrations/20260825850000_phase_c_rls_activation.sql'
         'supabase/20260825_86_phase_c_leads_insert_returning_fix.sql' = 'supabase/migrations/20260825860000_phase_c_leads_insert_returning_fix.sql'
         'supabase/20260826_00_phase_d_team_management.sql' = 'supabase/migrations/20260826000000_phase_d_team_management.sql'
+        'supabase/20260827_00_phase_e_billing.sql' = 'supabase/migrations/20260827000000_phase_e_billing.sql'
     }
 
     foreach ($pair in $pairs.GetEnumerator()) {

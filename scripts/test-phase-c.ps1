@@ -104,6 +104,7 @@ function Wait-LocalEdgeFunction {
     )
 
     Assert-LocalUrl $local.API_URL
+    $lastProbe = 'No request was completed.'
     for ($attempt = 1; $attempt -le $Attempts; $attempt++) {
         if ($Process -and $Process.HasExited) {
             $stderr = Join-Path $script:RepositoryRoot 'supabase/.local/site-lead.err.log'
@@ -111,7 +112,8 @@ function Wait-LocalEdgeFunction {
             throw "Local Edge Function process exited with code $($Process.ExitCode).`n$details"
         }
         try {
-            $optionsResponse = Invoke-WebRequest -UseBasicParsing -Method OPTIONS -Uri $Url -Headers @{ Origin = 'http://127.0.0.1:4173' } -TimeoutSec 2
+            $optionsResponse = Invoke-WebRequest -UseBasicParsing -SkipHttpErrorCheck -Method OPTIONS -Uri $Url -Headers @{ Origin = 'http://127.0.0.1:4173' } -TimeoutSec 2
+            $lastProbe = "OPTIONS returned HTTP $($optionsResponse.StatusCode): $($optionsResponse.Content)"
             if ($optionsResponse.StatusCode -eq 204) {
                 # OPTIONS may be answered before the TypeScript worker is warm.
                 # Exercise the complete handler path (secrets, rate-limit RPC,
@@ -127,20 +129,23 @@ function Wait-LocalEdgeFunction {
                     email = "phase-c-probe-$attempt@example.com"
                     propertyCode = $ProbePropertyCode
                 } | ConvertTo-Json -Compress) -TimeoutSec 10
+                $lastProbe = "POST returned HTTP $($probeResponse.StatusCode): $($probeResponse.Content)"
                 if ($probeResponse.StatusCode -in @(200, 201)) {
                     Start-Sleep -Milliseconds 500
                     return
                 }
             }
         } catch {
+            $lastProbe = "Request failed: $($_.Exception.Message)"
             if ($attempt -eq $Attempts) {
                 $stderr = Join-Path $script:RepositoryRoot 'supabase/.local/site-lead.err.log'
                 $details = if (Test-Path -LiteralPath $stderr) { Get-Content -LiteralPath $stderr -Raw } else { 'No stderr log was created.' }
-                throw "Local Edge Function did not become ready after $($Attempts / 2) seconds: $Url`n$details"
+                throw "Local Edge Function did not become ready after $($Attempts / 2) seconds: $Url`nLast probe: $lastProbe`n$details"
             }
             Start-Sleep -Milliseconds 500
         }
     }
+    throw "Local Edge Function answered requests but never passed readiness: $Url`nLast probe: $lastProbe"
 }
 
 function Start-HiddenProcess {
@@ -157,6 +162,41 @@ function Start-HiddenProcess {
     $process = Start-Process -FilePath $FilePath -ArgumentList $ArgumentList -WorkingDirectory $script:RepositoryRoot -WindowStyle Hidden -PassThru -RedirectStandardOutput $stdout -RedirectStandardError $stderr
     $backgroundProcesses.Add($process)
     return $process
+}
+
+function Start-LocalEdgeFunction {
+    param(
+        [Parameter(Mandatory)][string]$FilePath,
+        [Parameter(Mandatory)][string[]]$ArgumentList,
+        [int]$Attempts = 3,
+        [int]$ChecksPerAttempt = 60
+    )
+
+    $stdout = Join-Path $script:RepositoryRoot 'supabase/.local/site-lead.out.log'
+    $stderr = Join-Path $script:RepositoryRoot 'supabase/.local/site-lead.err.log'
+    for ($attempt = 1; $attempt -le $Attempts; $attempt++) {
+        $process = Start-HiddenProcess -FilePath $FilePath -ArgumentList $ArgumentList -LogPrefix 'site-lead'
+        for ($check = 1; $check -le $ChecksPerAttempt; $check++) {
+            if ($process.HasExited) { break }
+            $output = if (Test-Path -LiteralPath $stdout) { Get-Content -LiteralPath $stdout -Raw } else { '' }
+            if ($output -match 'Serving functions on http://127[.]0[.]0[.]1:54321/functions/v1/') {
+                return $process
+            }
+            Start-Sleep -Milliseconds 500
+        }
+
+        if (-not $process.HasExited) { Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue }
+        if ($attempt -lt $Attempts) {
+            Write-Warning "Edge runtime did not publish the function on cold-start attempt $attempt; retrying the local serve process."
+            Start-Sleep -Seconds 2
+        }
+    }
+
+    $details = @(
+        if (Test-Path -LiteralPath $stdout) { "stdout:`n$(Get-Content -LiteralPath $stdout -Raw)" }
+        if (Test-Path -LiteralPath $stderr) { "stderr:`n$(Get-Content -LiteralPath $stderr -Raw)" }
+    ) -join "`n"
+    throw "Local Edge Function runtime never published its route after $Attempts isolated attempts.`n$details"
 }
 
 try {
@@ -220,7 +260,7 @@ try {
         [System.IO.File]::WriteAllLines($envPath, $environmentLines, [System.Text.UTF8Encoding]::new($false))
 
         $serveArguments = @($script:SupabaseLaunch.PrefixArguments) + @('functions', 'serve', 'site-lead', '--env-file', $envPath)
-        $edgeFunctionProcess = Start-HiddenProcess -FilePath $script:SupabaseLaunch.FilePath -ArgumentList $serveArguments -LogPrefix 'site-lead'
+        $edgeFunctionProcess = Start-LocalEdgeFunction -FilePath $script:SupabaseLaunch.FilePath -ArgumentList $serveArguments
 
         $env:PHASE_C_SITE_LEAD_URL = "$($local.API_URL)/functions/v1/site-lead"
         $env:PHASE_C_SITE_ORIGIN = 'http://127.0.0.1:4173'
