@@ -60,7 +60,7 @@
 
     "descricao": "Apartamento semimobiliado à venda no Residencial Vida Azaléias, no bairro Bandeirantes, em Lucas do Rio Verde. Com 54 m² de área privativa, possui 2 quartos, 1 banheiro e 1 vaga de garagem. Localizado no 3º andar do Bloco 2, recebe o sol da manhã.",
 
-    "preco": 520000,
+    "preco": 480000,
 
     "cidade": "Lucas do Rio Verde",
     "estado": "MT",
@@ -97,6 +97,47 @@
 
     "dataPublicacao": "",
 
+    "corretor": {
+      "nome": "Valdiney Capistrano",
+      "creci": "CRECI-MT 15368"
+    }
+  },
+  {
+    "id": "VCI000003",
+    "codigo": "VCI000003",
+    "ativo": true,
+    "destaque": true,
+    "titulo": "Fazenda à venda na região de Nova Ubiratã – MT",
+    "slug": "fazenda-venda-regiao-nova-ubirata-mt",
+    "finalidade": "venda",
+    "tipo": "Fazenda",
+    "descricao": "Fazenda com 400 hectares localizada na região de Nova Ubiratã – MT. Área aberta, atualmente formada em pastagem, com histórico de plantio há aproximadamente dois anos. Solo com aproximadamente 15% de argila. Excelente oportunidade para investimento rural.",
+    "preco": 22000000,
+    "cidade": "Nova Ubiratã",
+    "estado": "MT",
+    "bairro": "",
+    "enderecoExibir": "Região de Nova Ubiratã – MT",
+    "areaTotal": 400,
+    "unidadeAreaTotal": "hectares",
+    "areaConstruida": null,
+    "quartos": null,
+    "suites": null,
+    "banheiros": null,
+    "vagas": null,
+    "caracteristicas": [
+      "Área aberta",
+      "Pastagem",
+      "Histórico de plantio há aproximadamente 2 anos",
+      "Aproximadamente 15% de argila"
+    ],
+    "imagens": [
+      "./assets/images/imoveis/nova-ubirata/01-capa.jpeg",
+      "./assets/images/imoveis/nova-ubirata/02.jpeg",
+      "./assets/images/imoveis/nova-ubirata/03.jpeg",
+      "./assets/images/imoveis/nova-ubirata/04.jpeg"
+    ],
+    "video": "",
+    "dataPublicacao": "",
     "corretor": {
       "nome": "Valdiney Capistrano",
       "creci": "CRECI-MT 15368"

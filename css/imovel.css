@@ -125,6 +125,23 @@
   object-fit: cover;
 }
 
+.property-gallery-main::before,
+.property-thumbnail::after,
+.property-lightbox-media::after {
+  content: "";
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  width: clamp(92px, 22%, 180px);
+  aspect-ratio: 2.2 / 1;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.72) url("../assets/images/4d6f85cd-fe07-4c5c-bbbf-be216a48a1b1.jpeg") center / contain no-repeat;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.18);
+  opacity: 0.72;
+  pointer-events: none;
+  z-index: 2;
+}
+
 .property-gallery-main::after {
   content: "Ampliar foto";
 
@@ -153,6 +170,7 @@
 }
 
 .property-thumbnail {
+  position: relative;
   aspect-ratio: 4 / 3;
 
   overflow: hidden;
@@ -163,6 +181,14 @@
   border-radius: var(--radius-md);
 
   background: var(--color-gray-200);
+}
+
+.property-thumbnail::after {
+  right: 5px;
+  bottom: 5px;
+  width: 45%;
+  border-radius: 4px;
+  opacity: 0.62;
 }
 
 .property-thumbnail img {
@@ -333,6 +359,19 @@
   object-fit: contain;
 }
 
+.property-lightbox-media {
+  position: relative;
+  display: grid;
+  place-items: center;
+  max-width: min(1100px, calc(100vw - 120px));
+  max-height: calc(100vh - 80px);
+}
+
+.property-lightbox-media::after {
+  right: 20px;
+  bottom: 20px;
+}
+
 .property-lightbox-control {
   position: absolute;
 
@@ -449,6 +488,10 @@ body.lightbox-open {
   }
 
   .property-lightbox-image {
+    max-width: calc(100vw - 24px);
+  }
+
+  .property-lightbox-media {
     max-width: calc(100vw - 24px);
   }
 

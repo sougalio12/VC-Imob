@@ -32,13 +32,16 @@ function formatPrice(value) {
 }
 
 function propertyLocation(property) {
+  if (property.enderecoExibir) return property.enderecoExibir;
   return [property.bairro, property.cidade, property.estado]
     .filter(Boolean)
     .join(" • ");
 }
 
 function propertyArea(property) {
-  return property.areaConstruida || property.areaTotal || null;
+  if (property.areaConstruida) return `${property.areaConstruida} m²`;
+  if (property.areaTotal) return `${property.areaTotal} ${property.unidadeAreaTotal || "m²"}`;
+  return null;
 }
 
 function updateSeo(property) {
@@ -111,7 +114,7 @@ function renderProperty(property) {
     ? property.imagens.filter(Boolean)
     : [];
   const facts = [
-    propertyArea(property) ? ["Área", `${escapeHTML(propertyArea(property))} m²`] : null,
+    propertyArea(property) ? ["Área", escapeHTML(propertyArea(property))] : null,
     property.quartos ? ["Quartos", escapeHTML(property.quartos)] : null,
     property.suites ? ["Suítes", escapeHTML(property.suites)] : null,
     property.banheiros ? ["Banheiros", escapeHTML(property.banheiros)] : null,
@@ -188,6 +191,12 @@ function renderProperty(property) {
       </aside>
     </section>
   `;
+
+  const lightboxImage = document.getElementById("lightboxImage");
+  if (lightboxImage && images.length) {
+    lightboxImage.src = images[0];
+    lightboxImage.alt = imageAlt(property, 0);
+  }
 
   bindPropertyEvents();
 }

@@ -82,7 +82,7 @@
 
   <link
     rel="stylesheet"
-    href="./css/style.css"
+    href="./css/style.css?v=site-20260827"
   >
 
   <link rel="stylesheet" href="./css/site-lead.css">
@@ -288,7 +288,7 @@
           class="btn btn-dark-outline"
           href="#anunciar"
         >
-          Anunciar meu imóvel
+          Anunciar seu imóvel
         </a>
 
       </div>
@@ -1006,7 +1006,7 @@
           href="#formularioAnuncio"
           class="btn btn-champagne"
         >
-          Anunciar meu imóvel
+          Anunciar seu imóvel
         </a>
 
       </div>
@@ -1062,7 +1062,7 @@
       <div class="form-field">
 
         <label for="sellerName">
-          Seu nome
+          Nome
         </label>
 
         <input
@@ -1079,7 +1079,7 @@
       <div class="form-field">
 
         <label for="sellerPhone">
-          Seu WhatsApp
+          Telefone / WhatsApp
         </label>
 
         <input
@@ -1143,14 +1143,16 @@
 
       <div class="form-field">
 
-        <label for="propertyNeighborhood">
-          Bairro ou região
+        <label for="propertyLocation">
+          Cidade / bairro / região
         </label>
 
         <input
-          id="propertyNeighborhood"
+          id="propertyLocation"
           type="text"
-          placeholder="Ex.: Bandeirantes"
+          required
+          autocomplete="address-level2"
+          placeholder="Ex.: Lucas do Rio Verde, Bandeirantes"
         >
 
       </div>
@@ -1159,7 +1161,7 @@
       <div class="form-field">
 
         <label for="propertyValue">
-          Valor pretendido
+          Valor aproximado
         </label>
 
         <input
@@ -1174,15 +1176,16 @@
 
       <div class="form-field">
 
-        <label for="propertyArea">
-          Área aproximada
+        <label for="preferredContactTime">
+          Horário preferido para atendimento
         </label>
 
-        <input
-          id="propertyArea"
-          type="text"
-          placeholder="Ex.: 180 m²"
-        >
+        <select id="preferredContactTime" required>
+          <option value="">Selecione</option>
+          <option value="Manhã">Manhã</option>
+          <option value="Tarde">Tarde</option>
+          <option value="Noite">Noite</option>
+        </select>
 
       </div>
 
@@ -1190,19 +1193,22 @@
       <div class="form-field full">
 
         <label for="propertyDescription">
-          Conte mais sobre o imóvel
+          Breve descrição
         </label>
 
         <textarea
           id="propertyDescription"
-          rows="6"
-          placeholder="Quartos, suítes, vagas, localização, diferenciais e outras informações."
+          rows="4"
+          maxlength="800"
+          placeholder="Conte brevemente as principais características do imóvel."
         ></textarea>
 
       </div>
 
 
       <div class="full">
+
+        <p class="form-error" id="sellFormError" role="alert" aria-live="polite"></p>
 
         <button
           type="submit"
@@ -1503,7 +1509,7 @@
         <div class="support-links">
 
           <a href="#formularioAnuncio">
-            Anunciar meu imóvel
+            Anunciar seu imóvel
           </a>
 
           <a
@@ -2172,24 +2178,20 @@
    CONFIGURAÇÃO
 ===================================================== */
 
-const WHATSAPP_PADRAO =
-  "5565999337268";
-
-
 function obterWhatsapp() {
 
   try {
 
     return (
       SITE_CONFIG?.contato?.whatsapp ||
-      WHATSAPP_PADRAO
+      ""
     );
 
   }
 
   catch {
 
-    return WHATSAPP_PADRAO;
+    return "";
 
   }
 
@@ -2225,6 +2227,11 @@ function abrirWhatsApp(
   const numero =
     obterWhatsapp();
 
+  if (!numero) {
+    mostrarToast("Contato de WhatsApp indisponível no momento.");
+    return;
+  }
+
   const texto =
     encodeURIComponent(
       mensagem
@@ -2235,7 +2242,8 @@ function abrirWhatsApp(
 
   window.open(
     url,
-    "_blank"
+    "_blank",
+    "noopener,noreferrer"
   );
 
 }
@@ -2583,7 +2591,7 @@ function renderizarImoveis(
             <article class="property-card">
 
 
-              <div class="property-image">
+              <div class="property-image${imagem ? " has-property-photo" : ""}">
 
                 ${imagemHTML}
 
@@ -2621,7 +2629,7 @@ function renderizarImoveis(
                       : ""
                   }
 
-                  Lucas do Rio Verde - MT
+                  ${escaparHTML([imovel.cidade, imovel.estado].filter(Boolean).join(" - ") || "Localização não informada")}
 
                 </div>
 
@@ -2643,7 +2651,9 @@ function renderizarImoveis(
                   ${
                     imovel.areaConstruida
                       ? `<span>📐 ${escaparHTML(imovel.areaConstruida)} m²</span>`
-                      : ""
+                      : imovel.areaTotal
+                        ? `<span>📐 ${escaparHTML(imovel.areaTotal)} ${escaparHTML(imovel.unidadeAreaTotal || "m²")}</span>`
+                        : ""
                   }
 
                   ${
@@ -3647,108 +3657,6 @@ async function carregarNoticias() {
 
 
 /* =====================================================
-   FORMULÁRIO DE ANÚNCIO
-===================================================== */
-
-document
-  .getElementById(
-    "sellForm"
-  )
-  ?.addEventListener(
-    "submit",
-    event => {
-
-      event.preventDefault();
-
-
-      const nome =
-        document
-          .getElementById(
-            "sellerName"
-          )
-          .value
-          .trim();
-
-
-      const telefone =
-        document
-          .getElementById(
-            "sellerPhone"
-          )
-          .value
-          .trim();
-
-
-      const tipo =
-        document
-          .getElementById(
-            "propertyType"
-          )
-          .value;
-
-
-      const bairro =
-        document
-          .getElementById(
-            "propertyNeighborhood"
-          )
-          .value
-          .trim();
-
-
-      const valor =
-        document
-          .getElementById(
-            "propertyValue"
-          )
-          .value
-          .trim();
-
-
-      const area =
-        document
-          .getElementById(
-            "propertyArea"
-          )
-          .value
-          .trim();
-
-
-      const descricao =
-        document
-          .getElementById(
-            "propertyDescription"
-          )
-          .value
-          .trim();
-
-
-      const mensagem =
-`Olá, Valdiney!
-
-Vim pelo site Valdiney Capistrano Imóveis e gostaria de anunciar meu imóvel.
-
-Nome: ${nome}
-Meu WhatsApp: ${telefone}
-Tipo do imóvel: ${tipo}
-Bairro/região: ${bairro || "Não informado"}
-Valor pretendido: ${valor || "Não informado"}
-Área aproximada: ${area || "Não informado"}
-
-Informações adicionais:
-${descricao || "Não informado"}`;
-
-
-      abrirWhatsApp(
-        mensagem
-      );
-
-    }
-  );
-
-
-
-/* =====================================================
    COOKIES
 ===================================================== */
 
@@ -3872,6 +3780,8 @@ carregarNoticias();
 
 
 </script>
+
+<script src="./js/sell-property.js?v=site-20260827"></script>
 
 
 
