@@ -96,15 +96,48 @@ function Wait-HttpEndpoint {
 }
 
 function Wait-LocalEdgeFunction {
-    param([Parameter(Mandatory)][string]$Url, [int]$Attempts = 60)
+    param(
+        [Parameter(Mandatory)][string]$Url,
+        [Parameter(Mandatory)][string]$ProbePropertyCode,
+        [System.Diagnostics.Process]$Process,
+        [int]$Attempts = 120
+    )
 
     Assert-LocalUrl $local.API_URL
     for ($attempt = 1; $attempt -le $Attempts; $attempt++) {
+        if ($Process -and $Process.HasExited) {
+            $stderr = Join-Path $script:RepositoryRoot 'supabase/.local/site-lead.err.log'
+            $details = if (Test-Path -LiteralPath $stderr) { Get-Content -LiteralPath $stderr -Raw } else { 'No stderr log was created.' }
+            throw "Local Edge Function process exited with code $($Process.ExitCode).`n$details"
+        }
         try {
-            $response = Invoke-WebRequest -UseBasicParsing -Method OPTIONS -Uri $Url -Headers @{ Origin = 'http://127.0.0.1:4173' } -TimeoutSec 2
-            if ($response.StatusCode -eq 204) { return }
+            $optionsResponse = Invoke-WebRequest -UseBasicParsing -Method OPTIONS -Uri $Url -Headers @{ Origin = 'http://127.0.0.1:4173' } -TimeoutSec 2
+            if ($optionsResponse.StatusCode -eq 204) {
+                # OPTIONS may be answered before the TypeScript worker is warm.
+                # Exercise the complete handler path (secrets, rate-limit RPC,
+                # fixture access and capture RPC) with an isolated synthetic lead.
+                $probeResponse = Invoke-WebRequest -UseBasicParsing -SkipHttpErrorCheck -Method POST -Uri $Url -Headers @{
+                    apikey = $local.ANON_KEY
+                    Origin = 'http://127.0.0.1:4173'
+                    'Content-Type' = 'application/json'
+                    'x-forwarded-for' = "127.0.1.$attempt"
+                } -Body (@{
+                    name = 'Phase C readiness probe'
+                    phone = "65988$($attempt.ToString('00000'))"
+                    email = "phase-c-probe-$attempt@example.com"
+                    propertyCode = $ProbePropertyCode
+                } | ConvertTo-Json -Compress) -TimeoutSec 10
+                if ($probeResponse.StatusCode -in @(200, 201)) {
+                    Start-Sleep -Milliseconds 500
+                    return
+                }
+            }
         } catch {
-            if ($attempt -eq $Attempts) { throw "Local Edge Function did not become ready: $Url" }
+            if ($attempt -eq $Attempts) {
+                $stderr = Join-Path $script:RepositoryRoot 'supabase/.local/site-lead.err.log'
+                $details = if (Test-Path -LiteralPath $stderr) { Get-Content -LiteralPath $stderr -Raw } else { 'No stderr log was created.' }
+                throw "Local Edge Function did not become ready after $($Attempts / 2) seconds: $Url`n$details"
+            }
             Start-Sleep -Milliseconds 500
         }
     }
@@ -176,20 +209,23 @@ try {
         Wait-HttpEndpoint 'http://127.0.0.1:4173/data/imoveis.json'
 
         $envPath = Join-Path $script:RepositoryRoot 'supabase/.local/site-lead.env'
-        @(
+        $environmentLines = @(
             "SITE_LEAD_ORGANIZATION_ID=$organizationId"
             'SITE_LEAD_ALLOWED_ORIGINS=http://127.0.0.1:4173'
             'SITE_LEAD_RATE_LIMIT_SALT=local-phase-c-rate-limit-only'
             'SITE_PUBLIC_URL=http://host.docker.internal:4173'
-        ) | Set-Content -LiteralPath $envPath -Encoding utf8
+        )
+        # Supabase CLI rejects an UTF-8 BOM as part of the first variable name.
+        # Use an explicit BOM-less encoding across Windows PowerShell and pwsh.
+        [System.IO.File]::WriteAllLines($envPath, $environmentLines, [System.Text.UTF8Encoding]::new($false))
 
         $serveArguments = @($script:SupabaseLaunch.PrefixArguments) + @('functions', 'serve', 'site-lead', '--env-file', $envPath)
-        Start-HiddenProcess -FilePath $script:SupabaseLaunch.FilePath -ArgumentList $serveArguments -LogPrefix 'site-lead' | Out-Null
+        $edgeFunctionProcess = Start-HiddenProcess -FilePath $script:SupabaseLaunch.FilePath -ArgumentList $serveArguments -LogPrefix 'site-lead'
 
         $env:PHASE_C_SITE_LEAD_URL = "$($local.API_URL)/functions/v1/site-lead"
         $env:PHASE_C_SITE_ORIGIN = 'http://127.0.0.1:4173'
         $env:PHASE_C_PROPERTY_CODE = [string]$property.codigo
-        Wait-LocalEdgeFunction $env:PHASE_C_SITE_LEAD_URL
+        Wait-LocalEdgeFunction -Url $env:PHASE_C_SITE_LEAD_URL -ProbePropertyCode $env:PHASE_C_PROPERTY_CODE -Process $edgeFunctionProcess
     } else {
         Remove-Item Env:PHASE_C_SITE_LEAD_URL -ErrorAction SilentlyContinue
         Remove-Item Env:PHASE_C_SITE_ORIGIN -ErrorAction SilentlyContinue

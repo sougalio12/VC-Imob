@@ -1,5 +1,7 @@
 async function renderLeads(root) {
-  const [leads, properties] = await Promise.all([getLeads(), loadProperties()]);
+  const [leads, properties, membership] = await Promise.all([getLeads(), loadProperties(), getActiveMembership()]);
+  const canAssign = ["owner", "manager"].includes(membership.role);
+  const teamMembers = canAssign && !isDemoMode() ? await getTeamMembers() : [];
   root.replaceChildren();
   const toolbar = createElement("div", { className: "toolbar" });
   const controls = createElement("div", { className: "toolbar-controls" });
@@ -22,7 +24,7 @@ async function renderLeads(root) {
     const table = createElement("table", { className: "lead-table" });
     const thead = document.createElement("thead");
     const tr = document.createElement("tr");
-    ["Lead", "Imóvel / região", "Etapa", "Próximo retorno", "Ações"].forEach(text => tr.append(createElement("th", { text })));
+    ["Lead", "Imóvel / região", "Etapa", "Responsável", "Próximo retorno", "Ações"].forEach(text => tr.append(createElement("th", { text })));
     thead.append(tr);
     table.append(thead);
     const tbody = document.createElement("tbody");
@@ -33,7 +35,17 @@ async function renderLeads(root) {
       row.append(name, createElement("td", { text: lead.property_title || lead.desired_region || "—" }));
       const stageCell = createElement("td");
       stageCell.append(createElement("span", { className: `stage stage-${lead.stage}`, text: stageLabel(lead.stage) }));
-      row.append(stageCell, createElement("td", { text: formatDate(lead.next_follow_up) }));
+      row.append(stageCell);
+      const assigneeCell = createElement("td");
+      if (canAssign && !isDemoMode()) {
+        const assigneeSelect = createElement("select", { className: "filter-select", attrs: { "aria-label": `Responsável por ${lead.name}` } });
+        assigneeSelect.append(new Option("Sem responsável", ""));
+        teamMembers.filter(member => member.status === "active").forEach(member => assigneeSelect.append(new Option(member.full_name || member.email, member.user_id)));
+        assigneeSelect.value = lead.assigned_to || "";
+        assigneeSelect.addEventListener("change", async () => { try { await assignLead(lead.id, assigneeSelect.value || null); lead.assigned_to = assigneeSelect.value || null; showToast("Responsável atualizado."); } catch (error) { showToast(error.message, "error"); await renderCurrentView(); } });
+        assigneeCell.append(assigneeSelect);
+      } else assigneeCell.textContent = "Você";
+      row.append(assigneeCell, createElement("td", { text: formatDate(lead.next_follow_up) }));
       const actions = createElement("td");
       const actionRow = createElement("div", { className: "table-actions" });
       const edit = createElement("button", { className: "icon-button", text: "Editar", type: "button" });
@@ -47,7 +59,7 @@ async function renderLeads(root) {
     });
     if (!filtered.length) {
       const row = document.createElement("tr");
-      row.append(createElement("td", { text: "Nenhum lead encontrado.", attrs: { colspan: "5" } }));
+      row.append(createElement("td", { text: "Nenhum lead encontrado.", attrs: { colspan: "6" } }));
       tbody.append(row);
     }
     table.append(tbody);

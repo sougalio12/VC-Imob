@@ -70,6 +70,20 @@ async function getActiveMembership() {
   return (await initializeOrganizationContext()).activeMembership;
 }
 
+async function callCrmRpc(name, body) {
+  return supabaseRequest(`/rest/v1/rpc/${name}`, { method: "POST", body: JSON.stringify(body || {}) });
+}
+
+async function getTeamMembers() { return callCrmRpc("list_team_members", { target_organization: await getActiveOrganizationId() }); }
+async function getPendingInvitations() { return callCrmRpc("list_pending_invitations", { target_organization: await getActiveOrganizationId() }); }
+async function inviteTeamMember(email, role) { return callCrmRpc("invite_member", { target_organization: await getActiveOrganizationId(), target_email: email, target_role: role }); }
+async function revokeTeamInvitation(id) { return callCrmRpc("revoke_invitation", { target_organization: await getActiveOrganizationId(), target_invitation: id }); }
+async function changeTeamMemberRole(userId, role) { return callCrmRpc("change_member_role", { target_organization: await getActiveOrganizationId(), target_user: userId, target_role: role }); }
+async function setTeamMemberEnabled(userId, enabled) { return callCrmRpc(enabled ? "enable_member" : "disable_member", { target_organization: await getActiveOrganizationId(), target_user: userId }); }
+async function removeTeamMember(userId) { return callCrmRpc("remove_member", { target_organization: await getActiveOrganizationId(), target_user: userId }); }
+async function assignLead(leadId, userId) { return callCrmRpc("assign_lead", { target_organization: await getActiveOrganizationId(), target_lead: leadId, target_user: userId || null }); }
+async function acceptTeamInvitation(token) { return callCrmRpc("accept_invitation", { invitation_token: token }); }
+
 function resetOrganizationContext() {
   crmOrganizationContext = null;
   clearOrganizationContext();
