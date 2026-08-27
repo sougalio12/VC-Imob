@@ -1205,6 +1205,7 @@ li {
   font-size: 0.88rem;
   font-weight: 700;
 }
+.sell-honeypot{position:absolute!important;left:-10000px!important;width:1px!important;height:1px!important;overflow:hidden!important}.sell-form-success{margin:0 0 14px;padding:16px;border:1px solid #b8dac7;border-radius:12px;background:#edf8f1;color:#165c36;font-weight:700;line-height:1.55}.sell-form-success a{color:#165c36;text-decoration:underline}.sell-form[aria-busy="true"]{opacity:.78}.sell-form button:disabled{cursor:wait}
 
 
 /* =========================================================

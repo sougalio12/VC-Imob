@@ -12,7 +12,7 @@ $env:SUPABASE_TELEMETRY_DISABLED = '1'
 Invoke-SupabaseCommand start
 
 Write-Host 'Rebuilding the local database from the automatic migration chain...' -ForegroundColor Cyan
-Invoke-SupabaseCommand db reset
+Invoke-LocalDatabaseReset
 
 $local = Get-LocalSupabaseEnvironment
 Write-Host "PASS Local Supabase is ready at $($local.API_URL)" -ForegroundColor Green

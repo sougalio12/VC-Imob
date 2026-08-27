@@ -993,8 +993,8 @@
         </h2>
 
         <p>
-          Envie as informações do seu imóvel e fale
-          diretamente comigo pelo WhatsApp.
+          Envie as informações do seu imóvel. Nossa equipe
+          receberá a solicitação e entrará em contato.
         </p>
 
       </div>
@@ -1044,8 +1044,8 @@
         </h2>
 
         <p class="section-description">
-          Preencha as informações abaixo. Ao finalizar,
-          abriremos o WhatsApp com a mensagem pronta.
+          Preencha as informações abaixo. A solicitação será
+          registrada com segurança e enviada à nossa equipe.
         </p>
 
       </div>
@@ -1071,6 +1071,7 @@
           required
           autocomplete="name"
           placeholder="Digite seu nome"
+          maxlength="120"
         >
 
       </div>
@@ -1088,6 +1089,7 @@
           required
           autocomplete="tel"
           placeholder="(65) 99999-9999"
+          maxlength="24"
         >
 
       </div>
@@ -1153,6 +1155,7 @@
           required
           autocomplete="address-level2"
           placeholder="Ex.: Lucas do Rio Verde, Bandeirantes"
+          maxlength="160"
         >
 
       </div>
@@ -1169,6 +1172,7 @@
           type="text"
           inputmode="numeric"
           placeholder="Ex.: R$ 850.000"
+          maxlength="80"
         >
 
       </div>
@@ -1208,18 +1212,22 @@
 
       <div class="full">
 
+        <label class="sell-honeypot" aria-hidden="true">Não preencha este campo<input id="sellerWebsite" type="text" tabindex="-1" autocomplete="off"></label>
+
         <p class="form-error" id="sellFormError" role="alert" aria-live="polite"></p>
+
+        <div class="sell-form-success" id="sellFormSuccess" role="status" aria-live="polite" tabindex="-1" hidden></div>
 
         <button
           type="submit"
           class="btn btn-primary"
+          id="sellSubmitButton"
         >
-          Enviar pelo WhatsApp
+          Enviar solicitação
         </button>
 
         <p class="form-help">
-          O WhatsApp será aberto para você revisar
-          a mensagem antes de enviar.
+          Seus dados serão usados apenas para atendimento desta solicitação.
         </p>
 
       </div>
@@ -3781,7 +3789,7 @@ carregarNoticias();
 
 </script>
 
-<script src="./js/sell-property.js?v=site-20260827"></script>
+<script src="./js/sell-property.js?v=property-ad-20260827"></script>
 
 
 

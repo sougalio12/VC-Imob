@@ -1,0 +1,13 @@
+export type PropertyAdPdfData={requestId:string;name:string;phone:string;propertyType:string;location:string;approximateValue:string;description:string;preferredTime:string;submittedAt:Date};
+const latin1=(value:string)=>new Uint8Array([...value].map(char=>{const code=char.charCodeAt(0);return code<=255?code:63}));
+const pdfEscape=(value:string)=>value.replace(/\\/g,"\\\\").replace(/\(/g,"\\(").replace(/\)/g,"\\)");
+function wrap(value:string,width=78){const words=value.replace(/\s+/g," ").trim().split(" ");const lines:string[]=[];let line="";for(const word of words){if(!line)line=word;else if(`${line} ${word}`.length<=width)line+=` ${word}`;else{lines.push(line);line=word}}if(line)lines.push(line);return lines.length?lines:["Não informado"]}
+export function generatePropertyAdPdf(data:PropertyAdPdfData){
+ const date=new Intl.DateTimeFormat("pt-BR",{dateStyle:"short",timeStyle:"short",timeZone:"America/Cuiaba"}).format(data.submittedAt);
+ const rows:[[string,string]]|Array<[string,string]>=[["Identificador",data.requestId],["Data/hora",date],["Nome",data.name],["Telefone / WhatsApp",data.phone],["Tipo de imóvel",data.propertyType],["Localização",data.location],["Valor aproximado",data.approximateValue||"Não informado"],["Horário preferido",data.preferredTime],["Descrição",data.description||"Não informada"]];
+ const commands=["BT","/F1 18 Tf","50 790 Td",`(${pdfEscape("Solicitação para anunciar imóvel")}) Tj`,"0 -25 Td","/F1 11 Tf",`(${pdfEscape("VC Imob / Valdiney Capistrano Imóveis")}) Tj`,`0 -30 Td`];
+ for(const [label,value] of rows){commands.push("/F1 10 Tf",`(${pdfEscape(label+":")}) Tj`,`0 -15 Td`);for(const line of wrap(value)){commands.push("/F1 11 Tf",`(${pdfEscape(line)}) Tj`,`0 -15 Td`)}commands.push("0 -6 Td")}
+ commands.push("/F1 8 Tf",`(${pdfEscape("Documento gerado automaticamente a partir do formulário público.")}) Tj`,"ET");
+ const stream=commands.join("\n");const objects=["<< /Type /Catalog /Pages 2 0 R >>","<< /Type /Pages /Kids [3 0 R] /Count 1 >>","<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 5 0 R >> >> /Contents 4 0 R >>",`<< /Length ${latin1(stream).length} >>\nstream\n${stream}\nendstream`,`<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>`];
+ let output="%PDF-1.4\n%âãÏÓ\n";const offsets=[0];objects.forEach((object,index)=>{offsets.push(latin1(output).length);output+=`${index+1} 0 obj\n${object}\nendobj\n`});const xref=latin1(output).length;output+=`xref\n0 ${objects.length+1}\n0000000000 65535 f \n${offsets.slice(1).map(offset=>String(offset).padStart(10,"0")+" 00000 n ").join("\n")}\ntrailer\n<< /Size ${objects.length+1} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF\n`;return latin1(output);
+}

@@ -88,6 +88,30 @@ function Invoke-SupabaseCommand {
     Invoke-CheckedCommand $script:SupabaseLaunch.FilePath @allArguments
 }
 
+function Invoke-LocalDatabaseReset {
+    try {
+        Invoke-SupabaseCommand db reset
+        return
+    } catch {
+        $resetError = $_
+        Write-Warning 'Supabase CLI reported a reset failure; checking whether this is the known delayed Storage healthcheck.'
+        $storageContainer = "supabase_storage_$($script:LocalProjectId)"
+        $databaseContainer = "supabase_db_$($script:LocalProjectId)"
+
+        for ($attempt = 1; $attempt -le 180; $attempt++) {
+            $storageHealth = & docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' $storageContainer 2>$null
+            $migrationApplied = & docker exec $databaseContainer psql -X -A -t -U postgres -d postgres -c "select count(*) from supabase_migrations.schema_migrations where version='20260827100000'" 2>$null
+            if ($LASTEXITCODE -eq 0 -and $storageHealth -eq 'healthy' -and $migrationApplied.Trim() -eq '1') {
+                Write-Warning 'Accepted the local reset after independent checks: Storage is healthy and the final automatic migration is recorded.'
+                return
+            }
+            Start-Sleep -Seconds 1
+        }
+
+        throw $resetError
+    }
+}
+
 function Get-LocalSupabaseEnvironment {
     $env:SUPABASE_TELEMETRY_DISABLED = '1'
     $allArguments = @($script:SupabaseLaunch.PrefixArguments) + @('status', '-o', 'env')
@@ -162,6 +186,7 @@ function Test-MigrationSourceParity {
         'supabase/20260825_86_phase_c_leads_insert_returning_fix.sql' = 'supabase/migrations/20260825860000_phase_c_leads_insert_returning_fix.sql'
         'supabase/20260826_00_phase_d_team_management.sql' = 'supabase/migrations/20260826000000_phase_d_team_management.sql'
         'supabase/20260827_00_phase_e_billing.sql' = 'supabase/migrations/20260827000000_phase_e_billing.sql'
+        'supabase/20260827_10_property_ad_submissions.sql' = 'supabase/migrations/20260827100000_property_ad_submissions.sql'
     }
 
     foreach ($pair in $pairs.GetEnumerator()) {

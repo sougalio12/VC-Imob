@@ -1,0 +1,24 @@
+[CmdletBinding()]param()
+. (Join-Path $PSScriptRoot '_local-common.ps1');Assert-LocalRepository;Assert-Tooling;Test-MigrationSourceParity;$local=Get-LocalSupabaseEnvironment
+$root=$script:RepositoryRoot;$processes=[System.Collections.Generic.List[System.Diagnostics.Process]]::new();$email='property-ad-owner@example.com';$sample=Join-Path $root 'supabase/.local/property-ad-sample.pdf'
+function Start-LocalProcess([string]$File,[string[]]$Arguments,[string]$Name){$dir=Join-Path $root 'supabase/.local';New-Item -ItemType Directory -Force $dir|Out-Null;$p=Start-Process -FilePath $File -ArgumentList $Arguments -WorkingDirectory $root -WindowStyle Hidden -PassThru -RedirectStandardOutput (Join-Path $dir "$Name.out.log") -RedirectStandardError (Join-Path $dir "$Name.err.log");$processes.Add($p);return $p}
+function Wait-Url([string]$Url){for($i=0;$i-lt 60;$i++){try{$r=Invoke-WebRequest -UseBasicParsing $Url -TimeoutSec 2;if($r.StatusCode-eq 200){return}}catch{};Start-Sleep -Milliseconds 500};throw "Endpoint not ready: $Url"}
+function Invoke-OrganizationFixture([string]$UserId){
+ for($attempt=1;$attempt-le 30;$attempt++){
+  try{return Invoke-RestMethod -Method Post -Headers $headers -Uri "$($local.API_URL)/rest/v1/rpc/property_ad_test_organization" -Body (@{target_user=$UserId}|ConvertTo-Json)}
+  catch{if($_.ErrorDetails.Message-notmatch'PGRST202'){throw};Start-Sleep -Seconds 1}
+ }
+ throw 'PostgREST did not reload the property-ad test helpers after 30 seconds.'
+}
+function Start-Function([string[]]$Arguments){$out=Join-Path $root 'supabase/.local/property-ad.out.log';for($attempt=1;$attempt-le 3;$attempt++){$p=Start-LocalProcess -File $script:SupabaseLaunch.FilePath -Arguments $Arguments -Name 'property-ad';for($i=0;$i-lt 60;$i++){if($p.HasExited){break};if((Test-Path $out)-and(Get-Content $out -Raw)-match'Serving functions on http://127[.]0[.]0[.]1:54321/functions/v1/'){return $p};Start-Sleep -Milliseconds 500};if(!$p.HasExited){Stop-Process $p.Id -Force};Start-Sleep -Seconds 2};throw 'property-ad route was not published'}
+$headers=@{apikey=$local.SERVICE_ROLE_KEY;Authorization="Bearer $($local.SERVICE_ROLE_KEY)";'Content-Type'='application/json'}
+try{
+ $users=Invoke-RestMethod -Headers $headers -Uri "$($local.API_URL)/auth/v1/admin/users?page=1&per_page=1000";foreach($u in $users.users){if($u.email-eq$email){Invoke-RestMethod -Method Delete -Headers $headers -Uri "$($local.API_URL)/auth/v1/admin/users/$($u.id)"|Out-Null}}
+ $password="Local!$([guid]::NewGuid().ToString('N'))";$created=Invoke-RestMethod -Method Post -Headers $headers -Uri "$($local.API_URL)/auth/v1/admin/users" -Body (@{email=$email;password=$password;email_confirm=$true;user_metadata=@{full_name='Property Ad Owner';company_name='[PROPERTY_AD_TEST]'}}|ConvertTo-Json -Depth 5)
+ Invoke-LocalSqlFile (Join-Path $root 'tests/property-ad/01_prepare_test_helpers.sql');$org=Invoke-OrganizationFixture $created.id
+ Start-LocalProcess -File (Get-Command node).Source -Arguments @('scripts/local-site-server.mjs') -Name 'property-site'|Out-Null;Start-LocalProcess -File (Get-Command node).Source -Arguments @('scripts/local-email-mock-server.mjs') -Name 'property-email'|Out-Null;Wait-Url 'http://127.0.0.1:4174/';Wait-Url 'http://127.0.0.1:4175/health'
+ $envFile=Join-Path $root 'supabase/.local/property-ad.env';[IO.File]::WriteAllLines($envFile,@("SELL_PROPERTY_ORGANIZATION_ID=$org",'SELL_PROPERTY_RECIPIENT_EMAIL=professional@example.test','SELL_PROPERTY_FROM_EMAIL=VC Imob <noreply@example.test>','SELL_PROPERTY_ALLOWED_ORIGINS=http://127.0.0.1:4174','SELL_PROPERTY_RATE_LIMIT_SALT=local-property-ad-only','SELL_PROPERTY_RATE_LIMIT_MAX=3','SELL_PROPERTY_EMAIL_MODE=mock','SELL_PROPERTY_ALLOW_MOCK=true','SELL_PROPERTY_EMAIL_MOCK_URL=http://host.docker.internal:4175'),[Text.UTF8Encoding]::new($false))
+ $serveArguments=@($script:SupabaseLaunch.PrefixArguments)+@('functions','serve','property-ad','--env-file',$envFile);Start-Function $serveArguments|Out-Null
+ $env:PROPERTY_AD_CONFIRM='RUN_ON_LOCAL_ONLY';$env:SUPABASE_URL=$local.API_URL;$env:SUPABASE_ANON_KEY=$local.ANON_KEY;$env:SUPABASE_SERVICE_ROLE_KEY=$local.SERVICE_ROLE_KEY;$env:PROPERTY_AD_ORGANIZATION_ID=$org;$env:PROPERTY_AD_SAMPLE_PDF=$sample
+ & node (Join-Path $root 'tests/property-ad/run-property-ad-tests.mjs');if($LASTEXITCODE-ne 0){throw "Property-ad tests failed: $LASTEXITCODE"};Write-Host 'PASS property-ad tests.' -ForegroundColor Green
+}finally{foreach($p in $processes){if(!$p.HasExited){Stop-Process $p.Id -Force -ErrorAction SilentlyContinue}};Invoke-LocalSqlFile (Join-Path $root 'tests/property-ad/03_cleanup_test_data.sql');foreach($n in @('PROPERTY_AD_CONFIRM','SUPABASE_URL','SUPABASE_ANON_KEY','SUPABASE_SERVICE_ROLE_KEY','PROPERTY_AD_ORGANIZATION_ID','PROPERTY_AD_SAMPLE_PDF')){Remove-Item "Env:$n" -ErrorAction SilentlyContinue}}

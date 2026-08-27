@@ -38,3 +38,8 @@ policy = "per_worker"
 enabled = true
 verify_jwt = false
 entrypoint = "./functions/site-lead/index.ts"
+
+[functions.property-ad]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/property-ad/index.ts"

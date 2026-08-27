@@ -1,53 +1,10 @@
-/* WhatsApp agora; payload reutilizável para futura origem anunciar_imovel no CRM. */
-(function () {
-  const form = document.getElementById("sellForm");
-  if (!form) return;
-
-  const clean = (value, maxLength) => String(value || "").replace(/\s+/g, " ").trim().slice(0, maxLength);
-  const field = (id) => document.getElementById(id);
-
-  function buildSubmission() {
-    return {
-      origin: "anunciar_imovel",
-      name: clean(field("sellerName")?.value, 120),
-      phone: clean(field("sellerPhone")?.value, 24),
-      propertyType: clean(field("propertyType")?.value, 60),
-      location: clean(field("propertyLocation")?.value, 160),
-      approximateValue: clean(field("propertyValue")?.value, 80),
-      description: clean(field("propertyDescription")?.value, 800),
-      preferredTime: clean(field("preferredContactTime")?.value, 20)
-    };
-  }
-
-  function validateSubmission(submission) {
-    if (submission.name.length < 2) return "Informe seu nome.";
-    if (submission.phone.replace(/\D/g, "").length < 8) return "Informe um telefone ou WhatsApp válido.";
-    if (!submission.propertyType) return "Selecione o tipo do imóvel.";
-    if (submission.location.length < 2) return "Informe a cidade, bairro ou região do imóvel.";
-    if (!submission.preferredTime) return "Selecione o horário preferido para atendimento.";
-    return "";
-  }
-
-  function buildWhatsAppMessage(submission) {
-    return `Olá! Gostaria de anunciar meu imóvel com a Valdiney Capistrano Imóveis.
-
-Nome: ${submission.name}
-Telefone: ${submission.phone}
-Tipo: ${submission.propertyType}
-Localização: ${submission.location}
-Valor aproximado: ${submission.approximateValue || "Não informado"}
-Preferência de atendimento: ${submission.preferredTime}
-Descrição: ${submission.description || "Não informada"}`;
-  }
-
-  form.addEventListener("submit", (event) => {
-    event.preventDefault();
-    const submission = buildSubmission();
-    const error = validateSubmission(submission);
-    const errorElement = document.getElementById("sellFormError");
-    if (errorElement) errorElement.textContent = error;
-    if (error) return;
-    window.dispatchEvent(new CustomEvent("vci:property-ad-submitted", { detail: submission }));
-    if (typeof window.abrirWhatsApp === "function") window.abrirWhatsApp(buildWhatsAppMessage(submission));
-  });
+(function(){
+ const form=document.getElementById("sellForm");if(!form)return;const field=id=>document.getElementById(id);const clean=(value,max)=>String(value||"").replace(/\s+/g," ").trim().slice(0,max);let pendingRequestId=null;let submitting=false;
+ function submission(){return{requestId:pendingRequestId||(pendingRequestId=crypto.randomUUID()),name:clean(field("sellerName")?.value,120),phone:clean(field("sellerPhone")?.value,24),propertyType:clean(field("propertyType")?.value,60),location:clean(field("propertyLocation")?.value,160),approximateValue:clean(field("propertyValue")?.value,80),description:clean(field("propertyDescription")?.value,800),preferredTime:clean(field("preferredContactTime")?.value,20),website:clean(field("sellerWebsite")?.value,120)}}
+ function validate(data){if(data.name.length<2)return"Informe seu nome.";if(data.phone.replace(/\D/g,"").length<8)return"Informe um telefone ou WhatsApp válido.";if(!data.propertyType)return"Selecione o tipo do imóvel.";if(data.location.length<2)return"Informe a cidade, bairro ou região do imóvel.";if(!["Manhã","Tarde","Noite"].includes(data.preferredTime))return"Selecione o horário preferido para atendimento.";return""}
+ function whatsappLink(){const number=(typeof SITE_CONFIG!=="undefined"?SITE_CONFIG.contato?.whatsapp:null)||"5565999337268";return`https://wa.me/${number}?text=${encodeURIComponent("Olá! Acabei de enviar uma solicitação para anunciar meu imóvel pelo site.")}`}
+ form.addEventListener("submit",async event=>{event.preventDefault();if(submitting)return;const data=submission(),error=validate(data),errorElement=field("sellFormError"),success=field("sellFormSuccess"),button=field("sellSubmitButton");errorElement.textContent=error;success.hidden=true;if(error)return;
+  submitting=true;button.disabled=true;button.textContent="Enviando...";form.setAttribute("aria-busy","true");try{const config=typeof PUBLIC_LEAD_CONFIG!=="undefined"?PUBLIC_LEAD_CONFIG:null;if(!config?.supabaseUrl||!config?.publishableKey)throw new Error("Serviço temporariamente indisponível.");const response=await fetch(`${config.supabaseUrl}/functions/v1/property-ad`,{method:"POST",headers:{apikey:config.publishableKey,"Content-Type":"application/json"},body:JSON.stringify(data)});let result={};try{result=await response.json()}catch{}if(!response.ok)throw new Error(result.error||"Não foi possível enviar agora. Tente novamente.");
+   form.reset();pendingRequestId=null;errorElement.textContent="";success.replaceChildren(document.createTextNode("Solicitação enviada com sucesso. Nossa equipe entrará em contato no horário informado. "));const link=document.createElement("a");link.href=whatsappLink();link.target="_blank";link.rel="noopener noreferrer";link.textContent="Prefere falar conosco agora? Chamar no WhatsApp.";success.append(document.createElement("br"),link);success.hidden=false;success.focus();window.dispatchEvent(new CustomEvent("vci:property-ad-submitted",{detail:{requestId:result.requestId,emailStatus:result.emailStatus}}));
+  }catch(err){errorElement.textContent=err instanceof Error?err.message:"Não foi possível enviar agora. Tente novamente."}finally{submitting=false;button.disabled=false;button.textContent="Enviar solicitação";form.removeAttribute("aria-busy")}});
 })();
