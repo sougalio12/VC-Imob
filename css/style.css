@@ -927,6 +927,18 @@ li {
   font-size: 1.35rem;
 }
 
+.property-project-label {
+  position: absolute;
+  left: 14px;
+  bottom: 14px;
+  padding: 6px 9px;
+  border-radius: 6px;
+  background: rgba(12, 12, 12, 0.88);
+  color: white;
+  font-size: 0.72rem;
+  z-index: 3;
+}
+
 .property-image.has-property-photo::after {
   content: "";
   position: absolute;

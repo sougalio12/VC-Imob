@@ -82,7 +82,7 @@
 
   <link
     rel="stylesheet"
-    href="./css/style.css?v=site-20260830"
+    href="./css/style.css?v=media-20260830"
   >
 
   <link rel="stylesheet" href="./css/site-lead.css">
@@ -2615,6 +2615,7 @@ function renderizarImoveis(
                 <span class="property-badge">
                   ${tipo}
                 </span>
+                ${imovel.imagensTipo === "projeto" ? '<span class="property-project-label">Imagem do projeto</span>' : ""}
 
               </div>
 

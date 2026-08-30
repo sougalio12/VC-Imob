@@ -165,7 +165,25 @@
     "banheiros": 1,
     "vagas": 1,
     "caracteristicas": ["Ampla área de lazer", "Salão de festas"],
-    "imagens": [],
+    "imagens": [
+      "./assets/images/imoveis/parque-primavera/01-capa-cozinha.jpeg",
+      "./assets/images/imoveis/parque-primavera/02-ambiente-interno.jpeg",
+      "./assets/images/imoveis/parque-primavera/03-ambiente-janela.jpeg",
+      "./assets/images/imoveis/parque-primavera/04-janela.jpeg",
+      "./assets/images/imoveis/parque-primavera/05-banheiro.jpeg",
+      "./assets/images/imoveis/parque-primavera/06-area-externa.jpeg",
+      "./assets/images/imoveis/parque-primavera/07-entrada-condominio-projeto.jpeg"
+    ],
+    "imagensAlt": [
+      "Cozinha e área de serviço do apartamento",
+      "Ambiente interno do apartamento",
+      "Ambiente interno com janela",
+      "Janela do apartamento",
+      "Banheiro do apartamento",
+      "Área externa do apartamento",
+      "Representação ilustrativa da entrada do Condomínio Parque Primavera"
+    ],
+    "legendasImagens": ["", "", "", "", "", "", "Representação ilustrativa da entrada do condomínio; não é fotografia do apartamento."],
     "video": "",
     "dataPublicacao": "2026-08-30",
     "corretor": {"nome": "Valdiney Capistrano", "creci": "CRECI-MT 15368"}
@@ -192,7 +210,11 @@
     "banheiros": null,
     "vagas": 2,
     "caracteristicas": ["Em fase de acabamento", "Sala com pé-direito duplo", "Cozinha", "Suíte master com closet e área privativa", "Mais 3 quartos", "Escritório", "Despensa", "Lavanderia", "Área gourmet", "Piscina com cascata", "Hidromassagem"],
-    "imagens": [],
+    "imagens": [
+      "./assets/images/imoveis/bandeirantes-acabamento/01-capa-fachada-projeto.jpeg",
+      "./assets/images/imoveis/bandeirantes-acabamento/02-fachada-muro-projeto.jpeg",
+      "./assets/images/imoveis/bandeirantes-acabamento/03-fachada-lateral-projeto.jpeg"
+    ],
     "imagensTipo": "projeto",
     "legendaImagens": "Imagens do projeto: representações visuais, não fotografias do imóvel pronto. Casa em fase de acabamento.",
     "video": "",

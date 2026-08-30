@@ -411,6 +411,29 @@ body.lightbox-open {
   overflow: hidden;
 }
 
+.property-gallery-caption {
+  margin: 14px 0;
+  padding: 12px 16px;
+  border-left: 2px solid var(--color-champagne);
+  background: var(--color-gray-100);
+  font-size: 0.9rem;
+}
+
+.property-lightbox-caption {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(780px, calc(100% - 24px));
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.88);
+  color: white;
+  font-size: 0.85rem;
+  text-align: center;
+}
+
 @media (max-width: 860px) {
   .property-detail-header,
   .property-detail-layout {

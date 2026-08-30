@@ -84,10 +84,10 @@ function renderer(property) {
   });
   vm.runInContext(detail, context);
   vm.runInContext('renderProperty(property); openWhatsAppForProperty();', context);
-  return {html: element('propertyDetailRoot').innerHTML, context, interest};
+  return {html: element('propertyDetailRoot').innerHTML, context, interest, element};
 }
 
-test('new detail pages render facts, honest empty media state, and original lead CTA', () => {
+test('new detail pages render facts, galleries, and original lead CTA', () => {
   for (const property of [apartment, house]) {
     const {html, interest} = renderer(property);
     assert.ok(html.includes(property.codigo));
@@ -107,6 +107,37 @@ test('new detail pages render facts, honest empty media state, and original lead
   assert.match(html, /Terreno/);
   assert.match(html, /437,50 m²/);
   assert.doesNotMatch(html, /<span>Banheiros<\/span>/);
+});
+
+test('new galleries contain exactly seven apartment and three house JPEG assets', () => {
+  for (const [property, count, folder] of [[apartment, 7, 'parque-primavera'], [house, 3, 'bandeirantes-acabamento']]) {
+    assert.equal(property.imagens.length, count);
+    assert.equal(new Set(property.imagens).size, count);
+    for (const path of property.imagens) {
+      assert.ok(path.includes(`/${folder}/`));
+      const bytes = readFileSync(path);
+      assert.equal(bytes.subarray(0, 3).toString('hex'), 'ffd8ff');
+      assert.ok(bytes.length < 300000, path);
+    }
+    assert.doesNotMatch(renderer(property).html, /Imagens ainda não disponíveis/);
+  }
+  assert.match(apartment.imagens[0], /01-capa-cozinha/);
+  assert.match(house.imagens[0], /01-capa-fachada-projeto/);
+});
+
+test('project captions follow the selected image in gallery and lightbox', () => {
+  const {context, element} = renderer(apartment);
+  assert.equal(element('galleryCaption').hidden, true);
+  vm.runInContext('setActiveImage(6)', context);
+  for (const id of ['galleryCaption', 'lightboxCaption']) {
+    assert.equal(element(id).hidden, false);
+    assert.match(element(id).textContent, /não é fotografia do apartamento/);
+  }
+  vm.runInContext('setActiveImage(0)', context);
+  assert.equal(element('lightboxCaption').hidden, true);
+  const renderedHouse = renderer(house);
+  assert.match(renderedHouse.element('galleryCaption').textContent, /Casa em fase de acabamento/);
+  assert.match(home, /property-project-label.*Imagem do projeto/);
 });
 
 test('existing galleries and project labels reuse the same renderer', () => {

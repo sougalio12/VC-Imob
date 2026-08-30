@@ -8,7 +8,7 @@
   <meta name="robots" content="index, follow">
   <meta name="theme-color" content="#0b0b0b">
   <link rel="stylesheet" href="./css/style.css?v=site-20260830">
-  <link rel="stylesheet" href="./css/imovel.css?v=site-20260827">
+  <link rel="stylesheet" href="./css/imovel.css?v=media-20260830">
   <link rel="stylesheet" href="./css/site-lead.css">
 </head>
 <body>
@@ -75,17 +75,18 @@
     </div>
   </footer>
 
-  <div class="property-lightbox" id="propertyLightbox" aria-hidden="true" role="dialog" aria-label="Visualização ampliada das fotos">
+  <div class="property-lightbox" id="propertyLightbox" aria-hidden="true" role="dialog" aria-label="Visualização ampliada das imagens" aria-describedby="lightboxCaption">
     <button class="property-lightbox-control property-lightbox-close" type="button" id="lightboxClose" aria-label="Fechar visualização">×</button>
-    <button class="property-lightbox-control property-lightbox-prev" type="button" id="lightboxPrev" aria-label="Foto anterior">‹</button>
+    <button class="property-lightbox-control property-lightbox-prev" type="button" id="lightboxPrev" aria-label="Imagem anterior">‹</button>
     <div class="property-lightbox-media">
       <img class="property-lightbox-image" id="lightboxImage" alt="">
     </div>
-    <button class="property-lightbox-control property-lightbox-next" type="button" id="lightboxNext" aria-label="Próxima foto">›</button>
+    <p class="property-lightbox-caption" id="lightboxCaption" hidden></p>
+    <button class="property-lightbox-control property-lightbox-next" type="button" id="lightboxNext" aria-label="Próxima imagem">›</button>
   </div>
 
   <script src="./js/config.js"></script>
   <script src="./js/site-lead.js"></script>
-  <script src="./js/imovel.js?v=site-20260830"></script>
+  <script src="./js/imovel.js?v=media-20260830"></script>
 </body>
 </html>

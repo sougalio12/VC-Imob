@@ -110,7 +110,23 @@ function renderNotFound() {
 }
 
 function imageAlt(property, index) {
+  if (property.imagensAlt?.[index]) return `${property.codigo} — ${property.imagensAlt[index]}`;
   return `${property.titulo || "Imóvel"} — ${property.imagensTipo === "projeto" ? "imagem do projeto" : "foto"} ${index + 1}`;
+}
+
+function imageCaption(property, index) {
+  return property.legendasImagens?.[index] || property.legendaImagens || "";
+}
+
+function updateImageCaptions() {
+  const {property, activeImage} = propertyDetailState;
+  for (const id of ["galleryCaption", "lightboxCaption"]) {
+    const element = document.getElementById(id);
+    if (element) {
+      element.textContent = imageCaption(property, activeImage);
+      element.hidden = !element.textContent;
+    }
+  }
 }
 
 function renderProperty(property) {
@@ -148,21 +164,20 @@ function renderProperty(property) {
     </section>
 
     ${images.length ? `
-      <section class="property-gallery" aria-label="Galeria de fotos do imóvel">
-        <button class="property-gallery-main" type="button" id="galleryMainButton" aria-label="Ampliar foto principal">
+      <section class="property-gallery" aria-label="Galeria de imagens do imóvel">
+        <button class="property-gallery-main" type="button" id="galleryMainButton" aria-label="Ampliar imagem principal" aria-describedby="galleryCaption">
           <img id="galleryMainImage" src="${escapeHTML(images[0])}" alt="${escapeHTML(imageAlt(property, 0))}">
         </button>
+        <p class="property-gallery-caption" id="galleryCaption" aria-live="polite" ${imageCaption(property, 0) ? "" : "hidden"}>${escapeHTML(imageCaption(property, 0))}</p>
         <div class="property-thumbnails" id="propertyThumbnails">
           ${images.map((image, index) => `
-            <button class="property-thumbnail${index === 0 ? " is-active" : ""}" type="button" data-image-index="${index}" aria-label="Ver foto ${index + 1}" aria-current="${index === 0 ? "true" : "false"}">
+            <button class="property-thumbnail${index === 0 ? " is-active" : ""}" type="button" data-image-index="${index}" aria-label="Ver imagem ${index + 1}" aria-current="${index === 0 ? "true" : "false"}">
               <img src="${escapeHTML(image)}" alt="${escapeHTML(imageAlt(property, index))}" loading="${index === 0 ? "eager" : "lazy"}">
             </button>
           `).join("")}
         </div>
       </section>
     ` : '<p class="property-info-panel">Imagens ainda não disponíveis. Fale conosco para mais informações sobre este imóvel.</p>'}
-
-    ${images.length && property.legendaImagens ? `<p class="property-description">${escapeHTML(property.legendaImagens)}</p>` : ""}
 
     <section class="property-detail-layout">
       <div>
@@ -206,6 +221,7 @@ function renderProperty(property) {
     lightboxImage.alt = imageAlt(property, 0);
   }
 
+  updateImageCaptions();
   bindPropertyEvents();
 }
 
@@ -220,6 +236,7 @@ function setActiveImage(index) {
   const mainImage = document.getElementById("galleryMainImage");
 
   propertyDetailState.activeImage = safeIndex;
+  updateImageCaptions();
 
   if (mainImage) {
     mainImage.src = images[safeIndex];
