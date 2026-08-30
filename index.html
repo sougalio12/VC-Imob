@@ -82,7 +82,7 @@
 
   <link
     rel="stylesheet"
-    href="./css/style.css?v=site-20260827"
+    href="./css/style.css?v=site-20260830"
   >
 
   <link rel="stylesheet" href="./css/site-lead.css">
@@ -1249,6 +1249,7 @@
   <div class="container profile-section">
 
 
+    <div class="profile-presentation">
     <div class="profile-photo">
 
       <img
@@ -1259,6 +1260,14 @@
 
     </div>
 
+    <section class="profile-education" aria-labelledby="profileEducationTitle">
+      <h3 id="profileEducationTitle">Formação e especializações</h3>
+      <ul>
+        <li>Pós-Graduação Lato Sensu em Direito Imobiliário</li>
+        <li>MBA em Empreendedorismo, Marketing e Finanças</li>
+      </ul>
+    </section>
+    </div>
 
     <div class="profile-content">
 
@@ -2589,7 +2598,7 @@ function renderizarImoveis(
               `
               : `
                 <div class="property-image-placeholder">
-                  Imóvel à venda
+                  Imagens ainda não disponíveis
                 </div>
               `;
 
@@ -2658,7 +2667,7 @@ function renderizarImoveis(
 
                   ${
                     imovel.areaConstruida
-                      ? `<span>📐 ${escaparHTML(imovel.areaConstruida)} m²</span>`
+                      ? `<span>📐 ${escaparHTML(Number(imovel.areaConstruida).toLocaleString("pt-BR"))} m²</span>`
                       : imovel.areaTotal
                         ? `<span>📐 ${escaparHTML(imovel.areaTotal)} ${escaparHTML(imovel.unidadeAreaTotal || "m²")}</span>`
                         : ""

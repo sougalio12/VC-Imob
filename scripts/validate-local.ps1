@@ -8,6 +8,8 @@ if ((Resolve-Path -LiteralPath (Get-Location)).Path -ne (Resolve-Path -LiteralPa
 }
 
 Write-Host '=== VC Imob local validation ===' -ForegroundColor Cyan
+& node --test (Join-Path $repositoryRoot 'tests/public-site.test.mjs')
+if ($LASTEXITCODE -ne 0) { throw 'Public site tests failed.' }
 & node --check (Join-Path $PSScriptRoot 'local-property-server.mjs')
 if ($LASTEXITCODE -ne 0) { throw 'Local property fixture has invalid JavaScript syntax.' }
 & node --check (Join-Path $repositoryRoot 'tests/phase-c/02_run_phase_c_tests.mjs')

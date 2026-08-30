@@ -39,9 +39,14 @@ function propertyLocation(property) {
 }
 
 function propertyArea(property) {
-  if (property.areaConstruida) return `${property.areaConstruida} m²`;
-  if (property.areaTotal) return `${property.areaTotal} ${property.unidadeAreaTotal || "m²"}`;
+  if (property.areaConstruida) return `${Number(property.areaConstruida).toLocaleString("pt-BR")} m²`;
+  if (property.areaTotal) return `${Number(property.areaTotal).toLocaleString("pt-BR")} ${property.unidadeAreaTotal || "m²"}`;
   return null;
+}
+
+function formatLandArea(value) {
+  const area = Number(value);
+  return area.toLocaleString("pt-BR", { minimumFractionDigits: Number.isInteger(area) ? 0 : 2 });
 }
 
 function updateSeo(property) {
@@ -105,7 +110,7 @@ function renderNotFound() {
 }
 
 function imageAlt(property, index) {
-  return `${property.titulo || "Imóvel"} — foto ${index + 1}`;
+  return `${property.titulo || "Imóvel"} — ${property.imagensTipo === "projeto" ? "imagem do projeto" : "foto"} ${index + 1}`;
 }
 
 function renderProperty(property) {
@@ -114,7 +119,8 @@ function renderProperty(property) {
     ? property.imagens.filter(Boolean)
     : [];
   const facts = [
-    propertyArea(property) ? ["Área", escapeHTML(propertyArea(property))] : null,
+    propertyArea(property) ? [property.areaTotal && property.areaConstruida ? "Área construída" : "Área", escapeHTML(propertyArea(property))] : null,
+    property.areaTotal && property.areaConstruida ? ["Terreno", `${formatLandArea(property.areaTotal)} ${escapeHTML(property.unidadeAreaTotal || "m²")}`] : null,
     property.quartos ? ["Quartos", escapeHTML(property.quartos)] : null,
     property.suites ? ["Suítes", escapeHTML(property.suites)] : null,
     property.banheiros ? ["Banheiros", escapeHTML(property.banheiros)] : null,
@@ -154,7 +160,9 @@ function renderProperty(property) {
           `).join("")}
         </div>
       </section>
-    ` : ""}
+    ` : '<p class="property-info-panel">Imagens ainda não disponíveis. Fale conosco para mais informações sobre este imóvel.</p>'}
+
+    ${images.length && property.legendaImagens ? `<p class="property-description">${escapeHTML(property.legendaImagens)}</p>` : ""}
 
     <section class="property-detail-layout">
       <div>
