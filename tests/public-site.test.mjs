@@ -41,7 +41,7 @@ test('house preserves supplied areas, construction status and unknown bathrooms'
 
 test('qualifications contain only the two supplied qualifications', () => {
   const section = home.match(/<section class="profile-education"[\s\S]*?<\/section>/)[0];
-  const items = [...section.matchAll(/<li>(.*?)<\/li>/g)].map(m => m[1]);
+  const items = [...section.matchAll(/<li>(.*?)<\/li>/g)].map(m => m[1].replace(/<span aria-hidden="true">🎓<\/span>\s*/, ''));
   assert.deepEqual(items, ['Pós-Graduação Lato Sensu em Direito Imobiliário', 'MBA em Empreendedorismo, Marketing e Finanças']);
 });
 
@@ -121,19 +121,20 @@ test('new galleries contain exactly seven apartment and three house JPEG assets'
     }
     assert.doesNotMatch(renderer(property).html, /Imagens ainda não disponíveis/);
   }
-  assert.match(apartment.imagens[0], /01-capa-cozinha/);
+  assert.match(apartment.imagens[0], /07-entrada-condominio-projeto/);
+  assert.equal(apartment.capaTipo, 'projeto');
   assert.match(house.imagens[0], /01-capa-fachada-projeto/);
 });
 
 test('project captions follow the selected image in gallery and lightbox', () => {
   const {context, element} = renderer(apartment);
-  assert.equal(element('galleryCaption').hidden, true);
-  vm.runInContext('setActiveImage(6)', context);
+  assert.equal(element('galleryCaption').hidden, false);
+  vm.runInContext('setActiveImage(0)', context);
   for (const id of ['galleryCaption', 'lightboxCaption']) {
     assert.equal(element(id).hidden, false);
     assert.match(element(id).textContent, /não é fotografia do apartamento/);
   }
-  vm.runInContext('setActiveImage(0)', context);
+  vm.runInContext('setActiveImage(1)', context);
   assert.equal(element('lightboxCaption').hidden, true);
   const renderedHouse = renderer(house);
   assert.match(renderedHouse.element('galleryCaption').textContent, /Casa em fase de acabamento/);

@@ -1258,8 +1258,8 @@ li {
 
 .profile-education h3 {
   margin: 0 0 12px;
-  color: var(--text-muted);
-  font-size: 0.75rem;
+  color: var(--text-primary, #161616);
+  font-size: 0.85rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -1273,6 +1273,9 @@ li {
 }
 
 .profile-education li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 8px;
   font-size: 0.95rem;
   line-height: 1.6;
 }

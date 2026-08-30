@@ -166,24 +166,25 @@
     "vagas": 1,
     "caracteristicas": ["Ampla área de lazer", "Salão de festas"],
     "imagens": [
+      "./assets/images/imoveis/parque-primavera/07-entrada-condominio-projeto.jpeg",
       "./assets/images/imoveis/parque-primavera/01-capa-cozinha.jpeg",
       "./assets/images/imoveis/parque-primavera/02-ambiente-interno.jpeg",
       "./assets/images/imoveis/parque-primavera/03-ambiente-janela.jpeg",
       "./assets/images/imoveis/parque-primavera/04-janela.jpeg",
       "./assets/images/imoveis/parque-primavera/05-banheiro.jpeg",
-      "./assets/images/imoveis/parque-primavera/06-area-externa.jpeg",
-      "./assets/images/imoveis/parque-primavera/07-entrada-condominio-projeto.jpeg"
+      "./assets/images/imoveis/parque-primavera/06-area-externa.jpeg"
     ],
+    "capaTipo": "projeto",
     "imagensAlt": [
+      "Representação ilustrativa da entrada do Condomínio Parque Primavera",
       "Cozinha e área de serviço do apartamento",
       "Ambiente interno do apartamento",
       "Ambiente interno com janela",
       "Janela do apartamento",
       "Banheiro do apartamento",
-      "Área externa do apartamento",
-      "Representação ilustrativa da entrada do Condomínio Parque Primavera"
+      "Área externa do apartamento"
     ],
-    "legendasImagens": ["", "", "", "", "", "", "Representação ilustrativa da entrada do condomínio; não é fotografia do apartamento."],
+    "legendasImagens": ["Representação ilustrativa da entrada do condomínio; não é fotografia do apartamento.", "", "", "", "", "", ""],
     "video": "",
     "dataPublicacao": "2026-08-30",
     "corretor": {"nome": "Valdiney Capistrano", "creci": "CRECI-MT 15368"}

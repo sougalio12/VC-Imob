@@ -82,7 +82,7 @@
 
   <link
     rel="stylesheet"
-    href="./css/style.css?v=media-20260830"
+    href="./css/style.css?v=profile-cover-20260830"
   >
 
   <link rel="stylesheet" href="./css/site-lead.css">
@@ -1263,8 +1263,8 @@
     <section class="profile-education" aria-labelledby="profileEducationTitle">
       <h3 id="profileEducationTitle">Formação e especializações</h3>
       <ul>
-        <li>Pós-Graduação Lato Sensu em Direito Imobiliário</li>
-        <li>MBA em Empreendedorismo, Marketing e Finanças</li>
+        <li><span aria-hidden="true">🎓</span> Pós-Graduação Lato Sensu em Direito Imobiliário</li>
+        <li><span aria-hidden="true">🎓</span> MBA em Empreendedorismo, Marketing e Finanças</li>
       </ul>
     </section>
     </div>
@@ -2615,7 +2615,7 @@ function renderizarImoveis(
                 <span class="property-badge">
                   ${tipo}
                 </span>
-                ${imovel.imagensTipo === "projeto" ? '<span class="property-project-label">Imagem do projeto</span>' : ""}
+                ${imovel.capaTipo === "projeto" || imovel.imagensTipo === "projeto" ? '<span class="property-project-label">Imagem do projeto</span>' : ""}
 
               </div>
 
