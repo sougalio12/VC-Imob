@@ -1,0 +1,54 @@
+// Real PostgreSQL-in-WASM evaluation; no network, Supabase credentials or production URL.
+// PGLITE_PACKAGE points to an isolated @electric-sql/pglite 0.5.8 package directory.
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync,readdirSync} from 'node:fs';
+import {resolve} from 'node:path';
+import {pathToFileURL} from 'node:url';
+const pkg=process.env.PGLITE_PACKAGE;
+if(!pkg) throw Error('Set PGLITE_PACKAGE to a local PGlite 0.5.8 package; this runner never connects to a server.');
+const {PGlite}=await import(pathToFileURL(resolve(pkg,'dist/index.js')));
+const {pgcrypto}=await import(pathToFileURL(resolve(pkg,'dist/contrib/pgcrypto.js')));
+const db=new PGlite({extensions:{pgcrypto}});
+await db.exec(`create role anon; create role authenticated; create role service_role bypassrls;
+create schema auth; create schema extensions;
+create table auth.users(id uuid primary key,email text,raw_user_meta_data jsonb default '{}');
+create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
+grant usage on schema public,auth to authenticated,anon,service_role;
+create extension pgcrypto with schema extensions;`);
+const migrations=readdirSync('supabase/migrations').filter(f=>f.endsWith('.sql')).sort();
+for(const file of migrations) {try{await db.exec(readFileSync(`supabase/migrations/${file}`,'utf8'));}catch(e){throw Error(`Migration ${file}: ${e.message}`);}}
+console.log(`PASS empty embedded PostgreSQL: ${migrations.length} migrations`);
+const f1=readFileSync('supabase/migrations/20260830100000_phase_f1_kanban_audit.sql','utf8');
+await db.exec(f1); console.log('PASS F.1 repeated application');
+const ids=Object.fromEntries(['owner','manager','agent','otherAgent','disabled','outsider'].map((role,i)=>[role,`10000000-0000-0000-0000-00000000000${i+1}`]));
+for(const [role,id] of Object.entries(ids)) await db.query('insert into auth.users(id,email) values($1,$2)',[id,`${role}@example.invalid`]);
+const org=(await db.query('select organization_id from public.profiles where id=$1',[ids.owner])).rows[0].organization_id;
+for(const role of ['manager','agent','otherAgent','disabled']) await db.query('insert into public.organization_members(organization_id,user_id,role,status) values($1,$2,$3,$4)',[org,ids[role],role==='manager'?'manager':'agent',role==='disabled'?'disabled':'active']);
+const lead=(await db.query("insert into public.leads(organization_id,assigned_to,name,phone) values($1,$2,'F1 fixture','6500000000') returning id",[org,ids.agent])).rows[0].id;
+const unassigned=(await db.query("insert into public.leads(organization_id,name,phone) values($1,'F1 unassigned','6500000001') returning id",[org])).rows[0].id;
+async function as(role,sql,args=[]){await db.exec('reset role');await db.query("select set_config('request.jwt.claim.sub',$1,false)",[ids[role]||'']);await db.exec('set role authenticated');try{return await db.query(sql,args);}finally{await db.exec('reset role');}}
+const denied=(role,sql,args=[])=>assert.rejects(as(role,sql,args),e=>['42501','22023','23514'].includes(e.code));
+test('owner and manager see unassigned leads',async()=>{for(const role of ['owner','manager'])assert.equal((await as(role,'select id from public.leads where id=$1',[unassigned])).rows.length,1);});
+test('agent only sees own assigned leads',async()=>{assert.equal((await as('agent','select id from public.leads where organization_id=$1',[org])).rows.length,1);});
+test('disabled and outsider cannot see tenant leads',async()=>{for(const role of ['disabled','outsider'])assert.equal((await as(role,'select id from public.leads where organization_id=$1',[org])).rows.length,0);});
+for(const role of ['owner','manager','agent'])test(`${role} stage mutation persists and audited`,async()=>{const current=(await as(role,'select stage from public.leads where id=$1',[lead])).rows[0].stage;const next=current==='novo'?'atendimento':'novo';assert.equal((await as(role,'update public.leads set stage=$1 where id=$2 returning stage',[next,lead])).rows[0].stage,next);const events=(await as(role,'select * from public.list_lead_activity($1)',[lead])).rows;assert.ok(events.some(e=>e.action==='lead_stage_changed'&&e.metadata.new_stage===next));});
+test('unrelated agent, disabled and cross-tenant stage writes affect zero rows',async()=>{for(const role of ['otherAgent','disabled','outsider'])assert.equal((await as(role,"update public.leads set stage='visita' where id=$1 returning id",[lead])).rows.length,0);});
+test('timestamp compare-and-set rejects stale write',async()=>{const stale='2000-01-01T00:00:00Z';assert.equal((await as('owner',"update public.leads set stage='visita' where id=$1 and updated_at=$2 returning id",[lead,stale])).rows.length,0);});
+test('invalid stage rejected',()=>denied('owner',"update public.leads set stage='invalid' where id=$1",[lead]));
+test('direct protected assignment forbidden',()=>denied('owner','update public.leads set assigned_to=$1 where id=$2',[ids.manager,lead]));
+test('agent assignment forbidden',()=>denied('agent','select public.assign_lead($1,$2,$3)',[org,lead,ids.agent]));
+test('disabled caller assignment denied even with valid tenant ID',()=>denied('disabled','select public.assign_lead($1,$2,$3)',[org,lead,ids.agent]));
+test('outsider assignment denied even with valid tenant ID',()=>denied('outsider','select public.assign_lead($1,$2,$3)',[org,lead,ids.agent]));
+test('disabled and foreign assignees rejected',async()=>{for(const role of ['disabled','outsider'])await denied('owner','select public.assign_lead($1,$2,$3)',[org,lead,ids[role]]);});
+test('manager assignment succeeds and is audited',async()=>{await as('manager','select public.assign_lead($1,$2,$3)',[org,unassigned,ids.otherAgent]);const events=(await as('manager','select * from public.list_lead_activity($1)',[unassigned])).rows;assert.ok(events.some(e=>e.metadata.new_assigned_to===ids.otherAgent));});
+test('owner assignment can clear responsible',async()=>{await as('owner','select public.assign_lead($1,$2,null)',[org,unassigned]);assert.equal((await as('owner','select assigned_to from public.leads where id=$1',[unassigned])).rows[0].assigned_to,null);});
+test('notes create structured event without copying note content',async()=>{await as('agent',"insert into public.lead_notes(organization_id,lead_id,author_id,content) values($1,$2,$3,'F1 note')",[org,lead,ids.agent]);const events=(await as('agent','select * from public.list_lead_activity($1)',[lead])).rows;assert.deepEqual(Object.keys(events.find(e=>e.action==='lead_note_created').metadata),['note_id']);});
+test('foreign notes rejected',()=>denied('outsider',"insert into public.lead_notes(organization_id,lead_id,author_id,content) values($1,$2,$3,'bad')",[org,lead,ids.outsider]));
+test('history rejects disabled, unrelated agents, outsider and missing lead',async()=>{for(const role of ['disabled','otherAgent','outsider'])await denied(role,'select * from public.list_lead_activity($1)',[lead]);await denied('owner','select * from public.list_lead_activity($1)',['20000000-0000-0000-0000-000000000001']);});
+test('audit table cannot be read or forged directly',async()=>{await denied('owner','select * from public.audit_events');await denied('owner',"insert into public.audit_events(organization_id,entity_type,action) values($1,'lead','forged')",[org]);});
+test('team directory rejects NULL membership roles',async()=>{for(const role of ['disabled','outsider','agent'])await denied(role,'select * from public.list_team_members($1)',[org]);});
+test('legacy team audit endpoint cannot bypass new scoped history',async()=>{for(const role of ['disabled','outsider','agent'])await denied(role,'select * from public.list_team_audit($1)',[org]);assert.ok((await as('owner','select * from public.list_team_audit($1)',[org])).rows.length>0);});
+test('F1 capability rejects disabled and foreign tenant',async()=>{for(const role of ['disabled','outsider'])await denied(role,'select public.kanban_access($1)',[org]);assert.equal((await as('agent','select public.kanban_access($1) as access',[org])).rows[0].access.role,'agent');});
+test('anonymous cannot execute new RPCs',async()=>{await db.exec("select set_config('request.jwt.claim.sub','',false); set role anon");try{await assert.rejects(db.query('select public.list_lead_activity($1)',[lead]),e=>e.code==='42501');}finally{await db.exec('reset role');}});
+test.after(async()=>{await db.close();});

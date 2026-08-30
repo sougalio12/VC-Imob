@@ -1,0 +1,16 @@
+.kanban-view .kanban{grid-auto-flow:column;grid-auto-columns:minmax(270px,310px);grid-template-columns:none;align-items:start;max-height:calc(100vh - 310px);min-height:350px;scroll-snap-type:x proximity;padding:3px 3px 18px}
+.kanban-view .kanban-column{scroll-snap-align:start;min-height:310px;background:#eeede9;transition:background .15s}
+.kanban-column.is-drop-target{background:#e6d8bc;outline:2px solid #967641;outline-offset:-2px}
+.kanban-view .kanban-column h2{position:sticky;top:0;z-index:1;background:#eeede9;padding:9px 0}
+.kanban-card-heading{display:flex;align-items:start;justify-content:space-between;gap:8px}
+.kanban-open{padding:0;border:0;background:none;color:var(--ink);font-weight:800;text-align:left;overflow-wrap:anywhere;min-height:44px}
+.kanban-handle{min-width:36px;min-height:44px;border:0;border-radius:8px;background:var(--soft);color:#61523b;font-size:1.4rem;cursor:grab}
+.kanban-handle{touch-action:none;user-select:none}.kanban-handle:active,.kanban-handle.is-dragging{cursor:grabbing;background:#e6d8bc}.kanban-card.is-saving{opacity:.65}
+.kanban-card p{overflow-wrap:anywhere}.kanban-card .kanban-origin{width:fit-content;max-width:100%;overflow-wrap:anywhere;padding:4px 8px;background:#f3f0e8;border-radius:8px;font-size:.72rem;color:#635333}
+.kanban-view .kanban-card select{min-height:44px;width:100%}
+.kanban-filters{display:flex;align-items:end;flex-wrap:wrap;gap:12px}.kanban-filters label{display:grid;gap:6px;min-width:140px;flex:1;font-size:.8rem;font-weight:700}.kanban-filters label:first-child{flex:2;min-width:200px}
+.kanban-status{min-height:24px;color:#56534d;font-size:.9rem}.kanban-detail{max-width:650px;overflow-wrap:anywhere}.kanban-detail>p{line-height:1.6}.kanban-detail>label{display:grid;gap:8px;margin:18px 0}.kanban-detail-actions{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0}.kanban-detail>button{margin-bottom:14px}
+.kanban-deployment-notice{padding:14px 18px;border:1px solid #b69762;background:#fff6e7;color:#654c25;border-radius:12px;line-height:1.5}
+.kanban-view :focus-visible,.kanban-detail :focus-visible{outline:3px solid #967641;outline-offset:3px}.kanban-view button:disabled,.kanban-detail button:disabled{cursor:wait}
+@media(max-width:560px){.kanban-filters label{min-width:130px}.kanban-view .kanban{grid-auto-columns:min(82vw,310px);max-height:65vh}.kanban-detail{max-height:92dvh;padding:18px}.kanban-filters button{min-height:44px}.kanban-view .muted{font-size:.85rem}}
+@media(prefers-reduced-motion:reduce){.kanban-column{transition:none}}

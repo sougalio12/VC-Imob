@@ -99,7 +99,7 @@ function createLeadHistory(notes, loadingError) {
   return section;
 }
 
-async function openLeadModal(lead, properties) {
+async function openLeadModal(lead, properties, onSaved) {
   let historyNotes = [];
   let historyLoadingError = false;
   if (lead) {
@@ -116,6 +116,7 @@ async function openLeadModal(lead, properties) {
     const input = createElement("input", { type, attrs: { name, required: required ? "" : null } });
     if (!required) input.removeAttribute("required");
     input.value = leadValue(lead, name);
+    if (onSaved && name === "responsavel") { input.readOnly = true; labelEl.textContent = "Responsável (registro antigo; atribuição no detalhe)"; }
     labelEl.append(input);
     grid.append(labelEl);
   });
@@ -156,16 +157,22 @@ async function openLeadModal(lead, properties) {
   form.append(actions);
   form.addEventListener("submit", async event => {
     event.preventDefault();
+    if (save.disabled) return;
+    save.disabled = true;
     error.textContent = "";
     const values = new FormData(form);
     const selected = findPropertyByCode(values.get("property_code"));
     const payload = { name: values.get("nome").trim(), phone: values.get("telefone").trim(), whatsapp: values.get("whatsapp").trim(), email: values.get("email").trim(), origin: values.get("origem").trim() || "manual", responsible_name: values.get("responsavel").trim(), property_code: values.get("property_code"), property_title: selected?.titulo || "", budget: values.get("orcamento").trim(), desired_region: values.get("regiao").trim(), notes: values.get("notes").trim(), stage: values.get("stage"), next_follow_up: values.get("proximo_retorno") || null, visit_date: values.get("data_visita") || null };
     if (!lead) payload.entered_at = new Date().toISOString();
+    payload.next_follow_up = leadDatePayload(lead, "proximo_retorno", values.get("proximo_retorno"));
+    payload.visit_date = leadDatePayload(lead, "data_visita", values.get("data_visita"));
     try {
-      const saved = lead ? await updateLead(lead.id, payload) : await createLead(payload);
+      const saved = lead ? await updateLead(lead.id, payload, onSaved ? lead.updated_at : undefined) : await createLead(payload);
       if (noteInput?.value.trim()) await saveLeadNote(saved.id, noteInput.value.trim());
-      closeModal(); showToast("Lead salvo com sucesso."); navigateCrm("leads");
+      closeModal(); showToast("Lead salvo com sucesso.");
+      if (onSaved) await onSaved(); else navigateCrm("leads");
     } catch (err) { error.textContent = err.message || "Não foi possível salvar o lead."; }
+    finally { save.disabled = false; }
   });
   card.append(form);
   modal.replaceChildren(card);
@@ -177,7 +184,19 @@ function leadValue(lead, name) {
   if (!lead) return "";
   const map = { nome: "name", telefone: "phone", whatsapp: "whatsapp", email: "email", origem: "origin", responsavel: "responsible_name", orcamento: "budget", regiao: "desired_region", proximo_retorno: "next_follow_up", data_visita: "visit_date" };
   const value = lead[map[name]] || "";
-  return name === "proximo_retorno" || name === "data_visita" ? (value ? new Date(value).toISOString().slice(0, 16) : "") : value;
+  if (name !== "proximo_retorno" && name !== "data_visita") return value;
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  const pad = number => String(number).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+function leadDatePayload(lead, field, input) {
+  if (!input) return null;
+  const key = field === "proximo_retorno" ? "next_follow_up" : "visit_date";
+  // Preserve the exact existing instant if the user did not edit it.
+  return lead && input === leadValue(lead, field) ? lead[key] : new Date(input).toISOString();
 }
 
 async function confirmDeleteLead(lead) {

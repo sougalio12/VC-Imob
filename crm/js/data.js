@@ -120,7 +120,7 @@ async function createLead(payload) {
   return result?.[0];
 }
 
-async function updateLead(id, payload) {
+async function updateLead(id, payload, expectedUpdatedAt) {
   validateLead(payload, true);
 
   if (isDemoMode()) {
@@ -131,12 +131,13 @@ async function updateLead(id, payload) {
   }
 
   const organizationId = await getActiveOrganizationId();
-  const result = await supabaseRequest(`/rest/v1/leads?id=eq.${encodeURIComponent(id)}&organization_id=eq.${encodeURIComponent(organizationId)}`, {
+  const result = await supabaseRequest(`/rest/v1/leads?id=eq.${encodeURIComponent(id)}&organization_id=eq.${encodeURIComponent(organizationId)}${expectedUpdatedAt ? `&updated_at=eq.${encodeURIComponent(expectedUpdatedAt)}` : ""}`, {
     method: "PATCH",
     headers: { Prefer: "return=representation" },
     body: JSON.stringify(payload)
   });
-  return result?.[0];
+  if (!Array.isArray(result) || result.length !== 1) throw new Error("O lead foi alterado ou seu acesso mudou. Atualize antes de tentar novamente.");
+  return result[0];
 }
 
 async function deleteLead(id) {

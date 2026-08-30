@@ -187,6 +187,7 @@ function Test-MigrationSourceParity {
         'supabase/20260826_00_phase_d_team_management.sql' = 'supabase/migrations/20260826000000_phase_d_team_management.sql'
         'supabase/20260827_00_phase_e_billing.sql' = 'supabase/migrations/20260827000000_phase_e_billing.sql'
         'supabase/20260827_10_property_ad_submissions.sql' = 'supabase/migrations/20260827100000_property_ad_submissions.sql'
+        'supabase/20260830_10_phase_f1_kanban_audit.sql' = 'supabase/migrations/20260830100000_phase_f1_kanban_audit.sql'
     }
 
     foreach ($pair in $pairs.GetEnumerator()) {

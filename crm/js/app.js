@@ -2,7 +2,21 @@ const CRM_VIEWS = { dashboard: ["Visão geral", "Acompanhamento comercial"], lea
 function stageLabel(value) { return CRM_STAGES.find(([stage]) => stage === value)?.[1] || value; }
 function closeModal() { const modal = document.getElementById("crmModal"); modal.classList.remove("is-open"); modal.setAttribute("aria-hidden", "true"); modal.replaceChildren(); }
 function toggleSidebar(force) { const sidebar = document.getElementById("crmSidebar"); const backdrop = document.getElementById("crmBackdrop"); const open = force ?? !sidebar.classList.contains("is-open"); sidebar.classList.toggle("is-open", open); backdrop.classList.toggle("is-open", open); }
-async function renderCurrentView() { const view = document.body.dataset.view || "dashboard"; const root = document.getElementById("crmContent"); root.replaceChildren(createElement("p", { className: "muted", text: "Carregando…" })); try { if (view === "dashboard") await renderDashboard(root); if (view === "leads") await renderLeads(root); if (view === "kanban") await renderKanban(root); if (view === "properties") await renderProperties(root); if (view === "agenda") await renderAgenda(root); if (view === "team") await renderTeam(root); if (view === "billing") await renderBilling(root); } catch (error) { root.replaceChildren(createEmptyState("Não foi possível carregar esta área", error.message || "Verifique sua conexão e tente novamente.")); } }
+async function renderCurrentView() {
+  const view = document.body.dataset.view || "dashboard";
+  // A detached mount prevents an older async render from replacing a newer view.
+  const root = createElement("div");
+  document.getElementById("crmContent").replaceChildren(root);
+  root.append(createElement("p", { className: "muted", text: "Carregando…", attrs: { role: "status" } }));
+  try {
+    const renderers = { dashboard: renderDashboard, leads: renderLeads, kanban: renderKanban, properties: renderProperties, agenda: renderAgenda, team: renderTeam, billing: renderBilling };
+    await renderers[view]?.(root);
+  } catch (error) {
+    const retry = createElement("button", { text: "Tentar novamente", type: "button", className: "crm-button crm-button-primary" });
+    retry.addEventListener("click", renderCurrentView);
+    root.replaceChildren(createEmptyState("Não foi possível carregar esta área", "Verifique sua conexão e seu acesso à organização.", retry));
+  }
+}
 function navigateCrm(view) { if (!CRM_VIEWS[view]) return; document.body.dataset.view = view; document.getElementById("pageTitle").textContent = CRM_VIEWS[view][0]; document.getElementById("pageEyebrow").textContent = CRM_VIEWS[view][1]; document.querySelectorAll("[data-view-link]").forEach(button => button.classList.toggle("is-active", button.dataset.viewLink === view)); toggleSidebar(false); renderCurrentView(); }
 document.addEventListener("DOMContentLoaded", async () => {
   if (!await requireCrmSession()) return;
