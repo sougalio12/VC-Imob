@@ -10,9 +10,9 @@ Migration: `20260830100000_phase_f1_kanban_audit.sql`, mirrored in `supabase/202
 
 Replaces `assign_lead`, `list_team_members` and `list_team_audit` preserving their signatures and Phase D rules, but explicitly rejects NULL membership roles. Legacy `IF role NOT IN (...)` does not reject SQL NULL: disabled/non-member callers must fail closed. The existing audit RPC cannot bypass the new scoped history. Stage RLS and all protected-column grants remain unchanged. The new capability RPC validates active membership freshly; it is not an authorization substitute for the mutation endpoint.
 
-**Production migration was NOT applied.** Until the new capability exists and succeeds, the F.1 board is read-only and displays a deployment/access notice. Existing unrelated CRM views remain intact. Demo mode uses memory only. No production users/fixtures, secrets or Edge Functions are changed.
+The production migration was applied through the controlled linked Supabase rollout on 2026-09-02, after the complete local validation and a dry-run that listed only `20260830100000_phase_f1_kanban_audit.sql`. Migration history was checked immediately afterwards. No production fixtures, secrets or Edge Functions were changed.
 
-No repository CI workflow or database auto-deployment configuration was found. Existing main pushes publish static files. Before activating F.1 writes, review/apply this migration through the established controlled Supabase rollout, then smoke-test using authorized real CRM accounts. Do not run resets or test fixtures on production. Other pre-existing team/billing RPCs containing nullable role checks are outside this narrowly scoped patch and require a separate security review; this patch must not be represented as a whole-CRM security certification.
+No repository CI workflow or database auto-deployment configuration was found. Existing main pushes publish static files. The separate F.7 audit subsequently removed the nullable-role fail-open condition through a fail-closed membership sentinel, with PostgreSQL regressions for disabled and absent memberships. Do not run resets or test fixtures on production.
 
 ## Verification
 
@@ -35,4 +35,4 @@ Drag uses Pointer Events with temporary document listeners, an 8 px threshold, t
 - All 21 migrations rebuilt an empty embedded database; F.1 reapplied successfully. This is not a full Supabase reset.
 - Browser demo: mouse drag, stage selector, refresh, combined phone/origin/assignee filters, note, assignment, existing edit flow, quick detail and responsive 390 px layout checked; no relevant console errors.
 - Full `validate-local.ps1` reaches Docker after passing executable tests/syntax checks, then stops because `dockerDesktopLinuxEngine` is absent. C/D/E and Property Ad HTTP regressions were not rerun; historical totals are not claimed as current passing results.
-- No remote SQL, migration application, production fixtures, secret changes or Edge Function deployment in this work.
+- The only remote schema action for F.1 was the reviewed migration above. No production fixtures, secret changes or Edge Function deployment occurred.

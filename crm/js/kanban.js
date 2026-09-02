@@ -97,7 +97,7 @@ async function renderKanban(root) {
   const membership = access || { role: "", status: "unavailable" };
   const userId = isDemoMode() ? "demo-owner" : getStoredSession()?.user?.id;
   const canAssign = membership.status === "active" && ["owner", "manager"].includes(membership.role);
-  let [leads, members] = await Promise.all([getKanbanLeads(), canAssign ? getKanbanMembers() : Promise.resolve([])]);
+  let [leads, members, activities, interests] = await Promise.all([getKanbanLeads(), canAssign ? getKanbanMembers() : Promise.resolve([]), getCrmActivities(), getLeadInterestsF()]);
   if (!root.isConnected) return;
   const store = createKanbanStore(leads, (lead, patch) => moveKanbanLead(lead, patch.stage), (lead, patch) => assignKanbanLead(lead.id, patch.assigned_to));
   const filters = { search: "", assignee: "", origin: "", stage: "" }, limits = new Map();
@@ -140,7 +140,7 @@ async function renderKanban(root) {
   async function reload() {
     if (store.pending.size || refreshing) return;
     refreshing = true; refresh.disabled = true; status.textContent = "Atualizando funil…";
-    try { const [fresh, team] = await Promise.all([getKanbanLeads(), canAssign ? getKanbanMembers() : Promise.resolve([])]); if (root.isConnected) { members = team; store.replace(fresh); syncFilterOptions(); } }
+    try { const [fresh, team, freshActivities, freshInterests] = await Promise.all([getKanbanLeads(), canAssign ? getKanbanMembers() : Promise.resolve([]), getCrmActivities(), getLeadInterestsF()]); if (root.isConnected) { members = team; activities = freshActivities; interests = freshInterests; store.replace(fresh); syncFilterOptions(); } }
     catch { status.textContent = "Não foi possível atualizar. Os dados anteriores foram preservados. Tente novamente."; }
     finally { refreshing = false; refresh.disabled = false; }
   }
@@ -176,6 +176,8 @@ async function renderKanban(root) {
         const handle = createElement("button", { text: "⠿", type: "button", className: "kanban-handle", attrs: { "aria-label": `Arrastar ${lead.name}; ou use o seletor de etapa` }, disabled: pending || !kanbanCanOperate(membership, lead, userId) });
         installKanbanDrag(handle, board, () => !refreshing && !store.pending.size, stage => void move(lead.id, stage));
         top.append(open, handle); card.append(top);
+        const score = scoreLead(lead, activities.filter(item => item.lead_id === lead.id), interests.filter(item => item.lead_id === lead.id));
+        card.append(createElement("span", { className: `score-chip score-${normalizeText(score.label)}`, text: `${score.label} · ${score.score}`, attrs: { title: score.reasons.join("; ") } }));
         if (lead.phone || lead.whatsapp) card.append(createElement("p", { text: lead.phone || lead.whatsapp }));
         if (lead.origin) card.append(createElement("span", { className: "kanban-origin", text: lead.origin }));
         card.append(createElement("p", { text: memberName(lead.assigned_to) }));

@@ -1,29 +1,15 @@
-async function renderDashboard(root) {
-  const leads = await getLeads();
-  const today = startOfToday();
-  const counts = Object.fromEntries(CRM_STAGES.map(([stage]) => [stage, leads.filter(lead => lead.stage === stage).length]));
-  const returnsToday = leads.filter(lead => lead.next_follow_up && new Date(lead.next_follow_up).toDateString() === today.toDateString());
-  const nextReturns = leads.filter(lead => lead.next_follow_up && new Date(lead.next_follow_up) >= today).sort((a, b) => new Date(a.next_follow_up) - new Date(b.next_follow_up)).slice(0, 5);
-
-  root.replaceChildren();
-  const metrics = createElement("section", { className: "metric-grid" });
-  [["Leads novos", counts.novo], ["Em atendimento", counts.atendimento], ["Visitas agendadas", counts.visita], ["Em negociação", counts.negociacao], ["Fechados", counts.fechado], ["Retornos de hoje", returnsToday.length]].forEach(([label, value]) => {
-    const card = createElement("article", { className: "metric-card" }); card.append(createElement("span", { text: label }), createElement("strong", { text: String(value) })); metrics.append(card);
-  });
-  root.append(metrics);
-
-  const grid = createElement("section", { className: "crm-grid" });
-  grid.append(createLeadPanel("Próximos retornos", nextReturns, "agenda"), createLeadPanel("Últimos leads", leads.slice(0, 5), "leads"));
-  root.append(grid);
+async function renderDashboard(root){
+  const [leads,activities,interests,settings,membership,features]=await Promise.all([getLeads(),getCrmActivities(),getLeadInterestsF(),getAutomationSettings(),getActiveMembership(),getPhaseFFeatures()]);if(!root.isConnected)return;root.replaceChildren();
+  const toolbar=createElement("div",{className:"toolbar"}),period=createElement("select",{className:"filter-select",attrs:{"aria-label":"Período do dashboard"}});[[1,"Hoje"],[7,"7 dias"],[30,"30 dias"],[0,"Todo o período"]].forEach(([value,text])=>period.append(new Option(text,value)));period.value="30";toolbar.append(createElement("strong",{text:["owner","manager"].includes(membership.role)?"Visão da equipe":"Minha operação"}),period);root.append(toolbar);
+  const content=createElement("div");root.append(content);
+  function draw(){const days=Number(period.value),cutoff=days?new Date(Date.now()-days*86400000):null,visible=cutoff?leads.filter(item=>new Date(item.entered_at||item.created_at)>=cutoff):leads,now=new Date(),today=startOfToday(),tomorrow=new Date(today.getTime()+86400000),openActivities=activities.filter(item=>item.status==="agendado"),closed=visible.filter(item=>item.stage==="fechado").length,activeBase=visible.filter(item=>item.stage!=="perdido").length;
+    content.replaceChildren();const metrics=createElement("section",{className:"metric-grid"});[["Leads",visible.length],["Novos",visible.filter(item=>item.stage==="novo").length],["Conversão",activeBase?`${Math.round(closed*100/activeBase)}%`:"0%"],["Sem responsável",visible.filter(item=>!item.assigned_to).length],["Follow-ups vencidos",openActivities.filter(item=>new Date(item.scheduled_at)<now).length],["Atividades hoje",openActivities.filter(item=>new Date(item.scheduled_at)>=today&&new Date(item.scheduled_at)<tomorrow).length]].forEach(([label,value])=>{const card=createElement("article",{className:"metric-card"});card.append(createElement("span",{text:label}),createElement("strong",{text:String(value)}));metrics.append(card);});content.append(metrics);
+    if(features.advancedReports){const grid=createElement("section",{className:"crm-grid"});grid.append(createBreakdown("Funil",CRM_STAGES.map(([stage,label])=>[label,visible.filter(item=>item.stage===stage).length])),createBreakdown("Origens",countBy(visible,item=>item.origin||"Não informada")));content.append(grid);}else content.append(createFeatureNotice("Relatórios avançados", "Os indicadores essenciais permanecem disponíveis neste plano."));
+    if(features.automation){const alerts=buildInternalAlerts(leads,activities,settings),alertPanel=createElement("section",{className:"crm-panel dashboard-alerts"}),heading=createElement("div",{className:"panel-heading"});heading.append(createElement("h2",{text:"Atenção necessária"}),createElement("span",{className:"stage",text:String(alerts.length)}));alertPanel.append(heading);if(!alerts.length)alertPanel.append(createElement("p",{className:"muted",text:"Nenhum alerta interno no momento."}));alerts.slice(0,12).forEach(alert=>{const row=createElement("div",{className:`alert-row alert-${alert.level}`});row.append(createElement("strong",{text:alert.lead.name}),createElement("span",{text:alert.text}));alertPanel.append(row);});content.append(alertPanel);if(["owner","manager"].includes(membership.role))content.append(createAutomationPanel(settings,()=>renderDashboard(root)));}else content.append(createFeatureNotice("Automações internas", "Follow-ups e agenda continuam disponíveis normalmente."));
+  }
+  period.addEventListener("change",draw);draw();
 }
-
-function createLeadPanel(title, leads, destination) {
-  const panel = createElement("section", { className: "crm-panel" });
-  const heading = createElement("div", { className: "panel-heading" });
-  const link = createElement("a", { text: "Ver todos", href: `#${destination}` });
-  link.addEventListener("click", event => { event.preventDefault(); navigateCrm(destination); });
-  heading.append(createElement("h2", { text: title }), link); panel.append(heading);
-  if (!leads.length) { panel.append(createElement("p", { className: "muted", text: "Nenhum item para exibir." })); return panel; }
-  leads.forEach(lead => { const row = createElement("div", { className: "lead-row" }); const info = createElement("div"); info.append(createElement("strong", { text: lead.name }), createElement("span", { text: lead.property_title || lead.desired_region || "Sem imóvel associado" })); row.append(info, createElement("span", { className: `stage stage-${lead.stage}`, text: stageLabel(lead.stage) })); panel.append(row); });
-  return panel;
-}
+function countBy(items,key){const map=new Map();items.forEach(item=>{const value=key(item);map.set(value,(map.get(value)||0)+1);});return[...map].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0]));}
+function createBreakdown(title,rows){const panel=createElement("section",{className:"crm-panel report-panel"});panel.append(createElement("h2",{text:title}));const max=Math.max(1,...rows.map(row=>row[1]));rows.forEach(([label,value])=>{const row=createElement("div",{className:"report-row"}),bar=createElement("span",{className:"report-bar",attrs:{style:`--bar:${Math.round(value*100/max)}%`}});row.append(createElement("span",{text:label}),bar,createElement("strong",{text:String(value)}));panel.append(row);});return panel;}
+function createFeatureNotice(title,text){const panel=createElement("section",{className:"crm-panel feature-notice"});panel.append(createElement("h2",{text}),createElement("p",{className:"muted",text}));return panel;}
+function createAutomationPanel(settings,refresh){const panel=createElement("section",{className:"crm-panel automation-settings"});panel.append(createElement("h2",{text:"Regras de atenção"}));const form=createElement("form",{className:"form-grid"});const stale=createElement("input",{type:"number",attrs:{min:"1",max:"90",required:""}});stale.value=settings.stale_lead_days;const reminder=createElement("input",{type:"number",attrs:{min:"1",max:"168",required:""}});reminder.value=settings.follow_up_reminder_hours;const unassigned=createElement("input",{type:"checkbox"});unassigned.checked=settings.alert_unassigned;[["Dias para lead parado",stale],["Horas para lembrar follow-up",reminder],["Alertar sem responsável",unassigned]].forEach(([text,input])=>{const label=createElement("label",{text});label.append(input);form.append(label);});const save=createElement("button",{type:"submit",className:"crm-button crm-button-outline",text:"Salvar regras"});form.append(save);form.addEventListener("submit",async event=>{event.preventDefault();save.disabled=true;try{await saveAutomationSettings({stale_lead_days:Number(stale.value),follow_up_reminder_hours:Number(reminder.value),alert_unassigned:unassigned.checked});showToast("Regras salvas.");await refresh();}catch(error){showToast(error.message,"error");}finally{save.disabled=false;}});panel.append(form,createElement("p",{className:"muted",text:"As regras geram alertas internos; nenhuma mensagem é enviada ao cliente."}));return panel;}

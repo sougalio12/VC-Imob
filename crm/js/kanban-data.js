@@ -1,4 +1,4 @@
-const KANBAN_FIELDS = "id,organization_id,assigned_to,responsible_name,name,phone,whatsapp,email,origin,property_code,property_title,desired_region,budget,notes,stage,next_follow_up,visit_date,created_at,updated_at";
+const KANBAN_FIELDS = "id,organization_id,assigned_to,responsible_name,name,phone,whatsapp,email,origin,property_code,property_title,desired_region,budget,notes,stage,next_follow_up,visit_date,preference_property_type,preference_city,preference_min_price,preference_max_price,preference_min_bedrooms,preference_min_area,created_at,updated_at";
 let demoKanbanActivity = [];
 async function getKanbanAccess() {
   if (isDemoMode()) return { role: "owner", status: "active" };
