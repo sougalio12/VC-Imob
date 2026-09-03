@@ -1,3 +1,16 @@
 supabase/.temp/
 supabase/.local/
 supabase/.branches/
+node_modules/
+dist-mobile/
+android/.gradle/
+android/local.properties
+android/**/build/
+android/app/src/main/assets/public/
+ios/App/Pods/
+ios/App/DerivedData/
+ios/App/App/public/
+*.jks
+*.keystore
+*.p12
+*.mobileprovision

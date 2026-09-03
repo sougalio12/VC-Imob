@@ -1,0 +1,25 @@
+{
+  "name": "vc-imob-mobile",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Wrapper mobile oficial do CRM VC Imob",
+  "scripts": {
+    "mobile:build-web": "node scripts/build-mobile.mjs",
+    "mobile:sync": "npm run mobile:build-web && cap sync",
+    "mobile:android": "npm run mobile:sync && cap open android",
+    "mobile:ios": "npm run mobile:sync && cap open ios",
+    "test:phase-h": "node --test tests/phase-h/phase-h.test.mjs"
+  },
+  "dependencies": {
+    "@capacitor/app": "8.1.1",
+    "@capacitor/app-launcher": "8.0.1",
+    "@capacitor/browser": "8.0.4",
+    "@capacitor/core": "8.5.1",
+    "@capacitor/network": "8.0.1"
+  },
+  "devDependencies": {
+    "@capacitor/android": "8.5.1",
+    "@capacitor/cli": "8.5.1",
+    "@capacitor/ios": "8.5.1"
+  }
+}

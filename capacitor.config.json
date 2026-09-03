@@ -1,0 +1,20 @@
+{
+  "appId": "br.com.valdineycapistrano.vcimob",
+  "appName": "VC Imob",
+  "webDir": "dist-mobile",
+  "bundledWebRuntime": false,
+  "server": {
+    "hostname": "localhost",
+    "androidScheme": "https",
+    "iosScheme": "capacitor"
+  },
+  "ios": {
+    "contentInset": "automatic",
+    "preferredContentMode": "mobile"
+  },
+  "android": {
+    "allowMixedContent": false,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": false
+  }
+}

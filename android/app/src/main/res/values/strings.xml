@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">VC Imob</string>
+    <string name="title_activity_main">VC Imob</string>
+    <string name="package_name">br.com.valdineycapistrano.vcimob</string>
+    <string name="custom_url_scheme">br.com.valdineycapistrano.vcimob</string>
+</resources>
