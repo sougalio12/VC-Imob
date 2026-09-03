@@ -7,6 +7,7 @@ import vm from 'node:vm';
 const catalog = JSON.parse(readFileSync('data/imoveis.json', 'utf8'));
 const apartment = catalog.find(p => p.codigo === 'VCI000004');
 const house = catalog.find(p => p.codigo === 'VCI000005');
+const vidaAzaleias = catalog.find(p => p.codigo === 'VCI000006');
 const home = readFileSync('index.html', 'utf8');
 const detail = readFileSync('js/imovel.js', 'utf8');
 const publicStyles = readFileSync('css/style.css', 'utf8');
@@ -39,6 +40,43 @@ test('house preserves supplied areas, construction status and unknown bathrooms'
   assert.match(house.descricao, /em fase de acabamento/);
   assert.equal(house.imagensTipo, 'projeto');
   assert.match(house.legendaImagens, /não fotografias do imóvel pronto/);
+});
+
+test('VCI000006 publishes the supplied Vida Azaléias facts without invented parking', () => {
+  assert.equal(vidaAzaleias.ativo, true);
+  assert.equal(vidaAzaleias.titulo, 'Apartamento no Residencial Vida Azaléias');
+  assert.equal(vidaAzaleias.preco, 550000);
+  assert.equal(vidaAzaleias.areaConstruida, 53.97);
+  assert.deepEqual([vidaAzaleias.quartos, vidaAzaleias.banheiros, vidaAzaleias.vagas], [2, 1, null]);
+  assert.equal(vidaAzaleias.enderecoExibir, 'Bandeirantes, Lucas do Rio Verde - MT');
+  for (const fact of ['Torre 2', '3º andar', 'Apto para financiamento', 'Clube Pizza', 'Baby Place']) {
+    assert.ok(vidaAzaleias.caracteristicas.includes(fact), fact);
+  }
+  assert.match(vidaAzaleias.descricao, /proprietário estuda proposta envolvendo outro apartamento/i);
+});
+
+test('VCI000006 has the supplied pool cover and six ordered, unique photos', () => {
+  assert.equal(vidaAzaleias.imagens.length, 6);
+  assert.equal(new Set(vidaAzaleias.imagens).size, 6);
+  assert.match(vidaAzaleias.imagens[0], /01-area-externa-piscinas\.jpg$/);
+  assert.deepEqual(vidaAzaleias.imagensAlt, [
+    'Área externa com piscinas e edifício do Residencial Vida Azaléias',
+    'Sala de jantar do apartamento',
+    'Cozinha e lavanderia planejadas',
+    'Sala de estar integrada',
+    'Quarto com móveis planejados',
+    'Banheiro social'
+  ]);
+  for (const image of vidaAzaleias.imagens) {
+    const bytes = readFileSync(image);
+    assert.equal(bytes.subarray(0, 3).toString('hex'), 'ffd8ff');
+  }
+  const {html} = renderer(vidaAzaleias);
+  assert.match(html, /galleryMainButton/);
+  assert.equal((html.match(/class="property-thumbnail(?: is-active)?" type="button"/g) || []).length, 6);
+  assert.match(html, /53,97 m²/);
+  assert.match(html, /<span>Banheiros<\/span><strong>1<\/strong>/);
+  assert.doesNotMatch(html, /<span>Vagas<\/span>/);
 });
 
 test('qualifications contain only titles supported by the supplied certificates', () => {
