@@ -82,7 +82,7 @@
 
   <link
     rel="stylesheet"
-    href="./css/style.css?v=profile-cover-20260830"
+    href="./css/style.css?v=public-cards-20260902"
   >
 
   <link rel="stylesheet" href="./css/site-lead.css">
@@ -1264,7 +1264,7 @@
       <h3 id="profileEducationTitle">Formação e especializações</h3>
       <ul>
         <li><span aria-hidden="true">🎓</span> Pós-Graduação Lato Sensu em Direito Imobiliário</li>
-        <li><span aria-hidden="true">🎓</span> MBA em Empreendedorismo, Marketing e Finanças</li>
+        <li><span aria-hidden="true">🎓</span> Pós-Graduação Lato Sensu em MBA de Empreendedorismo, Marketing e Finanças</li>
       </ul>
     </section>
     </div>
@@ -2608,7 +2608,20 @@ function renderizarImoveis(
             <article class="property-card">
 
 
-              <div class="property-image${imagem ? " has-property-photo" : ""}">
+              <header class="property-card-header">
+
+                <h3 class="property-title">
+                  ${titulo}
+                </h3>
+
+              </header>
+
+
+              <a
+                class="property-image${imagem ? " has-property-photo" : ""}"
+                href="${detalhesUrl}"
+                aria-label="Abrir anúncio: ${titulo}"
+              >
 
                 ${imagemHTML}
 
@@ -2617,7 +2630,7 @@ function renderizarImoveis(
                 </span>
                 ${imovel.capaTipo === "projeto" || imovel.imagensTipo === "projeto" ? '<span class="property-project-label">Imagem do projeto</span>' : ""}
 
-              </div>
+              </a>
 
 
               <div class="property-content">
@@ -2632,11 +2645,6 @@ function renderizarImoveis(
                     `
                     : ""
                 }
-
-
-                <h3 class="property-title">
-                  ${titulo}
-                </h3>
 
 
                 <div class="property-location">

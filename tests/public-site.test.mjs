@@ -9,6 +9,8 @@ const apartment = catalog.find(p => p.codigo === 'VCI000004');
 const house = catalog.find(p => p.codigo === 'VCI000005');
 const home = readFileSync('index.html', 'utf8');
 const detail = readFileSync('js/imovel.js', 'utf8');
+const publicStyles = readFileSync('css/style.css', 'utf8');
+const detailStyles = readFileSync('css/imovel.css', 'utf8');
 
 test('catalog codes, IDs and active slugs are unique', () => {
   for (const key of ['codigo', 'id', 'slug']) {
@@ -39,10 +41,34 @@ test('house preserves supplied areas, construction status and unknown bathrooms'
   assert.match(house.legendaImagens, /não fotografias do imóvel pronto/);
 });
 
-test('qualifications contain only the two supplied qualifications', () => {
+test('qualifications contain only titles supported by the supplied certificates', () => {
   const section = home.match(/<section class="profile-education"[\s\S]*?<\/section>/)[0];
   const items = [...section.matchAll(/<li>(.*?)<\/li>/g)].map(m => m[1].replace(/<span aria-hidden="true">🎓<\/span>\s*/, ''));
-  assert.deepEqual(items, ['Pós-Graduação Lato Sensu em Direito Imobiliário', 'MBA em Empreendedorismo, Marketing e Finanças']);
+  assert.deepEqual(items, ['Pós-Graduação Lato Sensu em Direito Imobiliário', 'Pós-Graduação Lato Sensu em MBA de Empreendedorismo, Marketing e Finanças']);
+  assert.doesNotMatch(section, /CPF|RG|registro|autenticidade|EVCODE|validador/i);
+});
+
+test('catalog card follows title, linked photo, information, price and action hierarchy', () => {
+  const card = home.match(/<article class="property-card">[\s\S]*?<\/article>/)?.[0] || '';
+  const positions = ['property-card-header', 'property-image', 'property-content', 'property-footer', 'property-price', 'property-actions'].map(token => card.indexOf(token));
+  assert.ok(positions.every(position => position >= 0), card);
+  assert.deepEqual([...positions].sort((a, b) => a - b), positions);
+  assert.match(card, /<a\s+[\s\S]*?class="property-image[^"].*?[\s\S]*?href="\$\{detalhesUrl\}"[\s\S]*?aria-label="Abrir anúncio:/);
+  assert.match(card, /property-details-link[\s\S]*?Ver imóvel/);
+  assert.match(card, /property-interest-button[\s\S]*?Tenho interesse/);
+});
+
+test('dynamic watermark is centered, subtle and crops the existing brand symbol', () => {
+  for (const css of [publicStyles, detailStyles]) {
+    assert.match(css, /left:\s*50%/);
+    assert.match(css, /top:\s*50%/);
+    assert.match(css, /translate\(-50%,\s*-50%\)/);
+    assert.match(css, /4d6f85cd-fe07-4c5c-bbbf-be216a48a1b1\.jpeg/);
+    assert.match(css, /380% auto no-repeat/);
+    assert.match(css, /grayscale\(1\)/);
+    assert.match(css, /opacity:\s*0\.1[58]/);
+  }
+  assert.match(detailStyles, /property-gallery-main::before[\s\S]*property-thumbnail::after[\s\S]*property-lightbox-media::after/);
 });
 
 test('all referenced catalog images are local existing assets', () => {

@@ -130,14 +130,15 @@
 .property-lightbox-media::after {
   content: "";
   position: absolute;
-  right: 14px;
-  bottom: 14px;
-  width: clamp(92px, 22%, 180px);
-  aspect-ratio: 2.2 / 1;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.72) url("../assets/images/4d6f85cd-fe07-4c5c-bbbf-be216a48a1b1.jpeg") center / contain no-repeat;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.18);
-  opacity: 0.72;
+  left: 50%;
+  top: 50%;
+  width: clamp(100px, 20%, 175px);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  background: url("../assets/images/4d6f85cd-fe07-4c5c-bbbf-be216a48a1b1.jpeg") left center / 380% auto no-repeat;
+  filter: grayscale(1) contrast(1.35);
+  mix-blend-mode: multiply;
+  opacity: 0.18;
   pointer-events: none;
   z-index: 2;
 }
@@ -184,11 +185,8 @@
 }
 
 .property-thumbnail::after {
-  right: 5px;
-  bottom: 5px;
-  width: 45%;
-  border-radius: 4px;
-  opacity: 0.62;
+  width: 42%;
+  opacity: 0.15;
 }
 
 .property-thumbnail img {
@@ -368,8 +366,7 @@
 }
 
 .property-lightbox-media::after {
-  right: 20px;
-  bottom: 20px;
+  width: clamp(110px, 18vw, 190px);
 }
 
 .property-lightbox-control {
