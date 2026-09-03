@@ -17,7 +17,7 @@ async function renderCurrentView() {
     root.replaceChildren(createEmptyState("Não foi possível carregar esta área", "Verifique sua conexão e seu acesso à organização.", retry));
   }
 }
-function navigateCrm(view) { if (!CRM_VIEWS[view]) return; document.body.dataset.view = view; document.getElementById("pageTitle").textContent = CRM_VIEWS[view][0]; document.getElementById("pageEyebrow").textContent = CRM_VIEWS[view][1]; document.querySelectorAll("[data-view-link]").forEach(button => button.classList.toggle("is-active", button.dataset.viewLink === view)); toggleSidebar(false); renderCurrentView(); }
+function navigateCrm(view, options = {}) { if (!CRM_VIEWS[view]) return; document.body.dataset.view = view; document.getElementById("pageTitle").textContent = CRM_VIEWS[view][0]; document.getElementById("pageEyebrow").textContent = CRM_VIEWS[view][1]; document.querySelectorAll("[data-view-link]").forEach(button => { const active = button.dataset.viewLink === view; button.classList.toggle("is-active", active); if (active) button.setAttribute("aria-current", "page"); else button.removeAttribute("aria-current"); }); const more = document.getElementById("mobileMoreButton"); const secondaryView = !["dashboard", "leads", "kanban", "agenda"].includes(view); more?.classList.toggle("is-active", secondaryView); if (secondaryView) more?.setAttribute("aria-current", "page"); else more?.removeAttribute("aria-current"); if (!options.preserveHistory && window.location.hash !== `#${view}`) window.history.replaceState({}, "", `${window.location.pathname}${window.location.search}#${view}`); toggleSidebar(false); more?.setAttribute("aria-expanded", "false"); renderCurrentView(); }
 document.addEventListener("DOMContentLoaded", async () => {
   if (!await requireCrmSession()) return;
 
@@ -55,5 +55,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("menuToggle").addEventListener("click", () => toggleSidebar());
   document.getElementById("crmBackdrop").addEventListener("click", () => toggleSidebar(false));
   document.getElementById("crmModal").addEventListener("click", event => { if (event.target.id === "crmModal") closeModal(); });
-  await renderCurrentView();
+  const initialView = window.location.hash.slice(1);
+  if (CRM_VIEWS[initialView]) navigateCrm(initialView, { preserveHistory: true });
+  else await renderCurrentView();
 });

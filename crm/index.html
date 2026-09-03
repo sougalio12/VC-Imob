@@ -2,14 +2,21 @@
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>VC Imob | CRM</title>
   <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#0b0b0b">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="VC Imob">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
   <link rel="stylesheet" href="./css/crm.css?v=phase-e-20260827">
   <link rel="stylesheet" href="./css/billing.css?v=phase-e-20260827">
   <link rel="stylesheet" href="./css/history.css?v=phase-b2-20260825">
   <link rel="stylesheet" href="./css/kanban.css?v=phase-f1-20260830">
   <link rel="stylesheet" href="./css/phase-f.css?v=phase-f-20260902">
+  <link rel="stylesheet" href="./css/phase-g.css?v=phase-g-20260902">
 </head>
 <body class="crm-app" data-view="dashboard">
   <div class="crm-shell">
@@ -37,6 +44,14 @@
       <main id="crmContent" class="crm-content" tabindex="-1"></main>
     </section>
   </div>
+  <p class="crm-connectivity" id="crmConnectivity" role="status" hidden>Você está sem conexão. Reconecte-se para atualizar os dados do CRM.</p>
+  <nav class="crm-bottom-nav" aria-label="Navegação principal no celular">
+    <button type="button" data-view-link="dashboard" class="is-active" aria-label="Abrir visão geral"><span aria-hidden="true">⌂</span><small>Início</small></button>
+    <button type="button" data-view-link="leads" aria-label="Abrir leads"><span aria-hidden="true">●</span><small>Leads</small></button>
+    <button type="button" data-view-link="kanban" aria-label="Abrir funil"><span aria-hidden="true">▥</span><small>Funil</small></button>
+    <button type="button" data-view-link="agenda" aria-label="Abrir agenda"><span aria-hidden="true">□</span><small>Agenda</small></button>
+    <button type="button" id="mobileMoreButton" aria-label="Abrir mais opções" aria-expanded="false"><span aria-hidden="true">•••</span><small>Mais</small></button>
+  </nav>
   <div id="crmToast" class="crm-toast" role="status"></div>
   <div id="crmModal" class="crm-modal" aria-hidden="true"></div>
   <script src="./js/config.js?v=phase-b2-20260825"></script>
@@ -57,5 +72,6 @@
   <script src="./js/team.js?v=phase-d-20260826"></script>
   <script src="./js/billing.js?v=phase-e-20260827"></script>
   <script src="./js/app.js?v=phase-f1-20260830"></script>
+  <script src="./js/pwa.js?v=phase-g-20260902b"></script>
 </body>
 </html>

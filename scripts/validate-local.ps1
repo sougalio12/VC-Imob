@@ -12,6 +12,8 @@ Write-Host '=== VC Imob local validation ===' -ForegroundColor Cyan
 if ($LASTEXITCODE -ne 0) { throw 'Phase F.1 local test failed.' }
 & (Join-Path $PSScriptRoot 'test-phase-f.ps1')
 if ($LASTEXITCODE -ne 0) { throw 'Phase F local test failed.' }
+& (Join-Path $PSScriptRoot 'test-phase-g.ps1')
+if ($LASTEXITCODE -ne 0) { throw 'Phase G local test failed.' }
 & node --test (Join-Path $repositoryRoot 'tests/public-site.test.mjs')
 if ($LASTEXITCODE -ne 0) { throw 'Public site tests failed.' }
 & node --check (Join-Path $PSScriptRoot 'local-property-server.mjs')

@@ -1,0 +1,24 @@
+{
+  "id": "/crm/",
+  "name": "VC Imob",
+  "short_name": "VC Imob",
+  "description": "CRM imobiliário para gestão de leads, agenda e negociações.",
+  "lang": "pt-BR",
+  "start_url": "/crm/index.html?source=pwa",
+  "scope": "/crm/",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#f6f5f2",
+  "theme_color": "#0b0b0b",
+  "icons": [
+    { "src": "./icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "./icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "./icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Leads", "short_name": "Leads", "url": "/crm/index.html#leads" },
+    { "name": "Funil", "short_name": "Funil", "url": "/crm/index.html#kanban" },
+    { "name": "Agenda", "short_name": "Agenda", "url": "/crm/index.html#agenda" }
+  ]
+}
