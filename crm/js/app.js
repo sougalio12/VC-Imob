@@ -48,14 +48,21 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   document.getElementById("demoBadge").hidden = !isDemoMode();
   const membership = await getActiveMembership();
+  const accessState = await getMyAccessState().catch(() => ({ status: "expired", is_entitled: false }));
+  if (!accessState.is_entitled && !isDemoMode()) {
+    document.body.classList.add("is-restricted");
+    document.querySelectorAll('[data-view-link]:not([data-view-link="billing"])').forEach(item => { item.hidden = true; });
+    document.getElementById("quickLeadButton").hidden = true;
+  }
   document.getElementById("teamNavigation").hidden = !["owner", "manager"].includes(membership.role);
-  document.getElementById("billingNavigation").hidden = !["owner", "manager"].includes(membership.role);
+  document.getElementById("billingNavigation").hidden = false;
   document.querySelectorAll("[data-view-link]").forEach(button => button.addEventListener("click", () => navigateCrm(button.dataset.viewLink)));
   document.getElementById("quickLeadButton").addEventListener("click", async () => { try { openLeadModal(null, await loadProperties()); } catch (error) { showToast(error.message, "error"); } });
   document.getElementById("menuToggle").addEventListener("click", () => toggleSidebar());
   document.getElementById("crmBackdrop").addEventListener("click", () => toggleSidebar(false));
   document.getElementById("crmModal").addEventListener("click", event => { if (event.target.id === "crmModal") closeModal(); });
   const initialView = window.location.hash.slice(1);
-  if (CRM_VIEWS[initialView]) navigateCrm(initialView, { preserveHistory: true });
+  if (!accessState.is_entitled && !isDemoMode()) navigateCrm("billing", { preserveHistory: true });
+  else if (CRM_VIEWS[initialView]) navigateCrm(initialView, { preserveHistory: true });
   else await renderCurrentView();
 });

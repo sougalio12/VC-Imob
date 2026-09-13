@@ -1,4 +1,4 @@
-const CACHE_VERSION = "vc-imob-shell-g1-20260902b";
+const CACHE_VERSION = "vc-imob-shell-i1-20260912";
 const SHELL_CACHE = CACHE_VERSION;
 const OFFLINE_URL = new URL("./offline.html", self.location).href;
 const SAFE_SHELL = [
@@ -9,6 +9,7 @@ const SAFE_SHELL = [
   "./css/kanban.css",
   "./css/phase-f.css",
   "./css/phase-g.css",
+  "./css/phase-i.css",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
   "./icons/icon-maskable-512.png",

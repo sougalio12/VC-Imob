@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Criar conta | VC Imob</title>
+  <meta name="description" content="Crie sua conta no VC Imob e teste o CRM imobiliário por 7 dias.">
+  <meta name="theme-color" content="#0b0b0b">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="./css/crm.css">
+  <link rel="stylesheet" href="./css/phase-i.css?v=phase-i-20260912">
+</head>
+<body class="crm-login-page phase-i-page">
+  <main class="signup-shell">
+    <section class="login-panel signup-panel" aria-labelledby="signupTitle">
+      <a class="crm-brand" href="../index.html"><span>VC</span><strong>Imob</strong></a>
+      <p class="eyebrow">Comece agora</p>
+      <h1 id="signupTitle">7 dias grátis para organizar suas vendas.</h1>
+      <p class="muted">Crie sua conta, sua organização e entre no CRM. Nenhuma cobrança é iniciada no cadastro.</p>
+      <ol class="onboarding-steps" aria-label="Etapas do cadastro"><li class="is-current">Conta</li><li>Organização</li><li>Trial</li><li>CRM</li></ol>
+      <form id="signupForm" class="crm-form" novalidate>
+        <label>Nome completo<input name="fullName" autocomplete="name" required maxlength="120"></label>
+        <label>E-mail<input type="email" name="email" autocomplete="email" inputmode="email" required maxlength="254"></label>
+        <label>Telefone<input type="tel" name="phone" autocomplete="tel" inputmode="tel" required maxlength="24" placeholder="(65) 99999-9999"></label>
+        <label>Senha<input type="password" name="password" autocomplete="new-password" required minlength="8" maxlength="72"><small>Use pelo menos 8 caracteres.</small></label>
+        <div class="signup-optional">
+          <label>CRECI <span>(opcional)</span><input name="creci" autocomplete="off" maxlength="40"></label>
+          <label>Nome da imobiliária <span>(opcional)</span><input name="companyName" autocomplete="organization" maxlength="120"></label>
+        </div>
+        <label class="legal-consent"><input type="checkbox" name="legalAccepted" required> <span>Li e aceito os <a href="./termos.html" target="_blank" rel="noopener">Termos de Uso</a> e a <a href="./privacidade.html" target="_blank" rel="noopener">Política de Privacidade</a>.</span></label>
+        <p id="signupError" class="form-error" role="alert"></p>
+        <button class="crm-button crm-button-primary" type="submit">Criar conta e iniciar trial</button>
+      </form>
+      <p class="signup-invite">Já tem uma conta? <a href="./login.html">Entrar</a></p>
+    </section>
+  </main>
+  <script src="./js/config.js"></script><script src="./js/supabase.js"></script><script src="./js/auth.js"></script>
+  <script src="./js/signup.js?v=phase-i-20260912"></script><script src="./js/native.js?v=phase-h-20260903"></script><script src="./js/pwa.js?v=phase-g-20260902b"></script>
+</body>
+</html>

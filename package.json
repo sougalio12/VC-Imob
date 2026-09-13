@@ -8,7 +8,8 @@
     "mobile:sync": "npm run mobile:build-web && cap sync",
     "mobile:android": "npm run mobile:sync && cap open android",
     "mobile:ios": "npm run mobile:sync && cap open ios",
-    "test:phase-h": "node --test tests/phase-h/phase-h.test.mjs"
+    "test:phase-h": "node --test tests/phase-h/phase-h.test.mjs",
+    "test:phase-i": "node --test tests/phase-i/phase-i.test.mjs"
   },
   "dependencies": {
     "@capacitor/app": "8.1.1",

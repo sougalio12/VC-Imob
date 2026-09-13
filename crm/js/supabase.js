@@ -74,7 +74,10 @@ async function supabaseRequest(path, options = {}) {
     const rawMessage = data?.message || data?.error_description || "Não foi possível concluir a operação.";
     const friendlyMessages = { "Team member limit reached": "O limite de pessoas do seu plano foi atingido. Consulte Plano / Assinatura para ver as opções.", "Acesso comercial negado": "Sua conta não tem acesso a este recurso no plano atual.", "Acesso ao plano negado": "Somente proprietários e gerentes podem consultar a assinatura." };
     const message = friendlyMessages[rawMessage] || rawMessage;
-    throw new Error(message);
+    const requestError = new Error(message);
+    requestError.status = response.status;
+    requestError.code = data?.code || null;
+    throw requestError;
   }
 
   return data;
@@ -88,6 +91,38 @@ async function signInWithPassword(email, password) {
   });
 
   storeSession(result);
+  return result;
+}
+
+async function signUpPublicAccount(payload) {
+  if (!isSupabaseConfigured()) throw new Error("Cadastro temporariamente indisponível.");
+  const capability = await fetch(`${CRM_CONFIG.supabaseUrl}/rest/v1/rpc/public_signup_available`, {
+    method: "POST", headers: { apikey: CRM_CONFIG.supabasePublishableKey, "Content-Type": "application/json" }, body: "{}"
+  });
+  if (!capability.ok || await capability.json().catch(() => false) !== true) throw new Error("O cadastro está aguardando uma atualização segura do serviço. Tente novamente mais tarde.");
+  const response = await fetch(`${CRM_CONFIG.supabaseUrl}/auth/v1/signup`, {
+    method: "POST",
+    headers: { apikey: CRM_CONFIG.supabasePublishableKey, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      email: payload.email,
+      password: payload.password,
+      data: {
+        public_signup: true,
+        full_name: payload.fullName,
+        phone: payload.phone,
+        creci: payload.creci || null,
+        company_name: payload.companyName || null,
+        legal_accepted: true,
+        terms_version: "2026-09-12",
+        privacy_version: "2026-09-12"
+      }
+    })
+  });
+  const text = await response.text();
+  let result = null;
+  try { result = text ? JSON.parse(text) : null; } catch { result = null; }
+  if (!response.ok) throw new Error(result?.msg || result?.message || "Não foi possível criar sua conta.");
+  if (result?.access_token) storeSession(result);
   return result;
 }
 

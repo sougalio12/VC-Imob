@@ -90,6 +90,23 @@ async function getBillingOverview() {
   return { subscription: subscriptions?.[0] || null, entitlements: entitlements || [], plans: plans || [] };
 }
 
+async function getMyAccessState() {
+  if (isDemoMode()) return { status: "active", is_entitled: true, can_manage_billing: true };
+  try {
+    const rows = await callCrmRpc("get_my_access_state", { target_organization: await getActiveOrganizationId() });
+    return rows?.[0] || { status: "expired", is_entitled: false, can_manage_billing: false };
+  } catch (error) {
+    if (error?.code === "PGRST202" || error?.status === 404) return { status: "legacy", is_entitled: true, can_manage_billing: false, legacy_compat: true };
+    throw error;
+  }
+}
+
+async function requestMyAccountDeletion() {
+  if (isDemoMode()) throw new Error("A exclusão não está disponível no modo demonstração.");
+  const rows = await callCrmRpc("request_account_deletion", { target_organization: await getActiveOrganizationId() });
+  return rows?.[0] || null;
+}
+
 function resetOrganizationContext() {
   crmOrganizationContext = null;
   clearOrganizationContext();

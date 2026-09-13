@@ -1,0 +1,39 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync, readdirSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
+
+const pkg = process.env.PGLITE_PACKAGE;
+if (!pkg) throw Error('PGLITE_PACKAGE required');
+const { PGlite } = await import(pathToFileURL(resolve(pkg, 'dist/index.js')));
+const { pgcrypto } = await import(pathToFileURL(resolve(pkg, 'dist/contrib/pgcrypto.js')));
+const db = new PGlite({ extensions: { pgcrypto } });
+await db.exec(`create role anon;create role authenticated;create role service_role bypassrls;create schema auth;create schema extensions;create table auth.users(id uuid primary key,email text,raw_user_meta_data jsonb default '{}');create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;grant usage on schema public,auth to authenticated,anon,service_role;create extension pgcrypto with schema extensions;`);
+for (const file of readdirSync('supabase/migrations').filter(file => file.endsWith('.sql')).sort()) await db.exec(readFileSync(`supabase/migrations/${file}`, 'utf8'));
+
+const ids = { owner: '31000000-0000-0000-0000-000000000001', second: '31000000-0000-0000-0000-000000000002', outsider: '31000000-0000-0000-0000-000000000003' };
+const publicMetadata = { public_signup: true, legal_accepted: true, terms_version: '2026-09-12', privacy_version: '2026-09-12', full_name: 'Corretor Teste', phone: '(65) 99999-0001', creci: '12345-F', company_name: 'Imobiliária Teste' };
+await db.query('insert into auth.users(id,email,raw_user_meta_data) values($1,$2,$3)', [ids.owner, 'owner-i@example.invalid', publicMetadata]);
+const org = (await db.query('select organization_id from public.profiles where id=$1', [ids.owner])).rows[0].organization_id;
+
+async function as(user, sql, args = []) { await db.exec('reset role'); await db.query("select set_config('request.jwt.claim.sub',$1,false)", [user]); await db.exec('set role authenticated'); try { return await db.query(sql, args); } finally { await db.exec('reset role'); } }
+async function service(sql, args = []) { await db.exec('reset role'); await db.exec('set role service_role'); try { return await db.query(sql, args); } finally { await db.exec('reset role'); } }
+
+test('public signup atomically creates named organization', async () => assert.equal((await db.query('select name from public.organizations where id=$1',[org])).rows[0].name,'Imobiliária Teste'));
+test('public signup creates complete owner profile', async () => { const row=(await db.query('select full_name,phone,creci,role,signup_completed_at from public.profiles where id=$1',[ids.owner])).rows[0]; assert.deepEqual([row.full_name,row.phone,row.creci,row.role],['Corretor Teste','+65999990001'.replace('+',''),'12345-F','owner']); assert.ok(row.signup_completed_at); });
+test('public signup creates active owner membership', async () => { const row=(await db.query('select role,status from public.organization_members where organization_id=$1 and user_id=$2',[org,ids.owner])).rows[0]; assert.deepEqual(row,{role:'owner',status:'active'}); });
+test('public signup creates one START trial', async () => { const row=(await db.query('select p.code,s.status,s.provider from public.subscriptions s join public.plans p on p.id=s.plan_id where s.organization_id=$1 and s.is_current',[org])).rows[0]; assert.deepEqual(row,{code:'start',status:'trialing',provider:'internal'}); });
+test('trial duration is exactly seven days', async () => { const row=(await db.query('select extract(epoch from ends_at-started_at)/86400 days from public.trial_claims where organization_id=$1',[org])).rows[0]; assert.equal(Number(row.days),7); });
+test('legal versions are persisted', async () => { const row=(await db.query('select terms_version,privacy_version from public.account_consents where user_id=$1',[ids.owner])).rows[0]; assert.deepEqual(row,{terms_version:'2026-09-12',privacy_version:'2026-09-12'}); });
+test('incomplete public signup rolls back', async () => { await assert.rejects(db.query('insert into auth.users(id,email,raw_user_meta_data) values($1,$2,$3)',[ids.outsider,'bad-i@example.invalid',{public_signup:true,full_name:'Sem aceite'}])); assert.equal((await db.query('select count(*)::int count from public.profiles where id=$1',[ids.outsider])).rows[0].count,0); });
+test('owner can read active access state', async () => { const row=(await as(ids.owner,'select * from public.get_my_access_state($1)',[org])).rows[0]; assert.equal(row.status,'trialing'); assert.equal(row.is_entitled,true); assert.equal(row.can_manage_billing,true); });
+test('client cannot read protected trial and consent tables', async () => { for(const table of ['trial_claims','account_consents','account_deletion_requests']) await assert.rejects(as(ids.owner,`select * from public.${table}`)); });
+test('client cannot call verified provider event RPC', async () => await assert.rejects(as(ids.owner,"select * from public.apply_verified_billing_event('apple','x','renew',$1,'pro','month','active',now(),now(),now()+interval '1 month',false,null,'sub-x','{}')",[org])));
+test('service applies verified provider event and activates PRO', async () => { const row=(await service("select * from public.apply_verified_billing_event('apple','evt-1','renew',$1,'pro','month','active',now(),now(),now()+interval '1 month',false,'cust-1','sub-1','{}')",[org])).rows[0]; assert.equal(row.applied,true); const sub=(await db.query('select p.code,s.provider,s.billing_interval,s.status from public.subscriptions s join public.plans p on p.id=s.plan_id where s.organization_id=$1 and s.is_current',[org])).rows[0]; assert.deepEqual(sub,{code:'pro',provider:'apple',billing_interval:'month',status:'active'}); });
+test('duplicate provider event is idempotent', async () => { const row=(await service("select * from public.apply_verified_billing_event('apple','evt-1','renew',$1,'pro','month','active',now(),now(),now()+interval '1 month',false,'cust-1','sub-1','{}')",[org])).rows[0]; assert.equal(row.applied,false); assert.equal(row.result,'duplicate'); });
+test('canceled paid period remains entitled', async () => { await service("select * from public.apply_verified_billing_event('apple','evt-2','cancel',$1,'pro','month','canceled',now()+interval '1 second',now(),now()+interval '1 month',true,'cust-1','sub-1','{}')",[org]); assert.equal((await as(ids.owner,'select is_entitled from public.get_my_access_state($1)',[org])).rows[0].is_entitled,true); });
+test('revocation closes operational role but account state remains readable', async () => { await service("select * from public.apply_verified_billing_event('apple','evt-3','revoke',$1,'pro','month','revoked',now()+interval '2 seconds',null,null,false,'cust-1','sub-1','{}')",[org]); assert.equal((await as(ids.owner,'select public.current_membership_role($1) role',[org])).rows[0].role,'__none__'); const access=(await as(ids.owner,'select * from public.get_my_access_state($1)',[org])).rows[0]; assert.equal(access.is_entitled,false); });
+test('single owner deletion creates organization review without revoking access', async () => { const row=(await as(ids.owner,'select * from public.request_account_deletion($1)',[org])).rows[0]; assert.equal(row.request_scope,'organization'); assert.equal(row.request_status,'pending_review'); assert.equal(row.access_revoked,false); });
+test('deletion request is idempotent while pending', async () => { const first=(await db.query('select id from public.account_deletion_requests where user_id=$1',[ids.owner])).rows[0].id; const second=(await as(ids.owner,'select * from public.request_account_deletion($1)',[org])).rows[0].request_id; assert.equal(second,first); });
+test('Phase I migration can be reapplied safely', async () => await db.exec(readFileSync('supabase/migrations/20260912000000_phase_i_public_saas.sql','utf8')));

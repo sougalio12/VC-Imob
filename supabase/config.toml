@@ -43,3 +43,8 @@ entrypoint = "./functions/site-lead/index.ts"
 enabled = true
 verify_jwt = false
 entrypoint = "./functions/property-ad/index.ts"
+
+[functions.billing-provider-event]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/billing-provider-event/index.ts"
