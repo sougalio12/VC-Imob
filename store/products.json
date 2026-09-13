@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "currency": "BRL",
+  "trialDays": 7,
+  "authority": "backend",
+  "status": "planned_not_created",
+  "apple": {
+    "subscriptionGroupReferenceName": "VC Imob",
+    "products": [
+      { "id": "vcimob.start.monthly", "plan": "start", "period": "P1M", "priceCents": 3990, "level": 3 },
+      { "id": "vcimob.start.annual", "plan": "start", "period": "P1Y", "priceCents": 39900, "level": 3 },
+      { "id": "vcimob.pro.monthly", "plan": "pro", "period": "P1M", "priceCents": 7990, "level": 2 },
+      { "id": "vcimob.pro.annual", "plan": "pro", "period": "P1Y", "priceCents": 79900, "level": 2 },
+      { "id": "vcimob.team.monthly", "plan": "equipe", "period": "P1M", "priceCents": 14990, "level": 1 },
+      { "id": "vcimob.team.annual", "plan": "equipe", "period": "P1Y", "priceCents": 149900, "level": 1 }
+    ]
+  },
+  "google": {
+    "products": [
+      { "id": "vcimob_start", "plan": "start", "basePlans": [{ "id": "monthly", "period": "P1M", "priceCents": 3990 }, { "id": "annual", "period": "P1Y", "priceCents": 39900 }] },
+      { "id": "vcimob_pro", "plan": "pro", "basePlans": [{ "id": "monthly", "period": "P1M", "priceCents": 7990 }, { "id": "annual", "period": "P1Y", "priceCents": 79900 }] },
+      { "id": "vcimob_team", "plan": "equipe", "basePlans": [{ "id": "monthly", "period": "P1M", "priceCents": 14990 }, { "id": "annual", "period": "P1Y", "priceCents": 149900 }] }
+    ]
+  }
+}

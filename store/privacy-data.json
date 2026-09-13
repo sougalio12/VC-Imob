@@ -1,0 +1,14 @@
+{
+  "reviewRequired": true,
+  "tracking": false,
+  "advertising": false,
+  "nativeDiagnosticsSdk": false,
+  "data": [
+    { "category": "contact_info", "types": ["name", "email_address", "phone_number"], "linkedToIdentity": true, "purposes": ["app_functionality", "account_management"] },
+    { "category": "user_content", "types": ["customer_support", "other_user_content"], "linkedToIdentity": true, "purposes": ["app_functionality"] },
+    { "category": "identifiers", "types": ["user_id"], "linkedToIdentity": true, "purposes": ["app_functionality", "security"] },
+    { "category": "purchases", "types": ["purchase_history"], "linkedToIdentity": true, "purposes": ["app_functionality", "account_management"], "effectiveOnlyAfterStoreBilling": true },
+    { "category": "other", "types": ["organization_roles", "leads", "notes", "appointments", "properties", "audit_events"], "linkedToIdentity": true, "purposes": ["app_functionality", "security"] }
+  ],
+  "processors": ["Supabase", "Resend", "Apple App Store when enabled", "Google Play when enabled"]
+}

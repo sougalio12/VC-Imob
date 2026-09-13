@@ -9,7 +9,9 @@
     "mobile:android": "npm run mobile:sync && cap open android",
     "mobile:ios": "npm run mobile:sync && cap open ios",
     "test:phase-h": "node --test tests/phase-h/phase-h.test.mjs",
-    "test:phase-i": "node --test tests/phase-i/phase-i.test.mjs"
+    "test:phase-i": "node --test tests/phase-i/phase-i.test.mjs",
+    "test:phase-j": "node --test tests/phase-j/phase-j.test.mjs",
+    "release:check": "node scripts/check-release-readiness.mjs"
   },
   "dependencies": {
     "@capacitor/app": "8.1.1",

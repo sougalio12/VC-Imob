@@ -1,0 +1,35 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+
+const read = path => readFileSync(path, 'utf8');
+const json = path => JSON.parse(read(path));
+const products = json('store/products.json');
+const metadata = json('store/metadata/pt-BR.json');
+const privacy = json('store/privacy-data.json');
+const pkg = json('package.json');
+const android = read('android/app/build.gradle');
+const manifest = read('android/app/src/main/AndroidManifest.xml');
+const ios = read('ios/App/App/Info.plist');
+const billing = read('crm/js/subscriptions.js');
+const docs = read('docs/phase-j.md');
+
+test('J01 identity and version remain stable', () => { assert.equal(pkg.version, '1.0.0'); assert.match(android, /applicationId "br\.com\.valdineycapistrano\.vcimob"/); assert.match(android, /versionCode 1/); assert.match(android, /versionName "1\.0"/); });
+test('J02 six Apple products are planned in one group', () => { assert.equal(products.apple.products.length, 6); assert.equal(new Set(products.apple.products.map(p => p.id)).size, 6); assert.equal(products.apple.subscriptionGroupReferenceName, 'VC Imob'); });
+test('J03 Apple group levels preserve upgrade order', () => assert.deepEqual([...new Set(products.apple.products.map(p => p.level))].sort(), [1,2,3]));
+test('J04 Google has three subscriptions with monthly and annual base plans', () => { assert.equal(products.google.products.length, 3); for (const p of products.google.products) assert.deepEqual(p.basePlans.map(b => b.id), ['monthly','annual']); });
+test('J05 store catalog preserves authorized BRL prices', () => { const expected = {start:[3990,39900],pro:[7990,79900],equipe:[14990,149900]}; for (const item of products.google.products) assert.deepEqual(item.basePlans.map(p => p.priceCents), expected[item.plan]); });
+test('J06 trial remains seven days and backend-authoritative', () => { assert.equal(products.trialDays, 7); assert.equal(products.authority, 'backend'); });
+test('J07 planned products cannot be represented as created', () => assert.equal(products.status, 'planned_not_created'));
+test('J08 store metadata is pt-BR and factual', () => { assert.equal(metadata.name, 'VC Imob'); assert.ok(metadata.fullDescription.includes('funil Kanban')); assert.doesNotMatch(metadata.fullDescription, /inteligência artificial|pagamento garantido/i); });
+test('J09 required public URLs are HTTPS', () => { for (const key of ['supportUrl','marketingUrl','privacyUrl','termsUrl','accountDeletionUrl']) assert.match(metadata[key], /^https:\/\/valdineycapistranoimoveis\.com\.br\//); });
+test('J10 privacy map declares no tracking or ads', () => { assert.equal(privacy.tracking, false); assert.equal(privacy.advertising, false); assert.equal(privacy.reviewRequired, true); });
+test('J11 account data is linked to identity for truthful disclosure', () => assert.ok(privacy.data.some(d => d.category === 'contact_info' && d.linkedToIdentity)));
+test('J12 Android remains minimum-permission and cleartext-disabled', () => { assert.deepEqual([...manifest.matchAll(/uses-permission android:name="([^"]+)/g)].map(m => m[1]), ['android.permission.INTERNET']); assert.match(manifest, /usesCleartextTraffic="false"/); });
+test('J13 iOS still requests no privacy-gated device permission', () => assert.doesNotMatch(ios, /NS(?:Camera|Microphone|PhotoLibrary|Location|Contacts)UsageDescription/));
+test('J14 billing remains fail-closed until verified adapters exist', () => { assert.match(billing, /configured: false/); assert.doesNotMatch(billing, /grant|entitlement\s*=/i); });
+test('J15 restore never grants local access', () => assert.match(billing, /Nenhum acesso foi concedido sem validação/));
+test('J16 release secrets and signing material are ignored', () => { const ignore=read('.gitignore'); for (const value of ['*.jks','*.keystore','*.p12','*.mobileprovision','*.p8','service-account*.json','android/keystore.properties']) assert.ok(ignore.includes(value), value); });
+test('J17 documentation covers both stores and lifecycle events', () => { for (const value of ['App Store Connect','Google Play Console','RTDN','TestFlight','refund','revocation','grace','12 testadores','14 dias']) assert.match(docs,new RegExp(value,'i')); });
+test('J18 documentation does not claim store publication', () => assert.match(docs, /NÃO publicados/));
+test('J19 Android release signing reads only ignored local properties', () => { assert.match(android, /rootProject\.file\('keystore\.properties'\)/); assert.match(android, /signingConfig signingConfigs\.release/); assert.doesNotMatch(android, /storePassword\s+["'][^$]/); });

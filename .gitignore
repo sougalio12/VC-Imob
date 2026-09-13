@@ -14,3 +14,10 @@ ios/App/App/public/
 *.keystore
 *.p12
 *.mobileprovision
+*.cer
+*.p8
+AuthKey_*.p8
+android/keystore.properties
+android/app/google-services.json
+service-account*.json
+play-service-account*.json

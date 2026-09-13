@@ -1,0 +1,14 @@
+{
+  "name": "VC Imob",
+  "iosSubtitle": "CRM imobiliário profissional",
+  "googleShortDescription": "Leads, funil, agenda e imóveis em um CRM imobiliário profissional.",
+  "promotionalText": "Organize leads, imóveis, follow-ups e sua operação comercial em um só lugar.",
+  "keywords": "crm,imóveis,corretor,leads,kanban,agenda,imobiliária",
+  "fullDescription": "O VC Imob reúne as ferramentas essenciais para a operação comercial imobiliária. Organize leads, acompanhe oportunidades no funil, programe follow-ups e compromissos, relacione clientes a imóveis e acompanhe indicadores do negócio.\n\nPara equipes, o VC Imob oferece atribuição de responsáveis, papéis de acesso e visão gerencial, sempre respeitando o isolamento dos dados da organização.\n\nRecursos principais:\n• gestão de leads e contatos;\n• funil Kanban;\n• agenda, tarefas e follow-ups;\n• cadastro e relacionamento de imóveis;\n• matching e priorização explicáveis;\n• dashboard e relatórios;\n• equipes e permissões;\n• acesso pela web, PWA e aplicativo.\n\nUma conta pode ser criada no aplicativo. O período de teste é de 7 dias e o backend do VC Imob controla o acesso e os entitlements.",
+  "releaseNotes": "Versão 1.0 do VC Imob com CRM de leads, funil, agenda, imóveis, equipes, relatórios e acesso multiplataforma.",
+  "supportUrl": "https://valdineycapistranoimoveis.com.br/",
+  "marketingUrl": "https://valdineycapistranoimoveis.com.br/",
+  "privacyUrl": "https://valdineycapistranoimoveis.com.br/crm/privacidade.html",
+  "termsUrl": "https://valdineycapistranoimoveis.com.br/crm/termos.html",
+  "accountDeletionUrl": "https://valdineycapistranoimoveis.com.br/crm/exclusao-de-conta.html"
+}
