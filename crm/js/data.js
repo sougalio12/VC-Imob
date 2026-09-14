@@ -13,6 +13,13 @@ let crmOrganizationContext = null;
 async function loadProperties() {
   if (crmProperties.length) return crmProperties;
 
+  if (!isDemoMode() && typeof loadManagedProperties === "function") {
+    try {
+      const managed = await loadManagedProperties();
+      if (managed.length) { crmProperties = managed; return crmProperties; }
+    } catch (error) { console.warn("Catálogo integrado indisponível; usando contingência estática.", error); }
+  }
+
   const response = await fetch(CRM_CONFIG.propertiesPath, { cache: "no-store" });
   if (!response.ok) throw new Error("Não foi possível carregar os imóveis do site.");
 

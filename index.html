@@ -2185,6 +2185,7 @@
 <script src="./js/caps.js"></script>
 
 <script src="./js/site-lead.js"></script>
+<script src="./js/public-catalog.js?v=premium-beta-20260913"></script>
 
 
 
@@ -2805,29 +2806,7 @@ async function carregarImoveis() {
     catch {}
 
 
-    const resposta =
-      await fetch(
-        arquivo,
-        {
-          cache:
-            "no-store"
-        }
-      );
-
-
-    if (
-      !resposta.ok
-    ) {
-
-      throw new Error(
-        "Não foi possível carregar os imóveis."
-      );
-
-    }
-
-
-    const dados =
-      await resposta.json();
+    const dados = await window.loadPublishedProperties(arquivo);
 
 
     todosImoveis =

@@ -75,17 +75,25 @@ function parsePropertyNumber(value) {
   const number = Number(normalized); return Number.isFinite(number) ? number : null;
 }
 function leadPreference(lead) {
-  return { type: normalizeText(lead.preference_property_type), city: normalizeText(lead.preference_city), region: normalizeText(lead.desired_region), minPrice: parsePropertyNumber(lead.preference_min_price), maxPrice: parsePropertyNumber(lead.preference_max_price), bedrooms: parsePropertyNumber(lead.preference_min_bedrooms), area: parsePropertyNumber(lead.preference_min_area) };
+  return { purpose:normalizeText(lead.preference_purpose),type: normalizeText(lead.preference_property_type), city: normalizeText(lead.preference_city), region: normalizeText(lead.desired_region), minPrice: parsePropertyNumber(lead.preference_min_price), maxPrice: parsePropertyNumber(lead.preference_max_price), bedrooms: parsePropertyNumber(lead.preference_min_bedrooms), minArea: parsePropertyNumber(lead.preference_min_area),maxArea:parsePropertyNumber(lead.preference_max_area),suites:parsePropertyNumber(lead.preference_min_suites),bathrooms:parsePropertyNumber(lead.preference_min_bathrooms),parking:parsePropertyNumber(lead.preference_min_parking),features:(lead.preference_features||[]).map(normalizeText) };
 }
 function matchProperties(lead, properties) {
   const criteria = leadPreference(lead);
-  const active = Object.values(criteria).some(value => value !== null && value !== ""); if (!active) return [];
+  const active = Object.values(criteria).some(value => Array.isArray(value) ? value.length > 0 : value !== null && value !== ""); if (!active) return [];
   return properties.filter(property => property.ativo !== false).map(property => {
-    const facts = { type: normalizeText(property.tipo), city: normalizeText(property.cidade), region: normalizeText(property.bairro), price: parsePropertyNumber(property.preco), bedrooms: parsePropertyNumber(property.quartos), area: parsePropertyNumber(property.areaConstruida ?? property.area) };
-    if ((criteria.type && facts.type !== criteria.type) || (criteria.city && facts.city !== criteria.city) || (criteria.maxPrice != null && facts.price != null && facts.price > criteria.maxPrice) || (criteria.bedrooms != null && facts.bedrooms != null && facts.bedrooms < criteria.bedrooms) || (criteria.area != null && facts.area != null && facts.area < criteria.area)) return null;
-    const checks = [[criteria.type, facts.type === criteria.type, 25, "tipo"], [criteria.city, facts.city === criteria.city, 20, "cidade"], [criteria.region, facts.region.includes(criteria.region), 15, "região"], [criteria.maxPrice != null, facts.price != null && facts.price <= criteria.maxPrice && (criteria.minPrice == null || facts.price >= criteria.minPrice), 25, "preço"], [criteria.bedrooms != null, facts.bedrooms != null && facts.bedrooms >= criteria.bedrooms, 10, "quartos"], [criteria.area != null, facts.area != null && facts.area >= criteria.area, 5, "área"]].filter(([enabled]) => enabled);
+    const facts = { purpose:normalizeText(property.finalidade),type: normalizeText(property.tipo), city: normalizeText(property.cidade), region: normalizeText(property.bairro), price: parsePropertyNumber(property.preco), bedrooms: parsePropertyNumber(property.quartos), area: parsePropertyNumber(property.areaConstruida ?? property.area),suites:parsePropertyNumber(property.suites),bathrooms:parsePropertyNumber(property.banheiros),parking:parsePropertyNumber(property.vagas),features:(property.caracteristicas||[]).map(normalizeText) };
+    if (criteria.type && facts.type !== criteria.type) return null;
+    if (criteria.city && facts.city !== criteria.city) return null;
+    if (criteria.maxPrice != null && (facts.price == null || facts.price > criteria.maxPrice)) return null;
+    if (criteria.bedrooms != null && (facts.bedrooms == null || facts.bedrooms < criteria.bedrooms)) return null;
+    if (criteria.minArea != null && (facts.area == null || facts.area < criteria.minArea)) return null;
+    const checks = [[criteria.purpose, facts.purpose===criteria.purpose,10,"finalidade"],[criteria.type, facts.type === criteria.type, 18, "tipo"], [criteria.city, facts.city === criteria.city, 12, "cidade"], [criteria.region, facts.region.includes(criteria.region), 12, "região"], [criteria.maxPrice != null, facts.price != null && facts.price <= criteria.maxPrice, 22, "preço"], [criteria.bedrooms != null, facts.bedrooms != null && facts.bedrooms >= criteria.bedrooms, 8, "quartos"], [criteria.minArea != null, facts.area != null && facts.area >= criteria.minArea, 6, "área"],[criteria.suites!=null,facts.suites!=null&&facts.suites>=criteria.suites,4,"suítes"],[criteria.bathrooms!=null,facts.bathrooms!=null&&facts.bathrooms>=criteria.bathrooms,4,"banheiros"],[criteria.parking!=null,facts.parking!=null&&facts.parking>=criteria.parking,4,"vagas"]].filter(([enabled]) => enabled);
     const total = checks.reduce((sum, item) => sum + item[2], 0); const hit = checks.filter(item => item[1]);
-    return { property, compatibility: total ? Math.round(hit.reduce((sum, item) => sum + item[2], 0) * 100 / total) : 0, reasons: hit.map(item => item[3]) };
+    const misses=checks.filter(item=>!item[1]).map(item=>item[3]);
+    if(criteria.minPrice!=null&&facts.price!=null&&facts.price<criteria.minPrice)misses.push("preço abaixo da faixa informada");
+    if(criteria.maxArea!=null&&facts.area!=null&&facts.area>criteria.maxArea)misses.push("área acima da faixa informada");
+    const missingFeatures=criteria.features.filter(feature=>!facts.features.some(item=>item.includes(feature)||feature.includes(item)));if(missingFeatures.length)misses.push(`sem ${missingFeatures.join(", ")}`);
+    return { property, compatibility: total ? Math.round(hit.reduce((sum, item) => sum + item[2], 0) * 100 / total) : 0, reasons: hit.map(item => item[3]),divergences:misses };
   }).filter(Boolean).sort((a, b) => b.compatibility - a.compatibility || String(a.property.codigo).localeCompare(String(b.property.codigo)));
 }
 

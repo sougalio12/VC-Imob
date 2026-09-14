@@ -1,4 +1,4 @@
-const CRM_VIEWS = { dashboard: ["Visão geral", "Acompanhamento comercial"], leads: ["Leads", "Clientes e oportunidades"], kanban: ["Funil", "Etapas das negociações"], properties: ["Imóveis", "Catálogo do site público"], agenda: ["Agenda", "Retornos e visitas"], team: ["Equipe", "Pessoas, acessos e responsabilidades"], billing: ["Plano / Assinatura", "Recursos, limites e situação comercial"] };
+const CRM_VIEWS = { dashboard: ["Visão geral", "Acompanhamento comercial"], leads: ["Leads", "Clientes e oportunidades"], kanban: ["Funil", "Etapas das negociações"], properties: ["Imóveis", "Catálogo integrado ao site"], agenda: ["Agenda", "Retornos, visitas e tarefas"], matching:["Matching","Oportunidades compatíveis"],proposals:["Propostas","Negociações e resultados"],reports:["Relatórios","Indicadores para decisão"],assistant:["Assistente VC","Copiloto comercial"],notifications:["Notificações","Ações que pedem atenção"],"site-status":["Status do site","Integração CRM e catálogo"],settings:["Configurações","Perfil e preferências"], team: ["Equipe", "Pessoas, acessos e responsabilidades"], billing: ["Plano / Assinatura", "Recursos, limites e situação comercial"] };
 function stageLabel(value) { return CRM_STAGES.find(([stage]) => stage === value)?.[1] || value; }
 function closeModal() { const modal = document.getElementById("crmModal"); modal.classList.remove("is-open"); modal.setAttribute("aria-hidden", "true"); modal.replaceChildren(); }
 function toggleSidebar(force) { const sidebar = document.getElementById("crmSidebar"); const backdrop = document.getElementById("crmBackdrop"); const open = force ?? !sidebar.classList.contains("is-open"); sidebar.classList.toggle("is-open", open); backdrop.classList.toggle("is-open", open); }
@@ -9,7 +9,7 @@ async function renderCurrentView() {
   document.getElementById("crmContent").replaceChildren(root);
   root.append(createElement("p", { className: "muted", text: "Carregando…", attrs: { role: "status" } }));
   try {
-    const renderers = { dashboard: renderDashboard, leads: renderLeads, kanban: renderKanban, properties: renderProperties, agenda: renderAgenda, team: renderTeam, billing: renderBilling };
+    const renderers = { dashboard: renderDashboard, leads: renderLeads, kanban: renderKanban, properties: renderProperties, agenda: renderAgenda, matching:renderMatchingCenter,proposals:renderProposals,reports:renderReports,assistant:renderAssistant,notifications:renderNotifications,"site-status":renderSiteStatus,settings:renderSettings, team: renderTeam, billing: renderBilling };
     await renderers[view]?.(root);
   } catch (error) {
     const retry = createElement("button", { text: "Tentar novamente", type: "button", className: "crm-button crm-button-primary" });
@@ -57,7 +57,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("teamNavigation").hidden = !["owner", "manager"].includes(membership.role);
   document.getElementById("billingNavigation").hidden = false;
   document.querySelectorAll("[data-view-link]").forEach(button => button.addEventListener("click", () => navigateCrm(button.dataset.viewLink)));
-  document.getElementById("quickLeadButton").addEventListener("click", async () => { try { openLeadModal(null, await loadProperties()); } catch (error) { showToast(error.message, "error"); } });
+  document.getElementById("quickLeadButton").addEventListener("click", openQuickCreate);
+  document.getElementById("globalSearchButton").addEventListener("click", openGlobalSearch);
+  document.getElementById("notificationButton").addEventListener("click", () => navigateCrm("notifications"));
   document.getElementById("menuToggle").addEventListener("click", () => toggleSidebar());
   document.getElementById("crmBackdrop").addEventListener("click", () => toggleSidebar(false));
   document.getElementById("crmModal").addEventListener("click", event => { if (event.target.id === "crmModal") closeModal(); });

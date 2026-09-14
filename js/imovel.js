@@ -308,13 +308,7 @@ async function loadProperty() {
 
   try {
     const file = SITE_CONFIG?.arquivos?.imoveis || "./data/imoveis.json";
-    const response = await fetch(file, { cache: "no-store" });
-
-    if (!response.ok) {
-      throw new Error("Não foi possível carregar os imóveis.");
-    }
-
-    const properties = await response.json();
+    const properties = await window.loadPublishedProperties(file);
     const property = Array.isArray(properties)
       ? properties.find(item => item.ativo !== false && (item.codigo === code || item.slug === slug))
       : null;

@@ -36,6 +36,12 @@ function formatPrice(value) {
   }).format(price);
 }
 
+function normalizePhone(value) { const digits = String(value || "").replace(/\D/g, "").replace(/^55(?=\d{10,11}$)/, "").slice(0, 11); return digits; }
+function formatPhone(value) { const digits = normalizePhone(value); if (digits.length <= 2) return digits ? `(${digits}` : ""; if (digits.length <= 6) return `(${digits.slice(0,2)}) ${digits.slice(2)}`; const split = digits.length === 11 ? 7 : 6; return `(${digits.slice(0,2)}) ${digits.slice(2,split)}-${digits.slice(split)}`; }
+function bindPhoneMask(input) { input.inputMode = "tel"; input.autocomplete = "tel"; input.addEventListener("input", () => { input.value = formatPhone(input.value); }); if (input.value) input.value = formatPhone(input.value); }
+function parseBrlNumber(value) { if (typeof value === "number") return value; const clean = String(value || "").trim().replace(/R\$\s?/g, "").replace(/\./g, "").replace(",", ".").replace(/[^\d.-]/g, ""); return clean ? Number(clean) : NaN; }
+function formatBrlInput(value) { const number = parseBrlNumber(value); return Number.isFinite(number) ? new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(number) : ""; }
+
 function normalizeText(value) {
   return String(value || "")
     .normalize("NFD")

@@ -49,7 +49,8 @@ async function renderLeads(root) {
       const actions = createElement("td");
       const actionRow = createElement("div", { className: "table-actions" });
       const edit = createElement("button", { className: "icon-button", text: "Editar", type: "button" });
-      edit.addEventListener("click", () => { void openLeadModal(lead, properties); });
+      edit.textContent = "Ficha 360°";
+      edit.addEventListener("click", () => { void openLead360(lead); });
       const remove = createElement("button", { className: "icon-button", text: "Excluir", type: "button" });
       remove.addEventListener("click", () => confirmDeleteLead(lead));
       actionRow.append(edit, remove);
@@ -116,6 +117,8 @@ async function openLeadModal(lead, properties, onSaved) {
     const input = createElement("input", { type, attrs: { name, required: required ? "" : null } });
     if (!required) input.removeAttribute("required");
     input.value = leadValue(lead, name);
+    if (name === "telefone" || name === "whatsapp") bindPhoneMask(input);
+    if (name === "orcamento") { input.inputMode = "decimal"; input.value = formatBrlInput(input.value); }
     if (onSaved && name === "responsavel") { input.readOnly = true; labelEl.textContent = "Responsável (registro antigo; atribuição no detalhe)"; }
     labelEl.append(input);
     grid.append(labelEl);
@@ -162,7 +165,7 @@ async function openLeadModal(lead, properties, onSaved) {
     error.textContent = "";
     const values = new FormData(form);
     const selected = findPropertyByCode(values.get("property_code"));
-    const payload = { name: values.get("nome").trim(), phone: values.get("telefone").trim(), whatsapp: values.get("whatsapp").trim(), email: values.get("email").trim(), origin: values.get("origem").trim() || "manual", responsible_name: values.get("responsavel").trim(), property_code: values.get("property_code"), property_title: selected?.titulo || "", budget: values.get("orcamento").trim(), desired_region: values.get("regiao").trim(), notes: values.get("notes").trim(), stage: values.get("stage"), next_follow_up: values.get("proximo_retorno") || null, visit_date: values.get("data_visita") || null };
+    const payload = { name: values.get("nome").trim(), phone: normalizePhone(values.get("telefone")) || null, whatsapp: normalizePhone(values.get("whatsapp")) || null, email: values.get("email").trim() || null, origin: values.get("origem").trim() || "manual", responsible_name: values.get("responsavel").trim(), property_code: values.get("property_code"), property_title: selected?.titulo || "", budget: Number.isFinite(parseBrlNumber(values.get("orcamento"))) ? String(parseBrlNumber(values.get("orcamento"))) : null, desired_region: values.get("regiao").trim(), notes: values.get("notes").trim(), stage: values.get("stage"), next_follow_up: values.get("proximo_retorno") || null, visit_date: values.get("data_visita") || null };
     if (!lead) payload.entered_at = new Date().toISOString();
     payload.next_follow_up = leadDatePayload(lead, "proximo_retorno", values.get("proximo_retorno"));
     payload.visit_date = leadDatePayload(lead, "data_visita", values.get("data_visita"));
