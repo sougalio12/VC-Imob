@@ -19,23 +19,24 @@ async function loadManagedProperties() {
   return rows.map(row => propertyRowToLegacy(row, media.filter(item => item.property_id === row.id)));
 }
 
-async function saveManagedProperty(values, existing) {
-  const org = await getActiveOrganizationId(), session = await getValidSession();
-  const payload = { organization_id: org, code: values.code.trim().toUpperCase(), title: values.title.trim(), slug: slugify(values.slug || values.title),
+async function saveManagedProperty(values, existing, mediaItems = []) {
+  const org = await getActiveOrganizationId();
+  const payload = { code: values.code.trim().toUpperCase(), title: values.title.trim(), slug: slugify(values.slug || values.title),
     purpose: values.purpose, property_type: cleanValue(values.property_type), description: cleanValue(values.description), price: numericValue(values.price),
     city: cleanValue(values.city), state: cleanValue(values.state)?.toUpperCase(), neighborhood: cleanValue(values.neighborhood), public_address: cleanValue(values.public_address),
     total_area: numericValue(values.total_area), total_area_unit: cleanValue(values.total_area_unit) || "m²", built_area: numericValue(values.built_area),
     bedrooms: integerValue(values.bedrooms), suites: integerValue(values.suites), bathrooms: integerValue(values.bathrooms), parking_spaces: integerValue(values.parking_spaces),
     features: splitList(values.features), status: values.status, is_published: Boolean(values.is_published), featured: Boolean(values.featured),
     video_url: cleanValue(values.video_url), publication_date: values.is_published ? (values.publication_date || new Date().toISOString().slice(0, 10)) : cleanValue(values.publication_date),
-    broker_name: cleanValue(values.broker_name), broker_creci: cleanValue(values.broker_creci), updated_by: session.user.id };
-  if (existing) {
-    const result = await supabaseRequest(`/rest/v1/properties?id=eq.${encodeURIComponent(existing.id)}&organization_id=eq.${encodeURIComponent(org)}`, { method: "PATCH", headers: { Prefer: "return=representation" }, body: JSON.stringify(payload) });
-    return result[0];
-  }
-  payload.created_by = session.user.id;
-  const result = await supabaseRequest("/rest/v1/properties", { method: "POST", headers: { Prefer: "return=representation" }, body: JSON.stringify([payload]) });
-  return result[0];
+    broker_name: cleanValue(values.broker_name), broker_creci: cleanValue(values.broker_creci) };
+  const result = await callCrmRpc("save_crm_property_with_media", {
+    target_organization: org,
+    target_property: existing?.id || null,
+    target_expected_updated_at: existing?.updated_at || null,
+    target_payload: payload,
+    target_media: mediaItems.map(item => ({ storage_path:item.storage_path,alt_text:item.alt_text||"",caption:item.caption||"",media_kind:item.media_kind||"photo" }))
+  });
+  return Array.isArray(result) ? result[0] : result;
 }
 
 async function replacePropertyMedia(propertyId, items) {

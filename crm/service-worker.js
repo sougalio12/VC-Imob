@@ -1,4 +1,4 @@
-const CACHE_VERSION = "vc-imob-shell-premium-20260913";
+const CACHE_VERSION = "vc-imob-shell-premium-master-beta-20260914";
 const SHELL_CACHE = CACHE_VERSION;
 const OFFLINE_URL = new URL("./offline.html", self.location).href;
 const SAFE_SHELL = [

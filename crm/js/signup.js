@@ -4,6 +4,8 @@
   if (!form) return;
   const error = document.getElementById("signupError");
   const submit = form.querySelector('button[type="submit"]');
+  const phoneInput = form.elements.namedItem("phone");
+  if (typeof bindPhoneInput === "function") bindPhoneInput(phoneInput);
   const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const phoneDigits = value => String(value || "").replace(/\D/g, "");
 

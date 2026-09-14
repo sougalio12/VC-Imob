@@ -94,7 +94,7 @@ function matchProperties(lead, properties) {
     if(criteria.maxArea!=null&&facts.area!=null&&facts.area>criteria.maxArea)misses.push("área acima da faixa informada");
     const missingFeatures=criteria.features.filter(feature=>!facts.features.some(item=>item.includes(feature)||feature.includes(item)));if(missingFeatures.length)misses.push(`sem ${missingFeatures.join(", ")}`);
     return { property, compatibility: total ? Math.round(hit.reduce((sum, item) => sum + item[2], 0) * 100 / total) : 0, reasons: hit.map(item => item[3]),divergences:misses };
-  }).filter(Boolean).sort((a, b) => b.compatibility - a.compatibility || String(a.property.codigo).localeCompare(String(b.property.codigo)));
+  }).filter(match => match && match.compatibility >= 50).sort((a, b) => b.compatibility - a.compatibility || String(a.property.codigo).localeCompare(String(b.property.codigo)));
 }
 
 function scoreLead(lead, activities = [], interests = [], now = new Date()) {

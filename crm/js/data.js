@@ -30,7 +30,8 @@ async function loadProperties() {
 
 async function loadCrmProfile() {
   if (isDemoMode()) return { full_name: "Valdiney Capistrano", organization_id: "demo" };
-  return (await initializeOrganizationContext()).profile;
+  const profile = (await initializeOrganizationContext()).profile;
+  return { ...profile, full_name: getDisplayName(profile) };
 }
 
 async function initializeOrganizationContext() {
@@ -56,8 +57,9 @@ async function initializeOrganizationContext() {
   }
 
   const activeMembership = legacyMatch || memberships[0];
+  const resolvedProfile = { ...profile, full_name: getDisplayName(profile) };
   crmOrganizationContext = {
-    profile,
+    profile: resolvedProfile,
     memberships,
     activeOrganizationId: activeMembership.organization_id,
     activeMembership
@@ -136,12 +138,13 @@ async function createLead(payload) {
   }
 
   const organizationId = await getActiveOrganizationId();
-  const result = await supabaseRequest("/rest/v1/leads", {
-    method: "POST",
-    headers: { Prefer: "return=representation" },
-    body: JSON.stringify([{ ...payload, organization_id: organizationId, assigned_to: getStoredSession()?.user?.id }])
+  const result = await callCrmRpc("save_crm_lead", {
+    target_organization: organizationId,
+    target_lead: null,
+    target_expected_updated_at: null,
+    target_payload: payload
   });
-  return result?.[0];
+  return Array.isArray(result) ? result[0] : result;
 }
 
 async function updateLead(id, payload, expectedUpdatedAt) {
@@ -155,13 +158,15 @@ async function updateLead(id, payload, expectedUpdatedAt) {
   }
 
   const organizationId = await getActiveOrganizationId();
-  const result = await supabaseRequest(`/rest/v1/leads?id=eq.${encodeURIComponent(id)}&organization_id=eq.${encodeURIComponent(organizationId)}${expectedUpdatedAt ? `&updated_at=eq.${encodeURIComponent(expectedUpdatedAt)}` : ""}`, {
-    method: "PATCH",
-    headers: { Prefer: "return=representation" },
-    body: JSON.stringify(payload)
+  const result = await callCrmRpc("save_crm_lead", {
+    target_organization: organizationId,
+    target_lead: id,
+    target_expected_updated_at: expectedUpdatedAt || null,
+    target_payload: payload
   });
-  if (!Array.isArray(result) || result.length !== 1) throw new Error("O lead foi alterado ou seu acesso mudou. Atualize antes de tentar novamente.");
-  return result[0];
+  const saved = Array.isArray(result) ? result[0] : result;
+  if (!saved) throw new Error("O lead foi alterado ou seu acesso mudou. Atualize antes de tentar novamente.");
+  return saved;
 }
 
 async function deleteLead(id) {

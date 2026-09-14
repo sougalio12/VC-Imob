@@ -118,7 +118,8 @@ async function openLeadModal(lead, properties, onSaved) {
     if (!required) input.removeAttribute("required");
     input.value = leadValue(lead, name);
     if (name === "telefone" || name === "whatsapp") bindPhoneMask(input);
-    if (name === "orcamento") { input.inputMode = "decimal"; input.value = formatBrlInput(input.value); }
+    if (name === "orcamento") bindCurrencyInput(input);
+    if (type === "datetime-local") bindDateTimeInput(input);
     if (onSaved && name === "responsavel") { input.readOnly = true; labelEl.textContent = "Responsável (registro antigo; atribuição no detalhe)"; }
     labelEl.append(input);
     grid.append(labelEl);

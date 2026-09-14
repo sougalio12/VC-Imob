@@ -72,8 +72,8 @@ async function supabaseRequest(path, options = {}) {
 
   if (!response.ok) {
     const rawMessage = data?.message || data?.error_description || "Não foi possível concluir a operação.";
-    const friendlyMessages = { "Team member limit reached": "O limite de pessoas do seu plano foi atingido. Consulte Plano / Assinatura para ver as opções.", "Acesso comercial negado": "Sua conta não tem acesso a este recurso no plano atual.", "Acesso ao plano negado": "Somente proprietários e gerentes podem consultar a assinatura." };
-    const message = friendlyMessages[rawMessage] || rawMessage;
+    const message = friendlySupabaseError({ path, method: options.method || "GET", status: response.status, code: data?.code, rawMessage });
+    console.error("CRM request failed", { operation: `${options.method || "GET"} ${String(path).split("?")[0]}`, status: response.status, code: data?.code || "unknown", timestamp: new Date().toISOString() });
     const requestError = new Error(message);
     requestError.status = response.status;
     requestError.code = data?.code || null;
@@ -81,6 +81,22 @@ async function supabaseRequest(path, options = {}) {
   }
 
   return data;
+}
+
+function friendlySupabaseError({ path, method, status, code, rawMessage }) {
+  const exact = { "Team member limit reached": "O limite de pessoas do seu plano foi atingido. Consulte Plano / Assinatura para ver as opções.", "Acesso comercial negado": "Sua conta não tem acesso a este recurso no plano atual.", "Acesso ao plano negado": "Somente proprietários e gerentes podem consultar a assinatura." };
+  if (exact[rawMessage]) return exact[rawMessage];
+  if (status === 401) return "Sua sessão expirou. Entre novamente para continuar.";
+  if (status === 403 || code === "42501" || /permission denied|access denied|acesso negado/i.test(rawMessage)) return "Você não possui permissão para realizar esta ação.";
+  if (code === "40001" || /CRM_(?:PROPERTY|LEAD)_CONFLICT/.test(rawMessage)) return "Este registro foi atualizado em outra sessão. Recarregue os dados antes de salvar novamente.";
+  if (code === "23505") return "Já existe um registro com estes dados.";
+  if (code === "23503") return "Este registro está vinculado a outro item e não pode ser alterado dessa forma.";
+  if (code === "23514" || code === "22023") return "Revise os campos informados e tente novamente.";
+  if (/\/properties|save_crm_property/.test(path)) return "Não foi possível salvar o imóvel. Tente novamente.";
+  if (/\/leads|save_crm_lead/.test(path)) return "Não foi possível salvar o lead. Revise os dados e tente novamente.";
+  if (/\/proposals/.test(path)) return "Não foi possível salvar a proposta. Tente novamente.";
+  if (/appointment|activity/i.test(path)) return "Não foi possível salvar a atividade. Tente novamente.";
+  return method === "GET" ? "Não foi possível carregar os dados agora. Tente novamente." : "Não foi possível concluir a operação. Tente novamente.";
 }
 
 async function signInWithPassword(email, password) {
@@ -121,7 +137,12 @@ async function signUpPublicAccount(payload) {
   const text = await response.text();
   let result = null;
   try { result = text ? JSON.parse(text) : null; } catch { result = null; }
-  if (!response.ok) throw new Error(result?.msg || result?.message || "Não foi possível criar sua conta.");
+  if (!response.ok) {
+    const detail = String(result?.msg || result?.message || "");
+    if (/already registered|already exists|user exists/i.test(detail)) throw new Error("Já existe uma conta com este e-mail.");
+    if (response.status === 429) throw new Error("Muitas tentativas em pouco tempo. Aguarde alguns minutos e tente novamente.");
+    throw new Error("Não foi possível criar sua conta. Revise os dados e tente novamente.");
+  }
   if (result?.access_token) storeSession(result);
   return result;
 }

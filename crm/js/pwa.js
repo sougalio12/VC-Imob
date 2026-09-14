@@ -14,6 +14,14 @@
     if (banner) banner.hidden = !offline;
   }
 
+  function syncVisualViewport() {
+    const viewport = window.visualViewport;
+    const height = Math.round(viewport?.height || window.innerHeight);
+    const offsetTop = Math.round(viewport?.offsetTop || 0);
+    document.documentElement.style.setProperty("--visual-viewport-height", `${height}px`);
+    document.documentElement.style.setProperty("--visual-viewport-offset-top", `${offsetTop}px`);
+  }
+
   function ensureInstallButton() {
     if (isStandalone || document.getElementById("pwaInstallButton")) return null;
     const host = document.querySelector(".topbar-actions") || document.querySelector(".login-panel");
@@ -137,8 +145,12 @@
 
   window.addEventListener("online", setConnectivity);
   window.addEventListener("offline", setConnectivity);
+  window.addEventListener("resize", syncVisualViewport, { passive: true });
+  window.visualViewport?.addEventListener("resize", syncVisualViewport, { passive: true });
+  window.visualViewport?.addEventListener("scroll", syncVisualViewport, { passive: true });
   document.addEventListener("DOMContentLoaded", () => {
     setConnectivity();
+    syncVisualViewport();
     bindMobileNavigation();
     bindModalAccessibility();
     showIosInstructions();
