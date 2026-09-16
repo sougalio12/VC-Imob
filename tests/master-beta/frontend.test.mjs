@@ -147,7 +147,7 @@ test("UI21 new assets have explicit cache-busting in the CRM shell", () => {
   assert.match(crm, /premium-intelligence\.js\?v=master-beta-20260913/);
   assert.match(crm, /premium\.css\?v=master-beta-20260914/);
   assert.match(crm, /pwa\.js\?v=ux-audit-20260916/);
-  assert.match(crm, /responsive-system\.css\?v=ux-audit-20260916/);
+  assert.match(crm, /responsive-system\.css\?v=mobile-fields-20260916b/);
 });
 
 test("UI22 no generative provider, fake push or store billing was introduced", () => {

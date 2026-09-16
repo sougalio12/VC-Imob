@@ -1,4 +1,4 @@
-const CACHE_VERSION = "vc-imob-shell-ux-audit-20260916";
+const CACHE_VERSION = "vc-imob-shell-mobile-fields-20260916b";
 const SHELL_CACHE = CACHE_VERSION;
 const OFFLINE_URL = new URL("./offline.html", self.location).href;
 const SAFE_SHELL = [

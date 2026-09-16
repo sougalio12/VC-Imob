@@ -16,13 +16,13 @@ const migration = read("supabase/migrations/20260916000000_global_mobile_crud_au
 test("UXAUDIT01 global responsive invariants contain pages, forms, grids and intentional scrollers", () => {
   assert.match(css, /body\.crm-app[\s\S]*overflow-x:\s*clip/);
   assert.match(css, /\.crm-content[\s\S]*min-width:\s*0/);
-  assert.match(css, /\.crm-form input:not/);
+  assert.match(css, /\.crm-app input:not/);
   assert.match(css, /width:\s*100%[\s\S]*max-width:\s*100%/);
   assert.match(css, /overflow-wrap:\s*anywhere/);
   assert.match(css, /\.lead-table-wrap,[\s\S]*\.kanban,[\s\S]*\.capture-board/);
   assert.match(css, /@media \(max-width:\s*560px\)[\s\S]*grid-template-columns:\s*1fr/);
   assert.ok(html.indexOf("responsive-system.css") > html.indexOf("assistant.css"));
-  assert.match(sw, /vc-imob-shell-ux-audit-20260916/);
+  assert.match(sw, /vc-imob-shell-mobile-fields-20260916b/);
   assert.match(sw, /\.\/css\/responsive-system\.css/);
 });
 

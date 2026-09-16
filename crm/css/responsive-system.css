@@ -2,10 +2,23 @@
    intencional continuam isolados nos seus próprios containers. */
 html,
 body.crm-app {
+  inline-size: 100%;
   width: 100%;
   min-width: 0;
   max-width: 100%;
   overflow-x: clip;
+}
+
+/* Safari atribui min-content a fieldsets e a alguns controles nativos. Essa
+   largura intrínseca atravessava grids/flex e alargava formulários inteiros. */
+html {
+  box-sizing: border-box;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
 }
 
 .crm-shell,
@@ -35,8 +48,17 @@ body.crm-app {
 .onboarding-panel,
 .assistant-panel,
 .site-status-panel {
+  width: 100%;
   min-width: 0;
   max-width: 100%;
+}
+
+/* Limita também wrappers gerados dinamicamente, e não somente a lista de
+   classes conhecida quando o primeiro responsive-system foi criado. */
+.crm-content :where(div, section, article, aside, header, footer, nav, form, fieldset, label),
+.modal-card :where(div, section, article, aside, header, footer, nav, form, fieldset, label) {
+  min-inline-size: 0;
+  max-inline-size: 100%;
 }
 
 .crm-content fieldset,
@@ -47,6 +69,12 @@ body.crm-app {
 .modal-card code {
   min-width: 0;
   max-width: 100%;
+}
+
+.crm-content fieldset,
+.modal-card fieldset {
+  width: 100%;
+  margin-inline: 0;
 }
 
 .crm-content pre,
@@ -83,17 +111,36 @@ body.crm-app {
   height: auto;
 }
 
-.crm-form input:not([type="checkbox"]):not([type="radio"]),
-.crm-form select,
-.crm-form textarea,
-.form-grid input:not([type="checkbox"]):not([type="radio"]),
-.form-grid select,
-.form-grid textarea,
+.crm-app input:not([type="checkbox"]):not([type="radio"]),
+.crm-app select,
+.crm-app textarea,
 .search-input,
 .filter-select {
+  display: block;
+  inline-size: 100%;
   width: 100%;
+  min-inline-size: 0;
   min-width: 0;
+  max-inline-size: 100%;
   max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Controles de data têm uma largura mínima interna própria no WebKit/iOS. */
+.crm-app input:is([type="date"], [type="time"], [type="datetime-local"], [type="month"]),
+.crm-app select {
+  min-inline-size: 0;
+  max-inline-size: 100%;
+}
+
+.crm-app input:is([type="date"], [type="time"], [type="datetime-local"], [type="month"])::-webkit-date-and-time-value {
+  min-inline-size: 0;
+  text-align: start;
+}
+
+.crm-app input:is([type="date"], [type="time"], [type="datetime-local"], [type="month"])::-webkit-datetime-edit {
+  min-inline-size: 0;
+  padding: 0;
 }
 
 .crm-button,
@@ -190,6 +237,8 @@ body.crm-app {
 
 .modal-card {
   position: relative;
+  min-inline-size: 0;
+  max-inline-size: 100%;
   scrollbar-gutter: stable;
 }
 
@@ -271,8 +320,10 @@ body.crm-app {
   }
 
   .modal-card {
+    inline-size: 100%;
     width: 100%;
-    max-width: calc(100vw - max(20px, env(safe-area-inset-left) + env(safe-area-inset-right)));
+    max-inline-size: 100%;
+    max-width: 100%;
     overflow-x: clip;
   }
 
@@ -295,6 +346,16 @@ body.crm-app {
 }
 
 @media (max-width: 560px) {
+  .crm-shell,
+  .crm-main,
+  .crm-content,
+  #crmContent,
+  #crmContent > * {
+    inline-size: 100%;
+    min-inline-size: 0;
+    max-inline-size: 100%;
+  }
+
   .crm-content {
     padding-right: max(14px, env(safe-area-inset-right));
     padding-left: max(14px, env(safe-area-inset-left));
@@ -308,6 +369,26 @@ body.crm-app {
 
   .crm-topbar h1 {
     overflow-wrap: anywhere;
+  }
+
+  .crm-form,
+  .form-grid,
+  .crm-form > label,
+  .form-grid > label,
+  .toolbar,
+  .toolbar-controls {
+    inline-size: 100%;
+    min-inline-size: 0;
+    max-inline-size: 100%;
+  }
+
+  .form-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .toolbar-controls > :where(input, select, textarea, label),
+  .toolbar > :where(input, select, textarea, label) {
+    flex: 1 1 100%;
   }
 
   .metric-grid,
@@ -342,6 +423,62 @@ body.crm-app {
 
   .dashboard-widget-row {
     grid-template-columns: auto minmax(0, 1fr) 44px 44px;
+  }
+}
+
+@media (max-width: 430px) {
+  .crm-content {
+    padding-inline: max(12px, env(safe-area-inset-left)) max(12px, env(safe-area-inset-right));
+  }
+
+  .crm-panel,
+  .modal-card,
+  .form-section {
+    min-inline-size: 0;
+    max-inline-size: 100%;
+  }
+
+  .crm-panel {
+    padding-inline: 14px;
+  }
+
+  .crm-modal {
+    padding-inline: max(10px, env(safe-area-inset-left)) max(10px, env(safe-area-inset-right));
+  }
+
+  .modal-card {
+    padding-inline: 16px;
+  }
+
+  .crm-app input:not([type="checkbox"]):not([type="radio"]),
+  .crm-app select,
+  .crm-app textarea {
+    font-size: 16px;
+  }
+
+  .crm-form > .crm-button,
+  .form-grid > .crm-button,
+  .modal-actions > .crm-button,
+  .toolbar-controls > .crm-button {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .status-indicator,
+  .score-chip,
+  .stage {
+    width: fit-content;
+    max-width: 100%;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .selection-order-row,
+  .media-editor-row,
+  .dashboard-widget-row {
+    min-inline-size: 0;
+    max-inline-size: 100%;
   }
 }
 
