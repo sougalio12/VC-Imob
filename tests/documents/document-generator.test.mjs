@@ -4,6 +4,7 @@ import {readFileSync} from "node:fs";
 import vm from "node:vm";
 
 const migration=readFileSync("supabase/migrations/20260917000000_real_estate_documents.sql","utf8");
+const planMigration=readFileSync("supabase/migrations/20260825200000_plans_entitlements.sql","utf8");
 const frontend=readFileSync("crm/js/documents.js","utf8");
 const pdfSource=readFileSync("crm/js/document-pdf.js","utf8");
 const css=readFileSync("crm/css/documents.css","utf8");
@@ -60,7 +61,7 @@ test("DOC06 mobile UI is one-column, accessible and PWA-versioned",()=>{
   assert.match(css,/min-height:44px/);
   assert.match(html,/data-view-link="documents"/);
   assert.match(html,/document-pdf\.js/);assert.match(html,/documents\.js/);
-  assert.match(sw,/vc-imob-shell-documents-20260917/);assert.match(sw,/\.\/css\/documents\.css/);
+  assert.match(sw,/vc-imob-shell-documents-hotfix-20260917/);assert.match(sw,/\.\/css\/documents\.css/);
 });
 
 test("DOC07 audit metadata never stores the full private document",()=>{
@@ -69,3 +70,34 @@ test("DOC07 audit metadata never stores the full private document",()=>{
   assert.doesNotMatch(migration,/audit_events[^;]+data_snapshot/s);
 });
 
+test("DOC08 clicking Novo documento opens the visible first step",async()=>{
+  class FakeClassList{constructor(){this.values=new Set();}add(...values){values.forEach(value=>this.values.add(value));}remove(...values){values.forEach(value=>this.values.delete(value));}contains(value){return this.values.has(value);}}
+  class FakeElement{
+    constructor(tag){this.tagName=tag.toUpperCase();this.children=[];this.dataset={};this.classList=new FakeClassList();this.attributes={};this.listeners={};this.value="";this.disabled=false;this.textContent="";this.isConnected=true;}
+    append(...children){this.children.push(...children);if(this.tagName==="SELECT"&&!this.value&&children[0]?.value!==undefined)this.value=children[0].value;}
+    replaceChildren(...children){this.children=[...children];}
+    setAttribute(key,value){this.attributes[key]=String(value);if(key==="id")this.id=String(value);}
+    addEventListener(type,listener){(this.listeners[type]??=[]).push(listener);}
+    async click(){for(const listener of this.listeners.click||[])await listener({target:this,preventDefault(){}});}
+    focus(){this.focused=true;}
+  }
+  const modal=new FakeElement("div"),documentStub={createElement:tag=>new FakeElement(tag),getElementById:id=>id==="crmModal"?modal:null,body:new FakeElement("body")},OptionStub=class{constructor(text,value){this.text=text;this.value=value;}};
+  const context=vm.createContext({console,document:documentStub,Option:OptionStub,Blob,Uint8Array,setTimeout,clearTimeout,crypto,Intl,URL,Event:class{},requestAnimationFrame:callback=>callback(),window:{},isDemoMode:()=>false,closeModal(){},showToast(){},crmFriendlyError:(_error,fallback)=>fallback});
+  vm.runInContext(readFileSync("crm/js/utils.js","utf8"),context);vm.runInContext(frontend,context);
+  const workspace={org:"org",templates:[{id:"template",template_code:"sale_intermediation",document_type:"sale_intermediation",version:1,status:"active",legal_reviewed_at:"2026-09-16"}],documents:[],versions:[],properties:[],owners:[],leads:[],proposals:[]};
+  context.hasEntitlement=async entitlement=>entitlement==="crm.documents";context.loadDocumentWorkspace=async()=>workspace;
+  const root=new FakeElement("main");await vm.runInContext("renderDocuments",context)(root);
+  const toolbar=root.children[0],newDocumentButton=toolbar.children.find(child=>child.textContent==="+ Novo documento");assert.ok(newDocumentButton);
+  await newDocumentButton.click();
+  assert.equal(modal.classList.contains("is-open"),true);assert.equal(modal.attributes["aria-hidden"],"false");
+  const card=modal.children[0];assert.equal(card.children[0].textContent,"Novo documento");assert.ok(card.children.some(child=>child.tagName==="FORM"));
+  const form=card.children.find(child=>child.tagName==="FORM"),typeSelect=form.children[0].children.find(child=>child.tagName==="SELECT");
+  assert.deepEqual(typeSelect.children.map(option=>option.value),["sale_intermediation","property_sale_purchase"]);
+  assert.match(frontend,/if\(create\.disabled\)return;create\.disabled=true/);
+});
+
+test("DOC09 PRO and EQUIPE receive documents while START remains essential",()=>{
+  assert.match(planMigration,/\('pro','crm\.documents',true,null\)/);
+  assert.match(planMigration,/\('equipe','crm\.documents',true,null\)/);
+  assert.doesNotMatch(planMigration,/\('start','crm\.documents',true,null\)/);
+});
