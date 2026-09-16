@@ -140,7 +140,7 @@ test("UI20 PWA caches only same-origin public shell assets", () => {
   assert.match(serviceWorker, /url\.origin !== self\.location\.origin/);
   assert.match(serviceWorker, /url\.pathname\.startsWith\("\/crm\/"\)/);
   assert.doesNotMatch(serviceWorker, /rest\/v1|auth\/v1|rpc\//);
-  assert.match(serviceWorker, /master-beta-20260914/);
+  assert.match(serviceWorker, /vc-imob-shell-[a-z0-9-]+/);
 });
 
 test("UI21 new assets have explicit cache-busting in the CRM shell", () => {

@@ -42,6 +42,20 @@ function normalizePhone(value: unknown) {
   return String(value ?? "").replace(/\D/g, "").slice(0, 15);
 }
 
+function attributionValue(value: unknown) {
+  const normalized = cleanText(value, 100).toLowerCase();
+  return /^[a-z0-9._~-]+$/.test(normalized) ? normalized : null;
+}
+
+function landingPage(value: unknown, allowedOrigin: string) {
+  try {
+    const parsed = new URL(cleanText(value, 500));
+    return parsed.origin === allowedOrigin && parsed.hostname === "valdineycapistranoimoveis.com.br"
+      ? `${parsed.origin}${parsed.pathname}`
+      : null;
+  } catch { return null; }
+}
+
 function clientIp(request: Request) {
   return (request.headers.get("x-forwarded-for") || "unknown")
     .split(",")[0]
@@ -121,13 +135,20 @@ serve(async (request) => {
   const propertyTitle = cleanText(property?.titulo, 180);
   if (!property || !propertyTitle) return response({ error: "Imóvel não disponível." }, 404, headers);
 
-  const { data: captureResult, error: captureError } = await admin.rpc("capture_site_lead", {
+  const requestOrigin = request.headers.get("origin")?.replace(/\/$/, "") || "";
+  const { data: captureResult, error: captureError } = await admin.rpc("capture_site_lead_attributed", {
     target_organization: organizationId,
     target_name: name,
     target_phone: phone,
     target_email: email,
     target_property_code: propertyCode,
-    target_property_title: propertyTitle
+    target_property_title: propertyTitle,
+    target_source: attributionValue(payload.source),
+    target_medium: attributionValue(payload.medium),
+    target_campaign: attributionValue(payload.campaign),
+    target_content: attributionValue(payload.content),
+    target_term: attributionValue(payload.term),
+    target_landing_page: landingPage(payload.landingPage, requestOrigin)
   });
 
   if (captureError || !Array.isArray(captureResult) || !captureResult[0]?.lead_id) {

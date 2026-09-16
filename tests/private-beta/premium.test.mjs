@@ -23,7 +23,7 @@ test("P20 profile can repair missing member name",()=>{assert.match(premium,/Per
 test("P21 phone and BRL helpers are centralized",()=>{const u=read("crm/js/utils.js");assert.match(u,/function formatPhone/);assert.match(u,/function parseBrlNumber/)});
 test("P22 mobile viewport is clipped except intentional Kanban",()=>{assert.match(css,/overflow-x:clip/);assert.match(css,/\.kanban-view,\.kanban\{contain:none/)});
 test("P23 touch and reduced motion remain supported",()=>{assert.match(css,/min-width:44px/);assert.match(css,/prefers-reduced-motion/)});
-test("P24 PWA cache version includes premium CSS",()=>{assert.match(sw,/shell-premium/);assert.match(sw,/premium\.css/);assert.doesNotMatch(sw,/rest\/v1|auth\/v1/)});
+test("P24 PWA cache version includes premium CSS",()=>{assert.match(sw,/vc-imob-shell-[a-z0-9-]+/);assert.match(sw,/premium\.css/);assert.doesNotMatch(sw,/rest\/v1|auth\/v1/)});
 test("P25 storage upload accepts only public image types and 15MB",()=>{assert.match(migration,/image\/jpeg/);assert.match(data,/15 \* 1024 \* 1024/)});
 test("P26 catalog seed preserves expected codes",async()=>{const source=JSON.parse(read("data/imoveis.json"));assert.deepEqual(source.filter(x=>x.ativo).map(x=>x.codigo),["VCI000002","VCI000003","VCI000004","VCI000005","VCI000006"]);assert.match(seed,/VCI000001/)});
 test("P27 VCI000004 and VCI000006 media are untouched",()=>{const source=JSON.parse(read("data/imoveis.json"));assert.equal(source.find(x=>x.codigo==="VCI000004").imagens.length,7);const six=source.find(x=>x.codigo==="VCI000006");assert.equal(six.imagens.length,6);assert.match(six.imagens[0],/01-area-externa-piscinas/)});

@@ -24,6 +24,14 @@ async function getKanbanLeads() {
 async function getKanbanMembers() {
   return isDemoMode() ? [{ user_id: "demo-owner", full_name: "Valdiney Capistrano", status: "active", role: "owner" }, { user_id: "demo-agent", full_name: "Corretor demonstração", status: "active", role: "agent" }] : getTeamMembers();
 }
+async function changeLeadWithUndo(lead,field,value) {
+  const result=await callCrmRpc("change_lead_with_undo",{target_organization:await getActiveOrganizationId(),target_lead:lead.id,target_expected_updated_at:lead.updated_at||null,target_field:field,target_value:value==null?null:String(value)});
+  return Array.isArray(result)&&result.length===1?result[0]:result;
+}
+async function undoLeadChange(actionId) {
+  const result=await callCrmRpc("undo_lead_change",{target_organization:await getActiveOrganizationId(),target_action:actionId});
+  return Array.isArray(result)&&result.length===1?result[0]:result;
+}
 async function moveKanbanLead(lead, stage) {
   if (!CRM_STAGES.some(([value]) => value === stage)) throw new Error("Etapa inválida.");
   if (isDemoMode()) {
@@ -31,12 +39,9 @@ async function moveKanbanLead(lead, stage) {
     demoKanbanActivity.unshift({ entity_id: lead.id, action: "lead_stage_changed", metadata: { previous_stage: lead.stage, new_stage: stage }, created_at: new Date().toISOString() }); return saved;
   }
   if (!lead.updated_at) throw new Error("Atualize o funil antes de mover este lead.");
-  const organization = await getActiveOrganizationId();
-  const rows = await supabaseRequest(`/rest/v1/leads?id=eq.${encodeURIComponent(lead.id)}&organization_id=eq.${encodeURIComponent(organization)}&updated_at=eq.${encodeURIComponent(lead.updated_at)}`, {
-    method: "PATCH", headers: { Prefer: "return=representation" }, body: JSON.stringify({ stage })
-  });
-  if (!Array.isArray(rows) || rows.length !== 1) throw new Error("Conflito de edição ou acesso alterado. Atualize o funil.");
-  return rows[0];
+  const result = await changeLeadWithUndo(lead,"stage",stage);
+  if (!result?.lead || result.lead.id !== lead.id) throw new Error("Conflito de edição ou acesso alterado. Atualize o funil.");
+  return { ...result.lead, _undo_id:result.undo_id, _undo_expires_at:result.expires_at };
 }
 async function assignKanbanLead(id, user) {
   if (!isDemoMode()) { const result = await assignLead(id, user); return Array.isArray(result) ? result[0] : result; }

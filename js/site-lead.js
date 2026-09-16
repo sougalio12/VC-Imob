@@ -12,6 +12,18 @@ const PUBLIC_LEAD_CONFIG = {
     return String(value || "").replace(/\s+/g, " ").trim().slice(0, max);
   }
 
+  function attribution() {
+    const params = new URLSearchParams(location.search), valid = value => {
+      const normalized = clean(value, 100).toLowerCase();
+      return /^[a-z0-9._~-]+$/.test(normalized) ? normalized : null;
+    };
+    return {
+      source: valid(params.get("utm_source")), medium: valid(params.get("utm_medium")),
+      campaign: valid(params.get("utm_campaign")), content: valid(params.get("utm_content")),
+      term: valid(params.get("utm_term")), landingPage: `${location.origin}${location.pathname}`
+    };
+  }
+
   function ensureModal() {
     if (modal) return modal;
     modal = document.createElement("div");
@@ -76,7 +88,7 @@ const PUBLIC_LEAD_CONFIG = {
         error.textContent = "Informe um e-mail válido ou deixe o campo em branco.";
         return;
       }
-      dialog._siteLeadState = { payload: { name, phone, email, propertyCode: clean(propertyCode, 32), propertyTitle: clean(propertyTitle, 180), website: clean(formData.get("website"), 120) }, onContinue };
+      dialog._siteLeadState = { payload: { name, phone, email, propertyCode: clean(propertyCode, 32), propertyTitle: clean(propertyTitle, 180), website: clean(formData.get("website"), 120), ...attribution() }, onContinue };
       finish(true);
     };
   }

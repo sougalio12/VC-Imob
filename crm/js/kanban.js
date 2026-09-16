@@ -150,7 +150,7 @@ async function renderKanban(root) {
   async function move(id, stage) {
     const lead = store.leads.find(item => item.id === id);
     if (!lead || !kanbanCanOperate(membership, lead, userId) || refreshing) return;
-    try { await store.move(id, stage); showToast("Etapa salva."); }
+    try { const saved=await store.move(id, stage);showToast("Etapa salva.");if(saved?._undo_id){const undo=createElement("button",{type:"button",className:"icon-button kanban-undo",text:"Desfazer"});undo.addEventListener("click",async()=>{undo.disabled=true;try{await undoLeadChange(saved._undo_id);showToast("Alteração desfeita.");await reload();}catch(error){showToast(error.message||"Não foi possível desfazer.","error");}});status.replaceChildren(document.createTextNode("Etapa salva. "),undo);} }
     catch { status.textContent = "A mudança não foi confirmada. A etapa anterior foi restaurada; atualize o funil antes de tentar novamente."; showToast("Não foi possível confirmar a mudança de etapa.", "error"); }
   }
   function draw() {
