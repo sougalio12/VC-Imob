@@ -62,6 +62,7 @@ function createPropertyAdminCard(property, canManage) {
     if (property.publicado) { const qr = createElement("button", { className: "crm-button crm-button-outline", text: "QR", type: "button" }); qr.addEventListener("click", () => openPropertyQr(property)); actions.append(qr); }
     const edit = createElement("button", { className: "crm-button crm-button-outline", text: "Editar", type: "button" }); edit.addEventListener("click", () => openPropertyModal(property)); actions.append(edit);
     const details = createElement("button", { className: "crm-button crm-button-outline", text: "Desempenho", type: "button" }); details.addEventListener("click", () => openPropertyPerformance(property)); actions.append(details);
+    const documents = createElement("button", { className: "crm-button crm-button-outline", text: "Documentos", type: "button" }); documents.addEventListener("click", () => openDocumentsForReference("property", property._row.id, property.codigo)); actions.append(documents);
     const duplicate = createElement("button", { className: "crm-button crm-button-outline", text: "Duplicar", type: "button" }); duplicate.addEventListener("click", () => openDuplicatePropertyModal(property)); actions.append(duplicate);
   }
   body.append(actions); card.append(media, body); return card;

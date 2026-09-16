@@ -1,4 +1,4 @@
-const CACHE_VERSION = "vc-imob-shell-mobile-fields-20260916b";
+const CACHE_VERSION = "vc-imob-shell-documents-20260917";
 const SHELL_CACHE = CACHE_VERSION;
 const OFFLINE_URL = new URL("./offline.html", self.location).href;
 const SAFE_SHELL = [
@@ -12,9 +12,12 @@ const SAFE_SHELL = [
   "./css/phase-i.css",
   "./css/premium.css",
   "./css/assistant.css",
+  "./css/documents.css",
   "./css/responsive-system.css",
   "./js/capture-marketing.js",
   "./js/team-operations.js",
+  "./js/document-pdf.js",
+  "./js/documents.js",
   "./js/vendor/qrcode-generator.js",
   "./icons/icon-192.png",
   "./icons/icon-512.png",

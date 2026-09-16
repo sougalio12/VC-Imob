@@ -51,9 +51,11 @@ async function renderLeads(root) {
       const edit = createElement("button", { className: "icon-button", text: "Editar", type: "button" });
       edit.textContent = "Ficha 360°";
       edit.addEventListener("click", () => { void openLead360(lead); });
+      const documents = createElement("button", { className: "icon-button", text: "Documentos", type: "button" });
+      documents.addEventListener("click", () => openDocumentsForReference("lead", lead.id, lead.name));
       const remove = createElement("button", { className: "icon-button", text: "Excluir", type: "button" });
       remove.addEventListener("click", () => confirmDeleteLead(lead));
-      actionRow.append(edit, remove);
+      actionRow.append(edit, documents, remove);
       actions.append(actionRow);
       row.append(actions);
       tbody.append(row);
