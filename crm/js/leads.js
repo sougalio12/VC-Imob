@@ -204,7 +204,11 @@ function leadDatePayload(lead, field, input) {
 }
 
 async function confirmDeleteLead(lead) {
-  if (!window.confirm(`Excluir o lead ${lead.name}? Esta ação não pode ser desfeita.`)) return;
-  try { await deleteLead(lead.id); showToast("Lead excluído."); navigateCrm("leads"); }
-  catch (err) { showToast(err.message || "Não foi possível excluir.", "error"); }
+  openDestructiveConfirmation({
+    title: "Excluir lead?",
+    message: `O lead ${lead.name} e os dados elimináveis relacionados serão removidos. Esta ação não pode ser desfeita.`,
+    successMessage: "Lead excluído.",
+    fallbackError: "Não foi possível excluir o lead.",
+    onConfirm: async () => { await deleteLead(lead.id); navigateCrm("leads"); }
+  });
 }

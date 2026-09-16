@@ -1,0 +1,363 @@
+/* Invariantes globais de layout do CRM. Componentes com rolagem horizontal
+   intencional continuam isolados nos seus próprios containers. */
+html,
+body.crm-app {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+.crm-shell,
+.crm-sidebar,
+.crm-main,
+.crm-content,
+#crmContent,
+#crmContent > div,
+.crm-grid,
+.metric-grid,
+.properties-grid,
+.marketing-grid,
+.form-grid,
+.crm-form,
+.crm-panel,
+.modal-card,
+.toolbar,
+.toolbar-controls,
+.panel-heading,
+.property-admin-card,
+.property-admin-body,
+.property-admin-actions,
+.activity-actions,
+.table-actions,
+.block4-workspace,
+.goal-card,
+.onboarding-panel,
+.assistant-panel,
+.site-status-panel {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.crm-content fieldset,
+.modal-card fieldset,
+.crm-content pre,
+.modal-card pre,
+.crm-content code,
+.modal-card code {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.crm-content pre,
+.modal-card pre,
+.crm-content code,
+.modal-card code {
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.crm-content > *,
+.crm-grid > *,
+.metric-grid > *,
+.properties-grid > *,
+.marketing-grid > *,
+.form-grid > *,
+.crm-form > *,
+.toolbar > *,
+.toolbar-controls > *,
+.panel-heading > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.crm-content img,
+.crm-content video,
+.crm-content canvas,
+.crm-content svg,
+.modal-card img,
+.modal-card video,
+.modal-card canvas,
+.modal-card svg {
+  max-width: 100%;
+  height: auto;
+}
+
+.crm-form input:not([type="checkbox"]):not([type="radio"]),
+.crm-form select,
+.crm-form textarea,
+.form-grid input:not([type="checkbox"]):not([type="radio"]),
+.form-grid select,
+.form-grid textarea,
+.search-input,
+.filter-select {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.crm-button,
+.icon-button,
+.quick-action,
+.onboarding-step,
+.dashboard-widget-row,
+.crm-content :where(h1, h2, h3, p, span, strong, small, label, code, a),
+.modal-card :where(h1, h2, h3, p, span, strong, small, label, code, a) {
+  overflow-wrap: anywhere;
+}
+
+.crm-button,
+.icon-button,
+.quick-action {
+  max-width: 100%;
+  white-space: normal;
+}
+
+.property-admin-actions,
+.activity-actions,
+.table-actions,
+.modal-actions,
+.billing-cycle {
+  flex-wrap: wrap;
+}
+
+.lead-table-wrap,
+.kanban,
+.capture-board,
+.block4-tabs,
+.property-editor-progress {
+  width: 100%;
+  max-width: 100%;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.crm-modal {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.sidebar-close-button {
+  display: none;
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+  margin: 0 0 12px auto;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, .24);
+  border-radius: 50%;
+  background: transparent;
+  color: #fff;
+  font-size: 1.45rem;
+}
+
+.pwa-install-guide {
+  width: min(420px, calc(100vw - 28px));
+  max-width: calc(100vw - 28px);
+  overflow-wrap: anywhere;
+}
+
+.pwa-install-guide > strong:first-of-type {
+  display: block;
+  padding-right: 52px;
+}
+
+.pwa-install-guide .pwa-guide-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.crm-toast {
+  right: max(14px, env(safe-area-inset-right));
+  width: min(360px, calc(100vw - 28px));
+  max-width: calc(100vw - 28px);
+  overflow-wrap: anywhere;
+}
+
+.modal-card {
+  position: relative;
+  scrollbar-gutter: stable;
+}
+
+.modal-system-header {
+  position: sticky;
+  top: 0;
+  z-index: 12;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 44px;
+  align-items: start;
+  gap: 12px;
+  margin: 0 0 18px;
+  padding: 0 0 12px;
+  border-bottom: 1px solid var(--line);
+  background: var(--paper);
+}
+
+.modal-system-header > :where(h1, h2, h3) {
+  min-width: 0;
+  margin: 0;
+}
+
+.modal-close-button {
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 1.45rem;
+  line-height: 1;
+}
+
+.modal-close-button:hover,
+.modal-close-button:focus-visible {
+  border-color: var(--gold);
+  outline: 3px solid var(--gold-light);
+}
+
+.crm-button-danger {
+  background: var(--danger);
+  color: #fff;
+}
+
+.crm-button-danger:hover,
+.crm-button-danger:focus-visible {
+  background: #8f2929;
+}
+
+@media (max-width: 820px) {
+  .sidebar-close-button {
+    display: grid;
+  }
+
+  .crm-sidebar {
+    max-width: min(300px, calc(100vw - 36px));
+    padding-top: max(14px, env(safe-area-inset-top));
+    padding-bottom: max(14px, env(safe-area-inset-bottom));
+    overflow-y: auto;
+  }
+
+  .crm-main,
+  .crm-content,
+  #crmContent,
+  #crmContent > div {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .crm-topbar > div:not(.topbar-actions),
+  .lead-row > *,
+  .agenda-item > * {
+    min-width: 0;
+  }
+
+  .modal-card {
+    width: 100%;
+    max-width: calc(100vw - max(20px, env(safe-area-inset-left) + env(safe-area-inset-right)));
+    overflow-x: clip;
+  }
+
+  /* O cabeçalho compartilhado substitui o título sticky legado. */
+  .modal-card > h2 {
+    position: static;
+    margin: 0 0 18px;
+    padding: 0;
+    border: 0;
+  }
+
+  .modal-system-header {
+    top: 0;
+  }
+
+  .kanban-view .kanban-column,
+  .capture-column {
+    min-height: 140px;
+  }
+}
+
+@media (max-width: 560px) {
+  .crm-content {
+    padding-right: max(14px, env(safe-area-inset-right));
+    padding-left: max(14px, env(safe-area-inset-left));
+  }
+
+  .crm-topbar {
+    min-width: 0;
+    padding-right: max(10px, env(safe-area-inset-right));
+    padding-left: max(10px, env(safe-area-inset-left));
+  }
+
+  .crm-topbar h1 {
+    overflow-wrap: anywhere;
+  }
+
+  .metric-grid,
+  .compact-metrics,
+  .my-day-summary,
+  .capture-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .panel-heading,
+  .lead-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .panel-heading > .crm-button,
+  .lead-row > .crm-button,
+  .property-admin-actions > .crm-button,
+  .activity-actions > .crm-button,
+  .table-actions > .crm-button {
+    width: 100%;
+  }
+
+  .modal-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-actions > * {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .dashboard-widget-row {
+    grid-template-columns: auto minmax(0, 1fr) 44px 44px;
+  }
+}
+
+@media (max-width: 360px) {
+  .metric-grid,
+  .compact-metrics,
+  .my-day-summary,
+  .capture-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-widget-row {
+    grid-template-columns: auto minmax(0, 1fr) 44px;
+  }
+
+  .dashboard-widget-row > button:last-child {
+    grid-column: 3;
+  }
+}

@@ -46,14 +46,22 @@
       panel.className = "pwa-install-guide";
       panel.setAttribute("role", "dialog");
       panel.setAttribute("aria-label", "Como instalar o VC Imob");
-      panel.innerHTML = "<strong>Instalar no iPhone ou iPad</strong><p>No Safari, toque em Compartilhar e depois em Adicionar à Tela de Início.</p><button type=\"button\">Entendi</button>";
-      panel.querySelector("button").addEventListener("click", () => {
+      panel.innerHTML = "<strong>Instalar no iPhone ou iPad</strong><p>No Safari, toque em Compartilhar e depois em Adicionar à Tela de Início.</p><button type=\"button\" class=\"pwa-guide-dismiss\">Entendi</button>";
+      const closeGuide = document.createElement("button");
+      closeGuide.type = "button";
+      closeGuide.className = "pwa-guide-close";
+      closeGuide.setAttribute("aria-label", "Fechar instruções de instalação");
+      closeGuide.textContent = "×";
+      const dismiss = () => {
         sessionStorage.setItem("vc-imob-ios-install-dismissed", "true");
         panel.remove();
         button.hidden = true;
-      });
+      };
+      closeGuide.addEventListener("click", dismiss);
+      panel.querySelector(".pwa-guide-dismiss").addEventListener("click", dismiss);
+      panel.prepend(closeGuide);
       document.body.append(panel);
-      panel.querySelector("button").focus();
+      closeGuide.focus();
     }, { once: true });
   }
 
@@ -102,6 +110,10 @@
       more.setAttribute("aria-expanded", String(open));
     });
     document.getElementById("crmBackdrop")?.addEventListener("click", () => more.setAttribute("aria-expanded", "false"));
+    document.getElementById("sidebarCloseButton")?.addEventListener("click", () => {
+      if (typeof toggleSidebar === "function") toggleSidebar(false);
+      more.setAttribute("aria-expanded", "false");
+    });
   }
 
   function bindModalAccessibility() {
@@ -109,16 +121,47 @@
     if (!modal) return;
     let wasOpen = false;
     let returnFocus = null;
+    const enhanceModalChrome = () => {
+      const card = modal.querySelector(".modal-card");
+      if (!card || card.dataset.modalChrome === "true") return card;
+      card.dataset.modalChrome = "true";
+      card.setAttribute("role", card.getAttribute("role") || "dialog");
+      card.setAttribute("aria-modal", "true");
+      const heading = [...card.children].find(element => /^H[1-3]$/.test(element.tagName));
+      const header = document.createElement("header");
+      header.className = "modal-system-header";
+      const close = document.createElement("button");
+      close.type = "button";
+      close.className = "modal-close-button";
+      close.dataset.modalClose = "true";
+      close.setAttribute("aria-label", "Fechar janela");
+      close.textContent = "×";
+      close.addEventListener("click", event => {
+        event.preventDefault();
+        event.stopPropagation();
+        if (typeof closeModal === "function") closeModal();
+      });
+      if (heading) {
+        if (!heading.id) heading.id = `modal-title-${Date.now().toString(36)}`;
+        card.setAttribute("aria-labelledby", heading.id);
+        header.append(heading, close);
+      } else {
+        header.append(document.createElement("span"), close);
+        card.setAttribute("aria-label", card.getAttribute("aria-label") || "Janela do CRM");
+      }
+      card.prepend(header);
+      return card;
+    };
     const observer = new MutationObserver(() => {
       const open = modal.classList.contains("is-open");
       document.body.classList.toggle("has-open-modal", open);
       if (open) {
         enhanceForms(modal);
-        const card = modal.querySelector(".modal-card");
+        const card = enhanceModalChrome();
         card?.setAttribute("tabindex", "-1");
         if (!wasOpen) {
           returnFocus = document.activeElement;
-          queueMicrotask(() => (modal.querySelector("input, select, textarea, button, [tabindex='0']") || card)?.focus());
+          queueMicrotask(() => (modal.querySelector("input, select, textarea, button:not([data-modal-close]), [tabindex='0']") || card)?.focus());
         }
       } else if (wasOpen && returnFocus instanceof HTMLElement) {
         returnFocus.focus();

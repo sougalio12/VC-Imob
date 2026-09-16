@@ -1,4 +1,4 @@
-const CACHE_VERSION = "vc-imob-shell-block4-20260915";
+const CACHE_VERSION = "vc-imob-shell-ux-audit-20260916";
 const SHELL_CACHE = CACHE_VERSION;
 const OFFLINE_URL = new URL("./offline.html", self.location).href;
 const SAFE_SHELL = [
@@ -12,6 +12,7 @@ const SAFE_SHELL = [
   "./css/phase-i.css",
   "./css/premium.css",
   "./css/assistant.css",
+  "./css/responsive-system.css",
   "./js/capture-marketing.js",
   "./js/team-operations.js",
   "./js/vendor/qrcode-generator.js",
