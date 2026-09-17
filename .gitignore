@@ -21,3 +21,5 @@ android/keystore.properties
 android/app/google-services.json
 service-account*.json
 play-service-account*.json
+/output/pdf/*.pdf
+/tmp/pdfs/

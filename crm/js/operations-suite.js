@@ -95,6 +95,50 @@ async function updateOrganizationBranding(payload) {
   return callCrmRpc("update_organization_branding", { target_organization: membership.organization_id, payload });
 }
 
+function documentLogoBytes(value) {
+  const hex=String(value||"").replace(/^\\x/,"");
+  if(!hex||hex.length%2)return new Uint8Array();
+  const bytes=new Uint8Array(hex.length/2);for(let index=0;index<bytes.length;index+=1)bytes[index]=Number.parseInt(hex.slice(index*2,index*2+2),16);return bytes;
+}
+
+function documentLogoDataUrl(identity) {
+  const bytes=documentLogoBytes(identity?.logo_bytes);if(!bytes.length||!identity?.logo_mime_type)return null;
+  let binary="";for(let offset=0;offset<bytes.length;offset+=0x8000)binary+=String.fromCharCode(...bytes.subarray(offset,offset+0x8000));
+  return `data:${identity.logo_mime_type};base64,${btoa(binary)}`;
+}
+
+async function decodeDocumentLogoDimensions(file) {
+  if(typeof createImageBitmap==="function"){const bitmap=await createImageBitmap(file);try{return{width:bitmap.width,height:bitmap.height};}finally{bitmap.close();}}
+  const url=URL.createObjectURL(file);try{return await new Promise((resolve,reject)=>{const image=new Image();image.onload=()=>resolve({width:image.naturalWidth,height:image.naturalHeight});image.onerror=()=>reject(new Error("O arquivo não contém uma imagem válida."));image.src=url;});}finally{URL.revokeObjectURL(url);}
+}
+
+async function validateDocumentLogoFile(file) {
+  const allowed={"image/jpeg":["jpg","jpeg"],"image/png":["png"],"image/webp":["webp"]},extension=String(file?.name||"").split(".").pop().toLowerCase();
+  if(!file||!allowed[file.type]?.includes(extension)||file.size<64||file.size>3*1024*1024)throw new Error("Use uma imagem JPG, PNG ou WebP válida de até 3 MB.");
+  const bytes=new Uint8Array(await file.arrayBuffer()),jpeg=bytes[0]===0xff&&bytes[1]===0xd8&&bytes[2]===0xff,png=[0x89,0x50,0x4e,0x47,0x0d,0x0a,0x1a,0x0a].every((value,index)=>bytes[index]===value),webp=String.fromCharCode(...bytes.slice(0,4))==="RIFF"&&String.fromCharCode(...bytes.slice(8,12))==="WEBP";
+  if((file.type==="image/jpeg"&&!jpeg)||(file.type==="image/png"&&!png)||(file.type==="image/webp"&&!webp))throw new Error("O conteúdo do arquivo não corresponde ao formato informado.");
+  const dimensions=await decodeDocumentLogoDimensions(file);if(dimensions.width<64||dimensions.height<64||dimensions.width>4096||dimensions.height>4096)throw new Error("A logo deve ter entre 64 e 4096 pixels em cada dimensão.");
+  return{bytes,...dimensions,mime:file.type};
+}
+
+function documentLogoBase64(bytes) { let binary="";for(let offset=0;offset<bytes.length;offset+=0x8000)binary+=String.fromCharCode(...bytes.subarray(offset,offset+0x8000));return btoa(binary); }
+
+async function getCurrentDocumentIdentity() {
+  const membership=await getActiveMembership(),organizations=await supabaseRequest(`/rest/v1/organizations?id=eq.${encodeURIComponent(membership.organization_id)}&select=id,name,trade_name,public_phone,public_whatsapp,creci,commercial_signature,current_document_identity_id`),organization=organizations[0];
+  if(!organization?.current_document_identity_id)return{organization,identity:null};
+  const identities=await supabaseRequest(`/rest/v1/organization_document_identities?id=eq.${encodeURIComponent(organization.current_document_identity_id)}&organization_id=eq.${encodeURIComponent(membership.organization_id)}&select=id,version_no,logo_bytes,logo_mime_type,logo_width,logo_height,logo_sha256,created_at`);
+  return{organization,identity:identities[0]||null};
+}
+
+async function saveDocumentIdentityLogo(file) {
+  const validated=await validateDocumentLogoFile(file),membership=await getActiveMembership();
+  return callCrmRpc("set_organization_document_identity",{target_organization:membership.organization_id,target_logo_base64:documentLogoBase64(validated.bytes),target_logo_mime_type:validated.mime,target_logo_width:validated.width,target_logo_height:validated.height,target_remove:false});
+}
+
+async function removeDocumentIdentityLogo() {
+  const membership=await getActiveMembership();return callCrmRpc("set_organization_document_identity",{target_organization:membership.organization_id,target_logo_base64:null,target_logo_mime_type:null,target_logo_width:null,target_logo_height:null,target_remove:true});
+}
+
 async function sha256Hex(value) {
   const bytes = new TextEncoder().encode(value), digest = await crypto.subtle.digest("SHA-256", bytes);
   return [...new Uint8Array(digest)].map(byte => byte.toString(16).padStart(2,"0")).join("");
