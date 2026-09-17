@@ -17,7 +17,7 @@ function isAuthenticated() {
 
 async function requireCrmSession() {
   if (isDemoMode()) return true;
-  if (await getValidSession()) return true;
+  if (await getValidSession({ verify: true })) return true;
 
   window.location.replace("./login.html");
   return false;

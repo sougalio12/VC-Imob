@@ -1,4 +1,4 @@
-const CACHE_VERSION = "vc-imob-shell-document-quality-20260917";
+const CACHE_VERSION = "vc-imob-shell-login-hotfix-20260917";
 const SHELL_CACHE = CACHE_VERSION;
 const OFFLINE_URL = new URL("./offline.html", self.location).href;
 const SAFE_SHELL = [

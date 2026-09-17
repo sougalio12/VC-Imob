@@ -10,7 +10,7 @@
   <meta name="apple-mobile-web-app-title" content="VC Imob">
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
-  <link rel="stylesheet" href="./css/crm.css">
+  <link rel="stylesheet" href="./css/crm.css?v=login-hotfix-20260917">
   <link rel="stylesheet" href="./css/phase-g.css?v=phase-g-20260902">
 </head>
 <body class="crm-login-page">
@@ -32,22 +32,26 @@
       <p id="configHint" class="login-hint"></p>
     </section>
   </main>
-  <script src="./js/config.js"></script>
-  <script src="./js/supabase.js?v=master-beta-20260914"></script>
-  <script src="./js/auth.js"></script>
+  <script src="./js/config.js?v=login-hotfix-20260917"></script>
+  <script src="./js/supabase.js?v=login-hotfix-20260917"></script>
+  <script src="./js/auth.js?v=login-hotfix-20260917"></script>
   <script src="./js/native.js?v=phase-h-20260903"></script>
-  <script src="./js/pwa.js?v=master-beta-20260914"></script>
+  <script src="./js/pwa.js?v=login-hotfix-20260917"></script>
   <script>
-    (async () => { if (isDemoMode() || await getValidSession()) window.location.replace('./index.html'); })();
+    (async () => { if (isDemoMode() || await getValidSession({ verify: true })) window.location.replace('./index.html'); })();
     const form = document.getElementById('loginForm');
     const error = document.getElementById('loginError');
+    const submit = form.querySelector('button[type="submit"]');
     document.getElementById('configHint').textContent = isSupabaseConfigured() ? '' : 'Modo demonstração disponível: configure o Supabase para habilitar o login real.';
     form.addEventListener('submit', async event => {
-      event.preventDefault(); error.textContent = '';
+      event.preventDefault();
+      if (submit.disabled) return;
+      error.textContent = '';
       if (!isSupabaseConfigured()) { error.textContent = 'Configure SUPABASE_URL e a Publishable Key para usar o login real.'; return; }
       const data = new FormData(form);
+      submit.disabled = true; submit.textContent = 'Entrando…';
       try { await signInWithPassword(data.get('email').trim(), data.get('password')); window.location.replace('./index.html'); }
-      catch (err) { error.textContent = err.message || 'Não foi possível entrar.'; }
+      catch (err) { error.textContent = err.message || 'Não foi possível entrar.'; submit.disabled = false; submit.textContent = 'Entrar'; }
     });
     document.getElementById('demoLoginButton').addEventListener('click', () => { enterDemoMode(); window.location.replace('./index.html'); });
   </script>

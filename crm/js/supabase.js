@@ -42,14 +42,30 @@ async function refreshStoredSession(session) {
   return refreshed;
 }
 
-async function getValidSession() {
+async function getValidSession(options = {}) {
   const session = getStoredSession();
   if (!session?.access_token) return null;
 
   const expiresAt = Number(session.expires_at || 0) * 1000;
-  if (!expiresAt || expiresAt - Date.now() > 60000) return session;
+  if (expiresAt && expiresAt - Date.now() <= 60000) return refreshStoredSession(session);
+  if (!options.verify) return session;
 
-  return refreshStoredSession(session);
+  try {
+    const response = await fetch(`${CRM_CONFIG.supabaseUrl}/auth/v1/user`, {
+      headers: { apikey: CRM_CONFIG.supabasePublishableKey, Authorization: `Bearer ${session.access_token}` }
+    });
+    if (response.ok) {
+      const user = await response.json();
+      const verified = { ...session, user: user || session.user };
+      storeSession(verified);
+      return verified;
+    }
+    if (response.status === 401 || response.status === 403) return refreshStoredSession(session);
+    return session;
+  } catch {
+    // Offline/transient network errors must not destroy an otherwise unexpired local session.
+    return session;
+  }
 }
 
 async function supabaseRequest(path, options = {}) {
@@ -100,13 +116,26 @@ function friendlySupabaseError({ path, method, status, code, rawMessage }) {
 }
 
 async function signInWithPassword(email, password) {
-  const result = await supabaseRequest("/auth/v1/token?grant_type=password", {
+  if (!isSupabaseConfigured()) throw new Error("Login temporariamente indisponível.");
+  const response = await fetch(`${CRM_CONFIG.supabaseUrl}/auth/v1/token?grant_type=password`, {
     method: "POST",
-    headers: { Authorization: `Bearer ${CRM_CONFIG.supabasePublishableKey}` },
+    headers: {
+      apikey: CRM_CONFIG.supabasePublishableKey,
+      Authorization: `Bearer ${CRM_CONFIG.supabasePublishableKey}`,
+      "Content-Type": "application/json"
+    },
     body: JSON.stringify({ email, password })
   });
+  const result = await response.json().catch(() => null);
+  if (!response.ok) {
+    if (response.status === 429) throw new Error("Muitas tentativas em pouco tempo. Aguarde alguns minutos e tente novamente.");
+    if (response.status === 400 || response.status === 401) throw new Error("E-mail ou senha incorretos.");
+    throw new Error("Não foi possível entrar agora. Tente novamente.");
+  }
+  if (!result?.access_token || !result?.refresh_token || !result?.user?.id) throw new Error("Não foi possível validar a sessão. Tente novamente.");
 
   storeSession(result);
+  clearOrganizationContext();
   return result;
 }
 
