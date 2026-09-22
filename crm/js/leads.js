@@ -1,5 +1,5 @@
 async function renderLeads(root) {
-  const [leads, properties, membership] = await Promise.all([getLeads(), loadProperties(), getActiveMembership()]);
+  const [leads, properties, membership, activities, interests] = await Promise.all([getLeads(), loadProperties(), getActiveMembership(), getCrmActivities().catch(() => []), getLeadInterestsF().catch(() => [])]);
   const canAssign = ["owner", "manager"].includes(membership.role);
   const teamMembers = canAssign && !isDemoMode() ? await getTeamMembers() : [];
   root.replaceChildren();
@@ -29,9 +29,12 @@ async function renderLeads(root) {
     table.append(thead);
     const tbody = document.createElement("tbody");
     filtered.forEach(lead => {
-      const row = document.createElement("tr");
-      const name = createElement("td");
-      name.append(createElement("strong", { text: lead.name }), createElement("span", { text: lead.phone || lead.whatsapp || "" }));
+      const row = document.createElement("tr"); row.className = `lead-card-row${lead.next_follow_up && new Date(lead.next_follow_up) < new Date() ? " is-overdue" : ""}`;
+      const name = createElement("td", { className: "lead-identity" });
+      const score = typeof scoreLead === "function" ? scoreLead(lead, activities.filter(item => item.lead_id === lead.id), interests.filter(item => item.lead_id === lead.id)) : null;
+      name.append(createElement("strong", { text: lead.name }));
+      if (score) name.append(createElement("span", { className: `score-chip score-${normalizeText(score.label)}`, text: `${score.label} · ${score.score}`, attrs: { title: score.reasons.join("; ") } }));
+      name.append(createElement("span", { className: "lead-phone", text: lead.phone || lead.whatsapp || "" }));
       row.append(name, createElement("td", { text: lead.property_title || lead.desired_region || "—" }));
       const stageCell = createElement("td");
       stageCell.append(createElement("span", { className: `stage stage-${lead.stage}`, text: stageLabel(lead.stage) }));

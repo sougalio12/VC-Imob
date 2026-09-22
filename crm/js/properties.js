@@ -56,6 +56,9 @@ function createPropertyAdminCard(property, canManage) {
   media.append(createElement("span", { className: `stage stage-${property.status || "available"}`, text: PROPERTY_STATUS[property.status] || (property.ativo === false ? "Inativo" : "Disponível") }));
   const body = createElement("div", { className: "property-mini-body" });
   body.append(createElement("p", { text: property.codigo || "Sem código" }), createElement("h2", { text: property.titulo || "Imóvel sem título" }), createElement("p", { text: [property.bairro, property.cidade].filter(Boolean).join(" • ") || "Localização não informada" }), createElement("strong", { className: "property-admin-price", text: formatPrice(property.preco) }));
+  const facts = createElement("div", { className: "property-admin-facts", attrs: { "aria-label": "Características principais" } });
+  [["⌂", property.quartos ?? property._row?.bedrooms, "quartos"], ["◫", property.banheiros ?? property._row?.bathrooms, "banheiros"], ["↔", property.areaConstruida ?? property.areaTotal ?? property._row?.built_area ?? property._row?.total_area, "m²"], ["P", property.vagas ?? property._row?.parking_spaces, "vagas"]].forEach(([icon, value, label]) => { if (value !== null && value !== undefined && value !== "") facts.append(createElement("span", { text: `${icon} ${value} ${label}` })); });
+  if (facts.childElementCount) body.append(facts);
   const actions = createElement("div", { className: "property-admin-actions" });
   if (property._row ? property.publicado : property.ativo !== false) actions.append(createElement("a", { className: "crm-button crm-button-outline", text: "Ver no site", attrs: { href: `../imovel.html?codigo=${encodeURIComponent(property.codigo)}`, target: "_blank", rel: "noopener" } }));
   if (canManage && property._row) {

@@ -58,6 +58,7 @@ function installKanbanDrag(handle, board, canStart, onDrop) {
       active = false;
       target?.classList.remove("is-drop-target");
       handle.classList.remove("is-dragging");
+      handle.closest?.(".kanban-card")?.classList.remove("is-dragging");
       document.removeEventListener("pointermove", track);
       document.removeEventListener("pointerup", release);
       document.removeEventListener("pointercancel", clean);
@@ -68,7 +69,7 @@ function installKanbanDrag(handle, board, canStart, onDrop) {
       if (!handle.isConnected) { clean(); return; }
       if (move.pointerId !== pointer) return;
       if (!dragging && Math.hypot(move.clientX - start.x, move.clientY - start.y) < 8) return;
-      dragging = true; move.preventDefault(); handle.classList.add("is-dragging");
+      dragging = true; move.preventDefault(); handle.classList.add("is-dragging"); handle.closest?.(".kanban-card")?.classList.add("is-dragging");
       const bounds = board.getBoundingClientRect();
       if (move.clientX > bounds.right - 40) board.scrollLeft += 24;
       else if (move.clientX < bounds.left + 40) board.scrollLeft -= 24;

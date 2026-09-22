@@ -37,12 +37,12 @@ function toggleSidebar(force) { const sidebar = document.getElementById("crmSide
 async function renderCurrentView() {
   const view = document.body.dataset.view || "dashboard";
   // A detached mount prevents an older async render from replacing a newer view.
-  const root = createElement("div");
+  const root = createElement("div", { className: `crm-view crm-view-${view}` });
   document.getElementById("crmContent").replaceChildren(root);
   root.append(createElement("p", { className: "muted", text: "Carregando…", attrs: { role: "status" } }));
   try {
     const renderers = { dashboard: renderDashboard, leads: renderLeads, kanban: renderKanban, properties: renderProperties, acquisitions:renderAcquisitions, agenda: renderAgenda, matching:renderMatchingCenter,proposals:renderProposals,documents:renderDocuments,reports:renderReports,assistant:renderAssistant,notifications:renderNotifications,marketing:renderMarketing,"site-status":renderSiteStatus,settings:renderSettings, team: renderTeam, billing: renderBilling };
-    await renderers[view]?.(root);
+    await renderers[view]?.(root); root.classList.add("is-ready");
   } catch (error) {
     const retry = createElement("button", { text: "Tentar novamente", type: "button", className: "crm-button crm-button-primary" });
     retry.addEventListener("click", renderCurrentView);

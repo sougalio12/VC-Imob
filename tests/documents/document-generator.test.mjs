@@ -61,7 +61,7 @@ test("DOC06 mobile UI is one-column, accessible and PWA-versioned",()=>{
   assert.match(css,/min-height:44px/);
   assert.match(html,/data-view-link="documents"/);
   assert.match(html,/document-pdf\.js/);assert.match(html,/documents\.js/);
-  assert.match(sw,/vc-imob-shell-clean-20260921b/);assert.match(sw,/\.\/css\/documents\.css/);
+  assert.match(sw,/vc-imob-shell-premium-20260922/);assert.match(sw,/\.\/css\/documents\.css/);
 });
 
 test("DOC07 audit metadata never stores the full private document",()=>{
