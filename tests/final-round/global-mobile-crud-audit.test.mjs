@@ -22,7 +22,7 @@ test("UXAUDIT01 global responsive invariants contain pages, forms, grids and int
   assert.match(css, /\.lead-table-wrap,[\s\S]*\.kanban,[\s\S]*\.capture-board/);
   assert.match(css, /@media \(max-width:\s*560px\)[\s\S]*grid-template-columns:\s*1fr/);
   assert.ok(html.indexOf("responsive-system.css") > html.indexOf("assistant.css"));
-  assert.match(sw, /vc-imob-shell-polish-20260922/);
+  assert.match(sw, /vc-imob-shell-polish-hotfix-20260922/);
   assert.match(sw, /\.\/css\/responsive-system\.css/);
 });
 

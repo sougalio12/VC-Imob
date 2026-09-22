@@ -9,6 +9,7 @@ const signup=readFileSync("crm/signup.html","utf8");
 const confirm=readFileSync("crm/confirm.html","utf8");
 const dashboard=readFileSync("crm/js/dashboard.js","utf8");
 const agenda=readFileSync("crm/js/agenda.js","utf8");
+const pwa=readFileSync("crm/js/pwa.js","utf8");
 const sw=readFileSync("crm/service-worker.js","utf8");
 
 test("POLISH01 official logo asset is reused and its bitmap remains presentation-only",()=>{
@@ -50,8 +51,25 @@ test("POLISH05 controls, focus, touch, reduced motion and mobile containment sta
 });
 
 test("POLISH06 PWA revision is immutable and private responses remain uncached",()=>{
-  assert.match(sw,/vc-imob-shell-polish-20260922/);
-  assert.match(index,/clean-system\.css\?v=polish-20260922/);
+  assert.match(sw,/vc-imob-shell-polish-hotfix-20260922/);
+  assert.match(index,/clean-system\.css\?v=polish-hotfix-20260922/);
   for(const asset of ["dashboard.js","agenda.js"])assert.match(index,new RegExp(`${asset.replace(".","\\.")}\\?v=polish-20260922`));
   assert.doesNotMatch(sw,/supabase\.co|\/auth\/v1|\/rest\/v1/);
+});
+
+test("POLISH07 mobile drawer close has an independent accessible hitbox",()=>{
+  assert.match(index,/id="sidebarCloseButton"[^>]*type="button"[^>]*aria-label="Fechar menu"/);
+  assert.match(pwa,/sidebarCloseButton[\s\S]*toggleSidebar\(false\)/);
+  assert.match(css,/\.crm-brand-app \{[\s\S]*align-self: flex-start;[\s\S]*max-width: calc\(100% - 58px\);[\s\S]*margin-top: 0/);
+  assert.match(css,/\.sidebar-close-button \{[\s\S]*position: absolute;[\s\S]*z-index: 2;[\s\S]*margin: 0/);
+});
+
+test("POLISH08 drawer labels keep a consistent icon gap",()=>{
+  assert.match(css,/\.crm-nav button \{[\s\S]*grid-template-columns: 28px minmax\(0, 1fr\);[\s\S]*column-gap: 10px/);
+});
+
+test("POLISH09 Meu Dia preserves its dark semantic surface and readable empty state",()=>{
+  assert.match(css,/\.crm-panel:not\(\.my-day-panel\),[\s\S]*background: var\(--surface-2\)/);
+  assert.match(css,/\.my-day-panel \{[\s\S]*linear-gradient\(135deg, #181713 0%, #27241e 62%, #4a3d28 150%\);[\s\S]*color: #fff/);
+  assert.match(css,/\.my-day-panel > \.muted \{ color: #d1cec6; \}/);
 });

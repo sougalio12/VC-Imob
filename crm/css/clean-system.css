@@ -263,6 +263,7 @@ body.crm-app {
   position: relative;
   display: grid;
   grid-template-columns: 28px minmax(0, 1fr);
+  column-gap: 10px;
   align-items: center;
   min-height: 46px;
   padding: 9px 12px;
@@ -710,7 +711,21 @@ body.crm-app {
     box-shadow: 24px 0 70px rgba(0, 0, 0, .3);
   }
   .crm-sidebar.is-open { animation: premium-sidebar-in var(--motion-base) var(--motion-ease) both; }
-  .crm-brand-app { margin-top: -48px; padding-right: 54px; }
+  .crm-brand-app {
+    align-self: flex-start;
+    width: max-content;
+    max-width: calc(100% - 58px);
+    min-height: 44px;
+    margin-top: 0;
+    padding-right: 0;
+  }
+  .sidebar-close-button {
+    position: absolute;
+    top: max(14px, env(safe-area-inset-top));
+    right: max(14px, env(safe-area-inset-right));
+    z-index: 2;
+    margin: 0;
+  }
   .sidebar-caption { margin-bottom: 20px; }
   .crm-nav button { min-height: 50px; }
   .crm-topbar::after { right: 16px; left: 16px; }
@@ -819,7 +834,7 @@ body.crm-app {
   background: rgba(252, 251, 248, .78);
 }
 .crm-grid { gap: clamp(16px, 2vw, 24px); }
-.crm-panel,
+.crm-panel:not(.my-day-panel),
 .metric-card,
 .lead-table-wrap,
 .agenda-item,
@@ -828,6 +843,7 @@ body.crm-app {
   background: var(--surface-2);
   box-shadow: var(--shadow-resting);
 }
+.my-day-panel > .muted { color: #d1cec6; }
 .crm-panel :is(.crm-panel, .lead-insights, .assistant-draft-panel, .assistant-command-panel, .form-section) { background: var(--surface-1); }
 .crm-panel :is(.interest-row, .match-card, .proposal-inline, .comparison-card, .onboarding-step, .dashboard-widget-row) { background: var(--surface-3); }
 .dashboard-alerts { background: linear-gradient(145deg, #fcfbf7, #f8f5ed); box-shadow: var(--shadow-resting); }
