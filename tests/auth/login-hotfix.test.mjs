@@ -34,8 +34,8 @@ test("LOGIN03 valid cached session is remotely confirmed before CRM bootstrap",a
   const result=await run.getValid({verify:true});assert.equal(result.user.id,"user");assert.equal(run.calls[0].options.headers.Authorization,"Bearer valid-jwt");
 });
 
-test("LOGIN04 login and CRM load an immutable hotfix revision",()=>{
-  for(const asset of ["config.js","supabase.js","auth.js","pwa.js"])assert.match(login,new RegExp(`${asset.replace(".","\\.")}\\?v=login-hotfix-20260917`));
-  for(const asset of ["config.js","supabase.js","auth.js","pwa.js"])assert.match(index,new RegExp(`${asset.replace(".","\\.")}\\?v=login-hotfix-20260917`));
-  assert.match(sw,/vc-imob-shell-auth-persistence-20260921/);assert.match(login,/getValidSession\(\{ verify: true \}\)/);assert.match(login,/submit\.disabled = true/);
+test("LOGIN04 login and CRM load the clean revision without losing the session hotfix",()=>{
+  for(const asset of ["config.js","supabase.js","auth.js","pwa.js"])assert.match(login,new RegExp(`${asset.replace(".","\\.")}\\?v=clean-20260921b`));
+  for(const asset of ["config.js","supabase.js","auth.js","pwa.js"])assert.match(index,new RegExp(`${asset.replace(".","\\.")}\\?v=clean-20260921b`));
+  assert.match(sw,/vc-imob-shell-clean-20260921b/);assert.match(login,/getValidSession\(\{ verify: true \}\)/);assert.match(login,/submit\.disabled = true/);
 });

@@ -135,7 +135,7 @@ test("PASSWORD02 toggling preserves value and selection in both directions", () 
 });
 
 test("PWA01 cache version changed and private/auth responses remain outside Cache Storage", () => {
-  assert.match(serviceWorker, /vc-imob-shell-auth-persistence-20260921/);
+  assert.match(serviceWorker, /vc-imob-shell-clean-20260921b/);
   assert.match(serviceWorker, /url\.origin !== self\.location\.origin/);
   assert.doesNotMatch(serviceWorker, /supabase\.co|\/auth\/v1|\/rest\/v1/);
   assert.match(serviceWorker, /password-toggle\.css/);

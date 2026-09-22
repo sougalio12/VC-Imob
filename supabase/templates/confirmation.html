@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Confirme seu e-mail | VC Imob</title>
+</head>
+<body style="margin:0;padding:0;background:#f6f5f2;color:#171717;font-family:Arial,Helvetica,sans-serif;">
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">Confirme seu endereço de e-mail para concluir seu cadastro no VC Imob.</div>
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;background:#f6f5f2;">
+    <tr><td align="center" style="padding:24px 12px;">
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;max-width:560px;background:#ffffff;border:1px solid #e4e2dc;border-radius:16px;">
+        <tr><td style="padding:32px 28px 12px;font-size:20px;line-height:28px;font-weight:700;color:#171717;">VC Imob</td></tr>
+        <tr><td style="padding:8px 28px 0;font-size:28px;line-height:34px;font-weight:700;color:#171717;">Confirme seu e-mail</td></tr>
+        <tr><td style="padding:20px 28px 0;font-size:16px;line-height:25px;color:#45443f;">{{ if .Data.full_name }}Olá, {{ .Data.full_name }}.{{ else }}Olá.{{ end }}</td></tr>
+        <tr><td style="padding:12px 28px 0;font-size:16px;line-height:25px;color:#45443f;">Seu cadastro no VC Imob está quase pronto. Confirme seu endereço de e-mail para concluir a criação da sua conta.</td></tr>
+        <tr><td align="center" style="padding:26px 28px;">
+          <a href="{{ .ConfirmationURL }}" style="display:inline-block;min-width:220px;padding:14px 20px;border-radius:10px;background:#171717;color:#ffffff;font-size:16px;line-height:20px;font-weight:700;text-decoration:none;text-align:center;">Confirmar meu e-mail</a>
+        </td></tr>
+        <tr><td style="padding:0 28px 28px;font-size:14px;line-height:22px;color:#6d6b65;">Se você não criou uma conta no VC Imob, pode ignorar esta mensagem.</td></tr>
+        <tr><td style="padding:18px 28px;border-top:1px solid #ece9e3;font-size:13px;line-height:20px;color:#77746d;">VC Imob</td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>

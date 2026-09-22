@@ -26,9 +26,21 @@ port = 54324
 
 [auth]
 enabled = true
-site_url = "http://127.0.0.1:3000"
-additional_redirect_urls = ["http://127.0.0.1:3000", "http://localhost:3000"]
+site_url = "https://valdineycapistranoimoveis.com.br/crm/"
+additional_redirect_urls = ["https://valdineycapistranoimoveis.com.br/crm/", "https://valdineycapistranoimoveis.com.br/crm/confirm.html", "https://valdineycapistranoimoveis.com.br/crm/login.html", "http://127.0.0.1:3000", "http://127.0.0.1:3000/crm/confirm.html", "http://localhost:3000", "http://localhost:3000/crm/confirm.html"]
 enable_signup = true
+
+[auth.email]
+enable_signup = true
+double_confirm_changes = true
+enable_confirmations = true
+max_frequency = "1m"
+otp_length = 8
+otp_expiry = 3600
+
+[auth.email.template.confirmation]
+subject = "Confirme seu e-mail | VC Imob"
+content_path = "./supabase/templates/confirmation.html"
 
 [edge_runtime]
 enabled = true

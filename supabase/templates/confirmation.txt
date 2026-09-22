@@ -1,0 +1,9 @@
+Confirme seu e-mail | VC Imob
+
+Seu cadastro no VC Imob está quase pronto. Confirme seu endereço de e-mail para concluir a criação da sua conta:
+
+{{ .ConfirmationURL }}
+
+Se você não criou uma conta no VC Imob, pode ignorar esta mensagem.
+
+VC Imob

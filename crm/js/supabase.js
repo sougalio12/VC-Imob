@@ -167,7 +167,8 @@ async function signUpPublicAccount(payload) {
     method: "POST", headers: { apikey: CRM_CONFIG.supabasePublishableKey, "Content-Type": "application/json" }, body: "{}"
   });
   if (!capability.ok || await capability.json().catch(() => false) !== true) throw new Error("O cadastro está aguardando uma atualização segura do serviço. Tente novamente mais tarde.");
-  const response = await fetch(`${CRM_CONFIG.supabaseUrl}/auth/v1/signup`, {
+  const redirectTo = getAuthConfirmationRedirectUrl();
+  const response = await fetch(`${CRM_CONFIG.supabaseUrl}/auth/v1/signup?redirect_to=${encodeURIComponent(redirectTo)}`, {
     method: "POST",
     headers: { apikey: CRM_CONFIG.supabasePublishableKey, "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -196,6 +197,48 @@ async function signUpPublicAccount(payload) {
   }
   if (result?.access_token) storeSession(result);
   return result;
+}
+
+function getAuthConfirmationRedirectUrl() {
+  const official = "https://valdineycapistranoimoveis.com.br/crm/confirm.html";
+  if (typeof window === "undefined") return official;
+  if (["localhost", "127.0.0.1"].includes(window.location.hostname)) return new URL("./confirm.html", window.location.href).href;
+  return official;
+}
+
+async function resendSignupConfirmation(email) {
+  if (!isSupabaseConfigured()) throw new Error("Confirmação temporariamente indisponível.");
+  const redirectTo = getAuthConfirmationRedirectUrl();
+  const response = await fetch(`${CRM_CONFIG.supabaseUrl}/auth/v1/resend?redirect_to=${encodeURIComponent(redirectTo)}`, {
+    method: "POST",
+    headers: { apikey: CRM_CONFIG.supabasePublishableKey, "Content-Type": "application/json" },
+    body: JSON.stringify({ type: "signup", email: String(email || "").trim().toLowerCase() })
+  });
+  if (response.status === 429) throw new Error("Aguarde alguns minutos antes de solicitar outro e-mail.");
+  if (!response.ok) throw new Error("Não foi possível reenviar agora. Aguarde e tente novamente.");
+  return true;
+}
+
+async function consumeAuthConfirmationRedirect() {
+  if (typeof window === "undefined") return { status: "unavailable" };
+  const params = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+  const errorCode = params.get("error_code") || params.get("error");
+  if (errorCode) {
+    window.history.replaceState({}, document.title, window.location.pathname);
+    return { status: "error", message: "O link de confirmação expirou ou já foi utilizado. Solicite um novo e-mail no cadastro." };
+  }
+  const accessToken = params.get("access_token"), refreshToken = params.get("refresh_token");
+  if (!accessToken || !refreshToken) return { status: "confirmed", session: false };
+  const response = await fetch(`${CRM_CONFIG.supabaseUrl}/auth/v1/user`, {
+    headers: { apikey: CRM_CONFIG.supabasePublishableKey, Authorization: `Bearer ${accessToken}` }
+  });
+  window.history.replaceState({}, document.title, window.location.pathname);
+  if (!response.ok) return { status: "error", message: "Seu e-mail foi confirmado, mas a sessão não pôde ser iniciada. Entre com seu e-mail e senha." };
+  const user = await response.json();
+  const expiresIn = Number(params.get("expires_in") || 3600);
+  storeSession({ access_token: accessToken, refresh_token: refreshToken, token_type: params.get("token_type") || "bearer", expires_in: expiresIn, expires_at: Math.floor(Date.now()/1000)+expiresIn, user });
+  clearOrganizationContext();
+  return { status: "confirmed", session: true };
 }
 
 async function signOutFromSupabase() {

@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Confirmação de e-mail | VC Imob</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#0b0b0b">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="stylesheet" href="./css/crm.css?v=clean-20260921b">
+  <link rel="stylesheet" href="./css/clean-system.css?v=clean-20260921b">
+</head>
+<body class="crm-login-page">
+  <main class="login-shell">
+    <section class="login-panel" aria-labelledby="confirmationTitle">
+      <a class="crm-brand" href="../index.html"><span>VC</span><strong>Imob</strong></a>
+      <p class="eyebrow">Cadastro</p>
+      <div id="confirmationState" class="signup-confirmation" aria-live="polite">
+        <h1 id="confirmationTitle">Confirmando seu e-mail…</h1>
+        <p>Estamos validando o link com segurança.</p>
+      </div>
+    </section>
+  </main>
+  <script src="./js/config.js?v=clean-20260921b"></script>
+  <script src="./js/supabase.js?v=clean-20260921b"></script>
+  <script>
+    (async () => {
+      const state = document.getElementById("confirmationState");
+      try {
+        const result = await consumeAuthConfirmationRedirect();
+        if (result.status === "error") {
+          state.replaceChildren(Object.assign(document.createElement("h1"), { textContent: "Não foi possível confirmar" }), Object.assign(document.createElement("p"), { textContent: result.message }));
+          const retry = Object.assign(document.createElement("a"), { className: "crm-button crm-button-outline", href: "./signup.html", textContent: "Voltar ao cadastro" }); state.append(retry); return;
+        }
+        state.replaceChildren(Object.assign(document.createElement("h1"), { textContent: "E-mail confirmado com sucesso" }), Object.assign(document.createElement("p"), { textContent: result.session ? "Sua conta está pronta. Você pode continuar para o CRM." : "Sua conta está pronta. Entre com seu e-mail e senha para continuar." }));
+        state.append(Object.assign(document.createElement("a"), { className: "crm-button crm-button-primary", href: result.session ? "./index.html" : "./login.html", textContent: result.session ? "Continuar no VC Imob" : "Entrar no VC Imob" }));
+      } catch {
+        window.history.replaceState({}, document.title, window.location.pathname);
+        state.replaceChildren(Object.assign(document.createElement("h1"), { textContent: "Confirmação concluída" }), Object.assign(document.createElement("p"), { textContent: "Entre com seu e-mail e senha para continuar." }), Object.assign(document.createElement("a"), { className: "crm-button crm-button-primary", href: "./login.html", textContent: "Entrar no VC Imob" }));
+      }
+    })();
+  </script>
+</body>
+</html>
