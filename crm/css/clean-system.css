@@ -707,10 +707,10 @@ body.crm-app {
   .crm-sidebar {
     width: min(370px, calc(100vw - 18px));
     max-width: min(370px, calc(100vw - 18px));
+    padding-top: calc(max(20px, env(safe-area-inset-top)) + 14px);
     border-radius: 0 24px 24px 0;
     box-shadow: 24px 0 70px rgba(0, 0, 0, .3);
   }
-  .crm-sidebar.is-open { animation: premium-sidebar-in var(--motion-base) var(--motion-ease) both; }
   .crm-brand-app {
     align-self: flex-start;
     width: max-content;
@@ -802,7 +802,6 @@ body.crm-app {
   #quickLeadButton { border-radius: 14px !important; box-shadow: 0 9px 22px rgba(0, 0, 0, .22); }
 }
 
-@keyframes premium-sidebar-in { from { transform: translateX(-104%); } to { transform: none; } }
 @keyframes premium-sheet-in { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: none; } }
 
 /* Premium polish: calmer surfaces, explicit controls and consistent elevation. */

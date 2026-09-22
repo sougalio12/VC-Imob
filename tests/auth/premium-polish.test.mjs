@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
 const css=readFileSync("crm/css/clean-system.css","utf8");
+const crmCss=readFileSync("crm/css/crm.css","utf8");
 const index=readFileSync("crm/index.html","utf8");
 const login=readFileSync("crm/login.html","utf8");
 const signup=readFileSync("crm/signup.html","utf8");
@@ -51,8 +52,8 @@ test("POLISH05 controls, focus, touch, reduced motion and mobile containment sta
 });
 
 test("POLISH06 PWA revision is immutable and private responses remain uncached",()=>{
-  assert.match(sw,/vc-imob-shell-polish-hotfix-20260922/);
-  assert.match(index,/clean-system\.css\?v=polish-hotfix-20260922/);
+  assert.match(sw,/vc-imob-shell-menu-hotfix-20260922/);
+  assert.match(index,/clean-system\.css\?v=menu-hotfix-20260922/);
   for(const asset of ["dashboard.js","agenda.js"])assert.match(index,new RegExp(`${asset.replace(".","\\.")}\\?v=polish-20260922`));
   assert.doesNotMatch(sw,/supabase\.co|\/auth\/v1|\/rest\/v1/);
 });
@@ -72,4 +73,16 @@ test("POLISH09 Meu Dia preserves its dark semantic surface and readable empty st
   assert.match(css,/\.crm-panel:not\(\.my-day-panel\),[\s\S]*background: var\(--surface-2\)/);
   assert.match(css,/\.my-day-panel \{[\s\S]*linear-gradient\(135deg, #181713 0%, #27241e 62%, #4a3d28 150%\);[\s\S]*color: #fff/);
   assert.match(css,/\.my-day-panel > \.muted \{ color: #d1cec6; \}/);
+});
+
+test("POLISH10 Mais opens through one listener and one transform sequence",()=>{
+  assert.equal((pwa.match(/more\.addEventListener\("click"/g)||[]).length,1);
+  assert.equal((pwa.match(/bindMobileNavigation\(\);/g)||[]).length,1);
+  assert.match(crmCss,/\.crm-sidebar\{[^}]*transition:transform \.25s/);
+  assert.doesNotMatch(css,/premium-sidebar-in/);
+});
+
+test("POLISH11 mobile brand spacing respects the iPhone safe area",()=>{
+  assert.match(css,/\.crm-sidebar \{[\s\S]*padding-top: calc\(max\(20px, env\(safe-area-inset-top\)\) \+ 14px\)/);
+  assert.match(css,/\.crm-brand-app \{[\s\S]*margin-top: 0/);
 });
