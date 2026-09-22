@@ -10,6 +10,7 @@
   <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
   <link rel="stylesheet" href="./css/crm.css">
   <link rel="stylesheet" href="./css/phase-i.css?v=phase-i-20260912">
+  <link rel="stylesheet" href="./css/password-toggle.css?v=auth-persistence-20260921">
 </head>
 <body class="crm-login-page phase-i-page">
   <main class="signup-shell">
@@ -23,7 +24,7 @@
         <label>Nome completo<input name="fullName" autocomplete="name" required maxlength="120"></label>
         <label>E-mail<input type="email" name="email" autocomplete="email" inputmode="email" required maxlength="254"></label>
         <label>Telefone<input type="tel" name="phone" autocomplete="tel" inputmode="tel" required maxlength="24" placeholder="(65) 99999-9999"></label>
-        <label>Senha<input type="password" name="password" autocomplete="new-password" required minlength="8" maxlength="72"><small>Use pelo menos 8 caracteres.</small></label>
+        <label>Senha<span class="password-field"><input id="signupPassword" type="password" name="password" autocomplete="new-password" required minlength="8" maxlength="72"><button class="password-toggle" type="button" data-password-toggle aria-controls="signupPassword" aria-label="Mostrar senha" aria-pressed="false"><svg class="eye-on" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg><svg class="eye-off" viewBox="0 0 24 24" aria-hidden="true"><path d="m3 3 18 18M10.6 6.2A11 11 0 0 1 12 6c6.5 0 10 6 10 6a18 18 0 0 1-2.1 2.8M6.6 6.6C3.6 8.4 2 12 2 12s3.5 6 10 6a10 10 0 0 0 4.1-.8M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg></button></span><small>Use pelo menos 8 caracteres.</small></label>
         <div class="signup-optional">
           <label>CRECI <span>(opcional)</span><input name="creci" autocomplete="off" maxlength="40"></label>
           <label>Nome da imobiliária <span>(opcional)</span><input name="companyName" autocomplete="organization" maxlength="120"></label>
@@ -37,5 +38,6 @@
   </main>
   <script src="./js/config.js"></script><script src="./js/utils.js?v=master-beta-20260914b"></script><script src="./js/supabase.js?v=master-beta-20260914"></script><script src="./js/auth.js"></script>
   <script src="./js/signup.js?v=master-beta-20260914"></script><script src="./js/native.js?v=phase-h-20260903"></script><script src="./js/pwa.js?v=master-beta-20260914"></script>
+  <script src="./js/password-toggle.js?v=auth-persistence-20260921"></script>
 </body>
 </html>

@@ -9,17 +9,18 @@ const index=readFileSync("crm/index.html","utf8");
 const sw=readFileSync("crm/service-worker.js","utf8");
 
 function harness(initialSession=null,responses=[]){
-  const values=new Map();if(initialSession)values.set("vc-imob-session",JSON.stringify(initialSession));values.set("vc-imob-organization-context","stale");
+  const values=new Map(),sessionValues=new Map();if(initialSession)values.set("vc-imob-session",JSON.stringify(initialSession));sessionValues.set("vc-imob-organization-context","stale");
   const calls=[];
-  const context=vm.createContext({console,Date,JSON,Error,sessionStorage:{getItem:key=>values.get(key)??null,setItem:(key,value)=>values.set(key,String(value)),removeItem:key=>values.delete(key)},CRM_CONFIG:{supabaseUrl:"https://project.supabase.test",supabasePublishableKey:"publishable-test-key"},isSupabaseConfigured:()=>true,friendlySupabaseError:()=>"Erro",fetch:async(url,options={})=>{calls.push({url,options});const response=responses.shift()||{ok:false,status:500,data:{}};return{ok:response.ok,status:response.status,json:async()=>response.data,text:async()=>JSON.stringify(response.data)}}});
-  vm.runInContext(source,context);return{context,calls,values,signIn:vm.runInContext("signInWithPassword",context),getValid:vm.runInContext("getValidSession",context)};
+  const storage=items=>({getItem:key=>items.get(key)??null,setItem:(key,value)=>items.set(key,String(value)),removeItem:key=>items.delete(key)});
+  const context=vm.createContext({console,Date,JSON,Error,localStorage:storage(values),sessionStorage:storage(sessionValues),CRM_CONFIG:{supabaseUrl:"https://project.supabase.test",supabasePublishableKey:"publishable-test-key"},isSupabaseConfigured:()=>true,friendlySupabaseError:()=>"Erro",fetch:async(url,options={})=>{calls.push({url,options});const response=responses.shift()||{ok:false,status:500,data:{}};return{ok:response.ok,status:response.status,json:async()=>response.data,text:async()=>JSON.stringify(response.data)}}});
+  vm.runInContext(source,context);return{context,calls,values,sessionValues,signIn:vm.runInContext("signInWithPassword",context),getValid:vm.runInContext("getValidSession",context)};
 }
 
 test("LOGIN01 password exchange never reuses a stale user JWT",async()=>{
   const stale={access_token:"stale-user-jwt",refresh_token:"stale-refresh",expires_at:Math.floor(Date.now()/1000)+3600,user:{id:"old-user"}},fresh={access_token:"fresh-user-jwt",refresh_token:"fresh-refresh",expires_at:Math.floor(Date.now()/1000)+3600,user:{id:"new-user"}},run=harness(stale,[{ok:true,status:200,data:fresh}]);
   await run.signIn("owner@example.test","correct-password");
   assert.equal(run.calls.length,1);assert.equal(run.calls[0].options.headers.Authorization,"Bearer publishable-test-key");assert.notEqual(run.calls[0].options.headers.Authorization,"Bearer stale-user-jwt");
-  assert.equal(JSON.parse(run.values.get("vc-imob-session")).access_token,"fresh-user-jwt");assert.equal(run.values.has("vc-imob-organization-context"),false);
+  assert.equal(JSON.parse(run.values.get("vc-imob-session")).access_token,"fresh-user-jwt");assert.equal(run.sessionValues.has("vc-imob-organization-context"),false);
 });
 
 test("LOGIN02 remote session guard refreshes or removes a revoked cached session",async()=>{
@@ -36,5 +37,5 @@ test("LOGIN03 valid cached session is remotely confirmed before CRM bootstrap",a
 test("LOGIN04 login and CRM load an immutable hotfix revision",()=>{
   for(const asset of ["config.js","supabase.js","auth.js","pwa.js"])assert.match(login,new RegExp(`${asset.replace(".","\\.")}\\?v=login-hotfix-20260917`));
   for(const asset of ["config.js","supabase.js","auth.js","pwa.js"])assert.match(index,new RegExp(`${asset.replace(".","\\.")}\\?v=login-hotfix-20260917`));
-  assert.match(sw,/vc-imob-shell-login-hotfix-20260917/);assert.match(login,/getValidSession\(\{ verify: true \}\)/);assert.match(login,/submit\.disabled = true/);
+  assert.match(sw,/vc-imob-shell-auth-persistence-20260921/);assert.match(login,/getValidSession\(\{ verify: true \}\)/);assert.match(login,/submit\.disabled = true/);
 });

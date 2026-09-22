@@ -12,6 +12,7 @@
   <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
   <link rel="stylesheet" href="./css/crm.css?v=login-hotfix-20260917">
   <link rel="stylesheet" href="./css/phase-g.css?v=phase-g-20260902">
+  <link rel="stylesheet" href="./css/password-toggle.css?v=auth-persistence-20260921">
 </head>
 <body class="crm-login-page">
   <main class="login-shell">
@@ -22,7 +23,7 @@
       <p class="muted">Entre com sua conta do Supabase ou use a demonstração, que não armazena dados permanentemente.</p>
       <form id="loginForm" class="crm-form" novalidate>
         <label>E-mail<input type="email" name="email" autocomplete="email" required></label>
-        <label>Senha<input type="password" name="password" autocomplete="current-password" required minlength="6"></label>
+        <label>Senha<span class="password-field"><input id="loginPassword" type="password" name="password" autocomplete="current-password" required minlength="6"><button class="password-toggle" type="button" data-password-toggle aria-controls="loginPassword" aria-label="Mostrar senha" aria-pressed="false"><svg class="eye-on" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg><svg class="eye-off" viewBox="0 0 24 24" aria-hidden="true"><path d="m3 3 18 18M10.6 6.2A11 11 0 0 1 12 6c6.5 0 10 6 10 6a18 18 0 0 1-2.1 2.8M6.6 6.6C3.6 8.4 2 12 2 12s3.5 6 10 6a10 10 0 0 0 4.1-.8M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg></button></span></label>
         <p id="loginError" class="form-error" role="alert"></p>
         <button class="crm-button crm-button-primary" type="submit">Entrar</button>
       </form>
@@ -37,6 +38,7 @@
   <script src="./js/auth.js?v=login-hotfix-20260917"></script>
   <script src="./js/native.js?v=phase-h-20260903"></script>
   <script src="./js/pwa.js?v=login-hotfix-20260917"></script>
+  <script src="./js/password-toggle.js?v=auth-persistence-20260921"></script>
   <script>
     (async () => { if (isDemoMode() || await getValidSession({ verify: true })) window.location.replace('./index.html'); })();
     const form = document.getElementById('loginForm');

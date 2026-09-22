@@ -1,6 +1,14 @@
 function getStoredSession() {
   try {
-    return JSON.parse(sessionStorage.getItem("vc-imob-session") || "null");
+    const persistent = localStorage.getItem("vc-imob-session");
+    if (persistent) return JSON.parse(persistent);
+
+    // One-time migration for a session created before persistent auth was enabled.
+    const legacy = sessionStorage.getItem("vc-imob-session");
+    if (!legacy) return null;
+    localStorage.setItem("vc-imob-session", legacy);
+    sessionStorage.removeItem("vc-imob-session");
+    return JSON.parse(legacy);
   }
   catch {
     return null;
@@ -8,10 +16,12 @@ function getStoredSession() {
 }
 
 function storeSession(session) {
-  sessionStorage.setItem("vc-imob-session", JSON.stringify(session));
+  localStorage.setItem("vc-imob-session", JSON.stringify(session));
+  sessionStorage.removeItem("vc-imob-session");
 }
 
 function clearStoredSession() {
+  localStorage.removeItem("vc-imob-session");
   sessionStorage.removeItem("vc-imob-session");
 }
 
@@ -20,26 +30,38 @@ function clearOrganizationContext() {
 }
 
 async function refreshStoredSession(session) {
-  if (!session?.refresh_token || !isSupabaseConfigured()) return null;
-
-  const response = await fetch(`${CRM_CONFIG.supabaseUrl}/auth/v1/token?grant_type=refresh_token`, {
-    method: "POST",
-    headers: {
-      apikey: CRM_CONFIG.supabasePublishableKey,
-      Authorization: `Bearer ${CRM_CONFIG.supabasePublishableKey}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ refresh_token: session.refresh_token })
-  });
-
-  if (!response.ok) {
+  if (!session?.refresh_token || !isSupabaseConfigured()) {
     clearStoredSession();
     return null;
   }
 
-  const refreshed = await response.json();
-  storeSession(refreshed);
-  return refreshed;
+  try {
+    const response = await fetch(`${CRM_CONFIG.supabaseUrl}/auth/v1/token?grant_type=refresh_token`, {
+      method: "POST",
+      headers: {
+        apikey: CRM_CONFIG.supabasePublishableKey,
+        Authorization: `Bearer ${CRM_CONFIG.supabasePublishableKey}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ refresh_token: session.refresh_token })
+    });
+
+    if (!response.ok) {
+      if ([400, 401, 403].includes(response.status)) clearStoredSession();
+      return [400, 401, 403].includes(response.status) ? null : session;
+    }
+
+    const refreshed = await response.json();
+    if (!refreshed?.access_token || !refreshed?.refresh_token) {
+      clearStoredSession();
+      return null;
+    }
+    storeSession(refreshed);
+    return refreshed;
+  } catch {
+    // A temporary network failure must not erase a refresh token that can be retried later.
+    return session;
+  }
 }
 
 async function getValidSession(options = {}) {

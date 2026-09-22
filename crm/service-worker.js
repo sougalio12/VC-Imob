@@ -1,4 +1,4 @@
-const CACHE_VERSION = "vc-imob-shell-login-hotfix-20260917";
+const CACHE_VERSION = "vc-imob-shell-auth-persistence-20260921";
 const SHELL_CACHE = CACHE_VERSION;
 const OFFLINE_URL = new URL("./offline.html", self.location).href;
 const SAFE_SHELL = [
@@ -14,10 +14,12 @@ const SAFE_SHELL = [
   "./css/assistant.css",
   "./css/documents.css",
   "./css/responsive-system.css",
+  "./css/password-toggle.css",
   "./js/capture-marketing.js",
   "./js/team-operations.js",
   "./js/document-pdf.js",
   "./js/documents.js",
+  "./js/password-toggle.js",
   "./js/vendor/qrcode-generator.js",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
