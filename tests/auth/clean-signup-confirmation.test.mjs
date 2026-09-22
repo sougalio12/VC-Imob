@@ -56,7 +56,7 @@ test("CLEAN05 Team operations is a desktop table and native mobile cards with re
 });
 
 test("CLEAN06 the clean system preserves mobile ergonomics and reduced motion",()=>{
-  assert.match(signup,/clean-system\.css\?v=premium-20260922/);assert.match(clean,/min-height: 44px/);assert.match(clean,/prefers-reduced-motion/);
+  assert.match(signup,/clean-system\.css\?v=polish-20260922/);assert.match(clean,/min-height: 44px/);assert.match(clean,/prefers-reduced-motion/);
   for(const viewport of [320,360,375,390,393,414,430])assert.ok(viewport-40>0);
 });
 
@@ -70,5 +70,5 @@ test("CLEAN08 screens have subtle contextual accents and Mais reuses the officia
   for(const view of ["leads","agenda","properties","acquisitions","proposals","documents","team","billing"])assert.match(clean,new RegExp(`data-view=\\"${view}\\"`));
   assert.match(index,/class="crm-brand crm-brand-app"[\s\S]*src="\.\/icons\/icon-192\.png"/);
   assert.match(serviceWorker,/"\.\/icons\/icon-192\.png"/);
-  assert.match(serviceWorker,/vc-imob-shell-premium-20260922/);
+  assert.match(serviceWorker,/vc-imob-shell-polish-20260922/);
 });
