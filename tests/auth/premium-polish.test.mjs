@@ -52,7 +52,7 @@ test("POLISH05 controls, focus, touch, reduced motion and mobile containment sta
 });
 
 test("POLISH06 PWA revision is immutable and private responses remain uncached",()=>{
-  assert.match(sw,/vc-imob-shell-documents-2-20260922/);
+  assert.match(sw,/vc-imob-shell-documents-mobile-20260923/);
   assert.match(index,/clean-system\.css\?v=menu-hotfix-20260922/);
   for(const asset of ["dashboard.js","agenda.js"])assert.match(index,new RegExp(`${asset.replace(".","\\.")}\\?v=polish-20260922`));
   assert.doesNotMatch(sw,/supabase\.co|\/auth\/v1|\/rest\/v1/);

@@ -63,7 +63,7 @@ test("DOC06 mobile UI is one-column, accessible and PWA-versioned",()=>{
   assert.match(css,/min-height:44px/);
   assert.match(html,/data-view-link="documents"/);
   assert.match(html,/document-pdf\.js/);assert.match(html,/documents\.js/);
-  assert.match(sw,/vc-imob-shell-documents-2-20260922/);assert.match(sw,/\.\/css\/documents\.css/);
+  assert.match(sw,/vc-imob-shell-documents-mobile-20260923/);assert.match(sw,/\.\/css\/documents\.css/);
 });
 
 test("DOC07 audit metadata never stores the full private document",()=>{
@@ -98,8 +98,8 @@ test("DOC08 clicking Novo documento opens the visible first step",async()=>{
   const toolbar=root.children[0],newDocumentButton=toolbar.children.find(child=>child.textContent==="+ Novo documento");assert.ok(newDocumentButton);
   await newDocumentButton.click();
   assert.equal(modal.classList.contains("is-open"),true);assert.equal(modal.attributes["aria-hidden"],"false");
-  const card=modal.children[0];assert.equal(card.children[0].textContent,"Novo documento");assert.ok(card.children.some(child=>child.tagName==="FORM"));
-  const form=card.children.find(child=>child.tagName==="FORM"),typeSelect=form.children[0].children.find(child=>child.tagName==="SELECT");
+  const card=modal.children[0],header=card.children[0],title=header.children[1].children.find(child=>child.tagName==="H2");assert.equal(title.textContent,"Novo documento");assert.ok(card.children.some(child=>child.tagName==="FORM"));
+  const form=card.children.find(child=>child.tagName==="FORM"),typeSelect=form.querySelector("input,select,textarea");
   assert.deepEqual(typeSelect.children.map(option=>option.value),["sale_intermediation","property_sale_purchase"]);
   assert.match(frontend,/if\(create\.disabled\)return;create\.disabled=true/);
 });

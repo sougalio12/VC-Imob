@@ -43,7 +43,7 @@ test("PREMIUM05 loading, success, errors, empty states and view transitions have
 });
 
 test("PREMIUM06 immutable PWA revision exposes changed assets without caching private data",()=>{
-  assert.match(sw,/vc-imob-shell-documents-2-20260922/);assert.match(html,/clean-system\.css\?v=menu-hotfix-20260922/);
+  assert.match(sw,/vc-imob-shell-documents-mobile-20260923/);assert.match(html,/clean-system\.css\?v=menu-hotfix-20260922/);
   for(const asset of ["dashboard.js","agenda.js"])assert.match(html,new RegExp(`${asset.replace(".","\\.")}\\?v=polish-20260922`));
   for(const asset of ["leads.js","kanban.js","properties.js","app.js"])assert.match(html,new RegExp(`${asset.replace(".","\\.")}\\?v=premium-20260922`));
   assert.doesNotMatch(sw,/supabase\.co|\/auth\/v1|\/rest\/v1/);

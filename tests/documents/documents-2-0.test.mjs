@@ -30,12 +30,16 @@ test("DOC20-01 legal versions, sources and special-scenario blockers are snapsho
 test("DOC20-02 guided mobile flow preserves conditional disclosure and accessible states",()=>{
   assert.match(frontend,/DOCUMENT_STEPS/);assert.match(frontend,/data-condition-key/);assert.match(frontend,/Etapa \$\{stepIndex\+1\} de/);
   assert.match(frontend,/Este cenário requer análise jurídica específica/);assert.match(frontend,/Salvar rascunho/);assert.match(frontend,/blocking_reasons/);
+  assert.match(frontend,/document-editor-header/);assert.match(frontend,/document-editor-body/);assert.match(frontend,/document-action-next/);assert.match(frontend,/document-action-preview/);
+  assert.match(frontend,/active\.blur\(\)/);assert.match(frontend,/mobileStepCounter\.focus\(\{preventScroll:true\}\)/);
+  assert.match(frontend,/if\(stepIndex!==steps\.length-1\)\{goToStep\(stepIndex\+1\);return;\}/);
+  assert.match(css,/grid-template-rows:minmax\(0,1fr\) auto/);assert.match(css,/\.document-editor-actions \[hidden\]/);assert.match(css,/font-size:16px/);
   assert.match(css,/\.document-progress/);assert.match(css,/\.document-control:focus-within/);assert.match(css,/min-height:44px/);
   assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);assert.match(css,/@media\(max-width:600px\)/);
 });
 
 test("DOC20-03 PWA caches only public shell assets and carries the new immutable version",()=>{
-  assert.match(serviceWorker,/vc-imob-shell-documents-2-20260922/);
+  assert.match(serviceWorker,/vc-imob-shell-documents-mobile-20260923/);
   assert.doesNotMatch(serviceWorker,/rest\/v1|auth\/v1|real_estate_document_versions|rendered_content/);
   assert.match(serviceWorker,/url\.pathname\.startsWith\("\/crm\/"\)/);assert.match(serviceWorker,/css\|js\|png\|svg\|ico\|webmanifest/);
   for(const icon of manifest.icons){assert.match(icon.src,/documents-2-20260922/);assert.ok(["any","maskable"].includes(icon.purpose));}
