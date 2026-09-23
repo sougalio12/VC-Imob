@@ -74,7 +74,7 @@ test("B4-08 comparison and simulator use real values and explicit rate",()=>{
 });
 
 test("B4-09 safe offline shell contains code only, never CRM responses",()=>{
-  assert.match(sw,/vc-imob-shell-menu-hotfix-20260922/);
+  assert.match(sw,/vc-imob-shell-documents-2-20260922/);
   assert.match(sw,/team-operations\.js/);
   assert.match(sw,/if \(!isSafeStaticRequest\(request, url\)\) return/);
   assert.doesNotMatch(sw,/\/rest\/v1|\/auth\/v1/);

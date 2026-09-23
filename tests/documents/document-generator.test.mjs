@@ -4,6 +4,7 @@ import {readFileSync} from "node:fs";
 import vm from "node:vm";
 
 const migration=readFileSync("supabase/migrations/20260917000000_real_estate_documents.sql","utf8");
+const documents2Migration=readFileSync("supabase/migrations/20260922010000_documents_2_0.sql","utf8");
 const planMigration=readFileSync("supabase/migrations/20260825200000_plans_entitlements.sql","utf8");
 const frontend=readFileSync("crm/js/documents.js","utf8");
 const pdfSource=readFileSync("crm/js/document-pdf.js","utf8");
@@ -31,9 +32,10 @@ test("DOC03 preview receipt binds payload and finalization blocks missing fields
   assert.match(migration,/payload_hash text not null/);
   assert.match(migration,/expires_at timestamptz not null default \(now\(\) \+ interval '30 minutes'\)/);
   assert.match(migration,/real_estate_document_payload_hash\(target_payload\)<>preview\.payload_hash/);
-  assert.match(migration,/cardinality\(version_row\.missing_fields\)>0/);
+  assert.match(documents2Migration,/cardinality\(version_row\.missing_fields\)>0/);
+  assert.match(documents2Migration,/cardinality\(version_row\.blocking_reasons\)>0/);
   assert.match(migration,/DOCUMENT_REQUIRED_FIELDS_MISSING/);
-  assert.match(frontend,/Preview obrigatório/);
+  assert.match(frontend,/Revisão e preview/);
   assert.match(frontend,/Finalizar versão/);
 });
 
@@ -61,7 +63,7 @@ test("DOC06 mobile UI is one-column, accessible and PWA-versioned",()=>{
   assert.match(css,/min-height:44px/);
   assert.match(html,/data-view-link="documents"/);
   assert.match(html,/document-pdf\.js/);assert.match(html,/documents\.js/);
-  assert.match(sw,/vc-imob-shell-menu-hotfix-20260922/);assert.match(sw,/\.\/css\/documents\.css/);
+  assert.match(sw,/vc-imob-shell-documents-2-20260922/);assert.match(sw,/\.\/css\/documents\.css/);
 });
 
 test("DOC07 audit metadata never stores the full private document",()=>{
@@ -71,13 +73,19 @@ test("DOC07 audit metadata never stores the full private document",()=>{
 });
 
 test("DOC08 clicking Novo documento opens the visible first step",async()=>{
-  class FakeClassList{constructor(){this.values=new Set();}add(...values){values.forEach(value=>this.values.add(value));}remove(...values){values.forEach(value=>this.values.delete(value));}contains(value){return this.values.has(value);}}
+  class FakeClassList{constructor(){this.values=new Set();}add(...values){values.forEach(value=>this.values.add(value));}remove(...values){values.forEach(value=>this.values.delete(value));}contains(value){return this.values.has(value);}toggle(value,force){const add=force===undefined?!this.contains(value):force;add?this.add(value):this.remove(value);return add;}}
   class FakeElement{
-    constructor(tag){this.tagName=tag.toUpperCase();this.children=[];this.dataset={};this.classList=new FakeClassList();this.attributes={};this.listeners={};this.value="";this.disabled=false;this.textContent="";this.isConnected=true;}
+    constructor(tag){this.tagName=tag.toUpperCase();this.children=[];this.dataset={};this.classList=new FakeClassList();this.attributes={};this.listeners={};this.value="";this.disabled=false;this.hidden=false;this.textContent="";this.isConnected=true;}
+    set className(value){this._className=value;this.classList=new FakeClassList();String(value).split(/\s+/).filter(Boolean).forEach(item=>this.classList.add(item));}get className(){return this._className||"";}
     append(...children){this.children.push(...children);if(this.tagName==="SELECT"&&!this.value&&children[0]?.value!==undefined)this.value=children[0].value;}
     replaceChildren(...children){this.children=[...children];}
+    insertBefore(child,before){const index=this.children.indexOf(before);if(index<0)this.children.push(child);else this.children.splice(index,0,child);}
     setAttribute(key,value){this.attributes[key]=String(value);if(key==="id")this.id=String(value);}
+    removeAttribute(key){delete this.attributes[key];}
     addEventListener(type,listener){(this.listeners[type]??=[]).push(listener);}
+    matches(selector){if(selector==="button")return this.tagName==="BUTTON";if(selector===".document-step-panel")return this.classList.contains("document-step-panel");if(selector==="[data-condition-key]")return this.dataset.conditionKey!==undefined;if(selector==="input,select,textarea")return ["INPUT","SELECT","TEXTAREA"].includes(this.tagName);if(selector==="input,select,textarea,button")return ["INPUT","SELECT","TEXTAREA","BUTTON"].includes(this.tagName);return false;}
+    querySelectorAll(selector){const matches=[];const visit=node=>{for(const child of node.children||[]){if(child?.matches?.(selector))matches.push(child);visit(child);}};visit(this);return matches;}
+    querySelector(selector){return this.querySelectorAll(selector)[0]||null;}
     async click(){for(const listener of this.listeners.click||[])await listener({target:this,preventDefault(){}});}
     focus(){this.focused=true;}
   }
