@@ -10,6 +10,7 @@ const supabaseJs = read('crm/js/supabase.js');
 const billing = read('crm/js/billing.js');
 const subscriptions = read('crm/js/subscriptions.js');
 const app = read('crm/js/app.js');
+const data = read('crm/js/data.js');
 const edge = read('supabase/functions/billing-provider-event/index.ts');
 const docs = read('docs/phase-i.md');
 
@@ -32,6 +33,7 @@ test('trial is exactly seven days using database timestamps', () => { assert.mat
 test('trial cannot repeat for same user', () => assert.match(migration, /unique \(user_id\)/));
 test('trial cannot repeat for same organization', () => assert.match(migration, /unique \(organization_id\)/));
 test('all catalog plans use seven trial days', () => assert.match(migration, /set trial_days = 7/));
+test('demo billing catalog mirrors the exact seven-day production trial', () => { const trialValues = [...data.matchAll(/trial_days:\s*(\d+)/g)].map(match => Number(match[1])); assert.deepEqual(trialValues, [7,7,7]); });
 test('monthly prices remain START 3990 PRO 7990 EQUIPE 14990', () => { const plans = read('supabase/migrations/20260825200000_plans_entitlements.sql'); for (const value of ['3990','7990','14990']) assert.match(plans, new RegExp(value)); });
 test('annual prices are 39900 79900 and 149900 cents', () => { for (const value of ['39900','79900','149900']) assert.match(migration, new RegExp(value)); });
 test('team entitlement remains limited to 30', () => assert.match(read('supabase/migrations/20260825200000_plans_entitlements.sql'), /'equipe','team\.members',true,30/));

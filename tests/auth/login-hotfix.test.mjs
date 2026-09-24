@@ -37,5 +37,5 @@ test("LOGIN03 valid cached session is remotely confirmed before CRM bootstrap",a
 test("LOGIN04 login and CRM load the clean revision without losing the session hotfix",()=>{
   for(const asset of ["config.js","supabase.js","auth.js","pwa.js"])assert.match(login,new RegExp(`${asset.replace(".","\\.")}\\?v=premium-20260922`));
   for(const asset of ["config.js","supabase.js","auth.js","pwa.js"])assert.match(index,new RegExp(`${asset.replace(".","\\.")}\\?v=premium-20260922`));
-  assert.match(sw,/vc-imob-shell-documents-autofill-delete-20260923/);assert.match(login,/getValidSession\(\{ verify: true \}\)/);assert.match(login,/submit\.disabled = true/);
+  assert.match(sw,/vc-imob-shell-final-audit-20260923/);assert.match(login,/getValidSession\(\{ verify: true \}\)/);assert.match(login,/submit\.disabled = true/);
 });

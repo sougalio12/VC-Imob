@@ -40,7 +40,7 @@ test("DOC20-02 guided mobile flow preserves conditional disclosure and accessibl
 });
 
 test("DOC20-03 PWA caches only public shell assets and carries the new immutable version",()=>{
-  assert.match(serviceWorker,/vc-imob-shell-documents-autofill-delete-20260923/);
+  assert.match(serviceWorker,/vc-imob-shell-final-audit-20260923/);
   assert.doesNotMatch(serviceWorker,/rest\/v1|auth\/v1|real_estate_document_versions|rendered_content/);
   assert.match(serviceWorker,/url\.pathname\.startsWith\("\/crm\/"\)/);assert.match(serviceWorker,/css\|js\|png\|svg\|ico\|webmanifest/);
   for(const icon of manifest.icons){assert.match(icon.src,/documents-2-20260922/);assert.ok(["any","maskable"].includes(icon.purpose));}
