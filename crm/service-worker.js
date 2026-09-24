@@ -1,4 +1,4 @@
-const CACHE_VERSION = "vc-imob-shell-documents-mobile-20260923";
+const CACHE_VERSION = "vc-imob-shell-documents-autofill-delete-20260923";
 const SHELL_CACHE = CACHE_VERSION;
 const OFFLINE_URL = new URL("./offline.html", self.location).href;
 const SAFE_SHELL = [

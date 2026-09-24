@@ -4,6 +4,7 @@ import {inflateSync} from "node:zlib";
 import {readFileSync} from "node:fs";
 
 const migration=readFileSync("supabase/migrations/20260922010000_documents_2_0.sql","utf8");
+const operationsMigration=readFileSync("supabase/migrations/20260923010000_documents_autofill_delete.sql","utf8");
 const frontend=readFileSync("crm/js/documents.js","utf8");
 const css=readFileSync("crm/css/documents.css","utf8");
 const manifest=JSON.parse(readFileSync("crm/manifest.webmanifest","utf8"));
@@ -39,7 +40,7 @@ test("DOC20-02 guided mobile flow preserves conditional disclosure and accessibl
 });
 
 test("DOC20-03 PWA caches only public shell assets and carries the new immutable version",()=>{
-  assert.match(serviceWorker,/vc-imob-shell-documents-mobile-20260923/);
+  assert.match(serviceWorker,/vc-imob-shell-documents-autofill-delete-20260923/);
   assert.doesNotMatch(serviceWorker,/rest\/v1|auth\/v1|real_estate_document_versions|rendered_content/);
   assert.match(serviceWorker,/url\.pathname\.startsWith\("\/crm\/"\)/);assert.match(serviceWorker,/css\|js\|png\|svg\|ico\|webmanifest/);
   for(const icon of manifest.icons){assert.match(icon.src,/documents-2-20260922/);assert.ok(["any","maskable"].includes(icon.purpose));}
@@ -53,4 +54,19 @@ test("DOC20-04 PWA icons contain no black outer frame and keep the official mark
     let minX=size,minY=size,maxX=-1,maxY=-1;for(let y=0;y<size;y+=1)for(let x=0;x<size;x+=1){const[r,g,b,a]=png.pixel(x,y);if(a>0&&r+g+b<120){minX=Math.min(minX,x);minY=Math.min(minY,y);maxX=Math.max(maxX,x);maxY=Math.max(maxY,y);}}
     assert.ok(maxX>minX&&maxY>minY,`${path} must retain the black VC symbol`);assert.ok(minX>=size*.1&&minY>=size*.1&&maxX<=size*.9&&maxY<=size*.9,`${path} mark is outside the safe zone`);
   }
+});
+
+test("DOC20-05 autofill reacts to real CRM references without overwriting manual fields",()=>{
+  for(const marker of ["refreshAutofill","DOCUMENT_AUTOFILL_FIELDS","referenceManual","manualFields","Preenchido pelo CRM","Preenchimento necessário"])assert.match(frontend,new RegExp(marker));
+  assert.match(frontend,/addEventListener\("change",async\(\)=>\{referenceManual/);
+  assert.match(frontend,/if\(!input\|\|manualFields\.has\(key\)\)continue/);
+  assert.match(operationsMigration,/property_acquisitions/);assert.match(operationsMigration,/target_proposal/);assert.match(operationsMigration,/'_references'/);
+  assert.doesNotMatch(operationsMigration,/'registry_information'/);assert.doesNotMatch(operationsMigration,/'payment_terms'/);
+});
+
+test("DOC20-06 deletion is explicit, tenant-scoped and preserves finalized versions",()=>{
+  assert.match(frontend,/Excluir documento/);assert.match(frontend,/delete_real_estate_document/);assert.match(frontend,/Excluir este documento\?/);
+  assert.match(operationsMigration,/add column if not exists archived_at/);assert.match(operationsMigration,/has_finalized_version/);assert.match(operationsMigration,/mode:='archived'/);assert.match(operationsMigration,/mode:='deleted'/);
+  assert.match(operationsMigration,/public\.can_access_real_estate_document\(target_document,target_organization\)/);assert.match(operationsMigration,/grant execute on function public\.delete_real_estate_document\(uuid,uuid\) to authenticated/);
+  assert.match(frontend,/archived_at=is\.null/);assert.match(css,/\.document-delete-action\{white-space:nowrap\}/);
 });

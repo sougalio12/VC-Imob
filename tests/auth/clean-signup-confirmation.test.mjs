@@ -70,5 +70,5 @@ test("CLEAN08 screens have subtle contextual accents and Mais reuses the officia
   for(const view of ["leads","agenda","properties","acquisitions","proposals","documents","team","billing"])assert.match(clean,new RegExp(`data-view=\\"${view}\\"`));
   assert.match(index,/class="crm-brand crm-brand-app"[\s\S]*src="\.\/icons\/icon-192\.png"/);
   assert.match(serviceWorker,/"\.\/icons\/icon-192\.png"/);
-  assert.match(serviceWorker,/vc-imob-shell-documents-mobile-20260923/);
+  assert.match(serviceWorker,/vc-imob-shell-documents-autofill-delete-20260923/);
 });
