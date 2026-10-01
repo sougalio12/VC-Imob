@@ -6,6 +6,13 @@
   X-Frame-Options: SAMEORIGIN
   Permissions-Policy: camera=(), microphone=(), geolocation=()
 
+/favicon.ico
+  Content-Type: image/x-icon
+  Cache-Control: public, max-age=86400
+
+/assets/icons/*
+  Cache-Control: public, max-age=86400
+
 /crm/service-worker.js
   Cache-Control: no-cache, no-store, must-revalidate
   Service-Worker-Allowed: /crm/
