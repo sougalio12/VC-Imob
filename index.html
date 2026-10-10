@@ -2219,6 +2219,7 @@
 
 <script src="./js/site-lead.js"></script>
 <script src="./js/public-catalog.js?v=premium-beta-20260913"></script>
+<script src="./js/property-share.js?v=share-20261010"></script>
 
 
 
@@ -2758,6 +2759,14 @@ function renderizarImoveis(
                       Tenho interesse
                     </button>
 
+                    <button
+                      class="btn btn-outline property-share-button"
+                      type="button"
+                      data-code="${codigo}"
+                    >
+                      Compartilhar imóvel
+                    </button>
+
                   </div>
 
                 </div>
@@ -2806,6 +2815,22 @@ function renderizarImoveis(
 
       }
     );
+
+  grid.querySelectorAll(".property-share-button").forEach(botao => {
+    botao.addEventListener("click", async () => {
+      const imovel = todosImoveis.find(item => item.codigo === botao.dataset.code);
+      if (!imovel || !window.VCPropertyShare) return;
+      const original = botao.textContent;
+      try {
+        const result = await window.VCPropertyShare.shareProperty(imovel);
+        if (result.status === "copied") botao.textContent = "Link do imóvel copiado";
+        if (result.status === "shared") botao.textContent = "Compartilhado";
+      } catch {
+        botao.textContent = "Não foi possível copiar";
+      }
+      window.setTimeout(() => { botao.textContent = original; }, 2600);
+    });
+  });
 
 }
 
@@ -3516,7 +3541,7 @@ function renderizarNoticias(
 
 
   notice.textContent =
-    "Últimas notícias e informações de Lucas do Rio Verde.";
+    "Notícias selecionadas de fontes públicas e confiáveis. O conteúdo completo permanece na fonte original.";
 
 
   grid.innerHTML =
@@ -3545,6 +3570,22 @@ function renderizarNoticias(
               noticia.categoria ||
               "Lucas do Rio Verde"
             );
+
+
+          const fonte =
+            escaparHTML(
+              noticia.fonte ||
+              "Fonte original"
+            );
+
+
+          let url = "";
+
+          try {
+            const candidata = new URL(noticia.url);
+            if (candidata.protocol === "https:") url = candidata.href;
+          }
+          catch {}
 
 
           const imagem =
@@ -3593,30 +3634,16 @@ function renderizarNoticias(
                   ${resumo}
                 </p>
 
+                <div class="news-source">
+                  <span>Fonte: ${fonte}</span>
+                  ${url ? `<a href="${escaparHTML(url)}" target="_blank" rel="noopener noreferrer external">Leia mais</a>` : ""}
+                </div>
+
               </div>
 
             </article>
 
           `;
-
-
-          if (
-            noticia.url
-          ) {
-
-            return `
-
-              <a
-                href="${escaparHTML(noticia.url)}"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                ${conteudo}
-              </a>
-
-            `;
-
-          }
 
 
           return conteudo;
@@ -3658,7 +3685,7 @@ async function carregarNoticias() {
         arquivo,
         {
           cache:
-            "no-store"
+            "default"
         }
       );
 

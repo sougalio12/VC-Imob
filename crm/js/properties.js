@@ -61,6 +61,16 @@ function createPropertyAdminCard(property, canManage) {
   if (facts.childElementCount) body.append(facts);
   const actions = createElement("div", { className: "property-admin-actions" });
   if (property._row ? property.publicado : property.ativo !== false) actions.append(createElement("a", { className: "crm-button crm-button-outline", text: "Ver no site", attrs: { href: `../imovel.html?codigo=${encodeURIComponent(property.codigo)}`, target: "_blank", rel: "noopener" } }));
+  const share = createElement("button", { className: "crm-button crm-button-outline", text: "Compartilhar imóvel", type: "button", disabled: property._row ? !property.publicado : property.ativo === false, attrs: { title: property._row && !property.publicado ? "Publique o imóvel para compartilhar" : "Compartilhar o link público deste imóvel" } });
+  share.addEventListener("click", async () => {
+    if (share.disabled) return;
+    try {
+      const result = await window.VCPropertyShare?.shareProperty(property);
+      if (result?.status === "copied") showToast("Link do imóvel copiado");
+      if (result?.status === "shared") showToast("Imóvel compartilhado");
+    } catch { showToast("Não foi possível copiar o link público.", true); }
+  });
+  actions.append(share);
   if (canManage && property._row) {
     if (property.publicado) { const qr = createElement("button", { className: "crm-button crm-button-outline", text: "QR", type: "button" }); qr.addEventListener("click", () => openPropertyQr(property)); actions.append(qr); }
     const edit = createElement("button", { className: "crm-button crm-button-outline", text: "Editar", type: "button" }); edit.addEventListener("click", () => openPropertyModal(property)); actions.append(edit);
@@ -163,7 +173,19 @@ async function openPropertyModal(property) {
   const publicationPreview = createElement("section", { className: "property-publication-preview", attrs: { hidden: "", "aria-live": "polite" } });
   const error = createElement("p", { className: "form-error", attrs: { role: "alert" } }), actions = createElement("div", { className: "modal-actions" });
   const cancel = createElement("button", { type: "button", className: "crm-button crm-button-outline", text: "Cancelar" }), save = createElement("button", { type: "submit", className: "crm-button crm-button-primary", text: "Salvar imóvel" });
-  cancel.addEventListener("click", closeModal); actions.append(cancel, save); form.append(publicationPreview, error, actions);
+  cancel.addEventListener("click", closeModal);
+  if (property) {
+    const share = createElement("button", { type: "button", className: "crm-button crm-button-outline", text: "Compartilhar imóvel", disabled: !property.publicado, attrs: { title: property.publicado ? "Compartilhar o link público deste imóvel" : "Publique o imóvel para compartilhar" } });
+    share.addEventListener("click", async () => {
+      try {
+        const result = await window.VCPropertyShare?.shareProperty(property);
+        if (result?.status === "copied") showToast("Link do imóvel copiado");
+        if (result?.status === "shared") showToast("Imóvel compartilhado");
+      } catch { showToast("Não foi possível copiar o link público.", true); }
+    });
+    actions.append(share);
+  }
+  actions.append(cancel, save); form.append(publicationPreview, error, actions);
   const resetPublicationPreview = () => { form.dataset.publicationReviewed = ""; publicationPreview.hidden = true; save.textContent = "Salvar imóvel"; };
   form.addEventListener("input", resetPublicationPreview); form.addEventListener("change", resetPublicationPreview);
   form.addEventListener("submit", async event => {

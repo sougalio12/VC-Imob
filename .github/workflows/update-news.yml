@@ -1,0 +1,33 @@
+name: Atualizar notícias
+
+on:
+  schedule:
+    - cron: "17 3,9,15,21 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-news
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Atualizar cache sanitizado
+        run: node scripts/update-news.mjs
+      - name: Publicar cache quando houver mudanças
+        run: |
+          if git diff --quiet -- data/noticias.json; then exit 0; fi
+          git config user.name "vc-imob-news-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/noticias.json
+          git commit -m "chore: atualizar notícias"
+          git push

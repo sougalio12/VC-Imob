@@ -211,6 +211,7 @@ function renderProperty(property) {
         <h2>Gostou deste imóvel?</h2>
         <p>Fale com Valdiney Capistrano e receba mais informações.</p>
         <button class="btn btn-champagne" type="button" id="propertyWhatsAppButton">Tenho interesse neste imóvel</button>
+        <button class="btn btn-dark-outline property-detail-share" type="button" id="propertyShareButton">Compartilhar imóvel</button>
       </aside>
     </section>
   `;
@@ -294,6 +295,18 @@ function bindPropertyEvents() {
 
   document.getElementById("galleryMainButton")?.addEventListener("click", openLightbox);
   document.getElementById("propertyWhatsAppButton")?.addEventListener("click", openWhatsAppForProperty);
+  document.getElementById("propertyShareButton")?.addEventListener("click", async event => {
+    const button = event.currentTarget;
+    const original = button.textContent;
+    try {
+      const result = await window.VCPropertyShare?.shareProperty(propertyDetailState.property);
+      if (result?.status === "copied") button.textContent = "Link do imóvel copiado";
+      if (result?.status === "shared") button.textContent = "Compartilhado";
+    } catch {
+      button.textContent = "Não foi possível copiar";
+    }
+    window.setTimeout(() => { button.textContent = original; }, 2600);
+  });
 }
 
 async function loadProperty() {

@@ -1042,7 +1042,7 @@ li {
 }
 
 .property-actions .btn {
-  min-height: 40px;
+  min-height: 44px;
   padding: 0 14px;
 
   font-size: 0.82rem;
@@ -1508,6 +1508,34 @@ li {
   color: var(--text-muted);
 
   font-size: 0.9rem;
+}
+
+.news-source {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 13px;
+  border-top: 1px solid var(--border-color);
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+
+.news-source a {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  color: var(--color-champagne-dark);
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+@media (max-width: 430px) {
+  .news-source {
+    align-items: flex-start;
+    flex-direction: column;
+  }
 }
 
 

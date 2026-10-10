@@ -309,6 +309,12 @@
   width: 100%;
 }
 
+.property-contact-panel .property-detail-share {
+  margin-top: 10px;
+  border-color: rgba(255, 255, 255, 0.55);
+  color: var(--color-white);
+}
+
 .property-empty-state {
   max-width: 640px;
 
