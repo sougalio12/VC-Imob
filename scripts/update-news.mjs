@@ -15,14 +15,9 @@ export const NEWS_SOURCES = [
     url: "https://agenciabrasil.ebc.com.br/rss/economia/feed.xml"
   },
   {
-    name: "Fontes públicas federais",
-    category: "Habitação e economia",
-    url: "https://www.bing.com/news/search?q=%28imobili%C3%A1rio+OR+habita%C3%A7%C3%A3o+OR+%22financiamento+habitacional%22+OR+%22constru%C3%A7%C3%A3o+civil%22+OR+Selic%29+site%3Agov.br&format=rss"
-  },
-  {
-    name: "Fontes públicas de Mato Grosso",
-    category: "Mato Grosso",
-    url: "https://www.bing.com/news/search?q=%28im%C3%B3vel+OR+habita%C3%A7%C3%A3o+OR+moradia+OR+%22constru%C3%A7%C3%A3o+civil%22%29+%28site%3Amt.gov.br+OR+site%3Alucasdorioverde.mt.gov.br%29&format=rss"
+    name: "Agência de Notícias IBGE",
+    category: "Construção civil e economia",
+    url: "https://agenciadenoticias.ibge.gov.br/agencia-rss"
   }
 ];
 
@@ -50,10 +45,6 @@ function tag(xml, name) {
 function safeHttpsUrl(value) {
   try {
     const url = new URL(String(value || "").trim());
-    if (/^(?:www\.)?bing\.com$/i.test(url.hostname) && url.pathname.includes("/news/apiclick.aspx")) {
-      const original = new URL(url.searchParams.get("url") || "");
-      return original.protocol === "https:" ? original.href : "";
-    }
     return url.protocol === "https:" ? url.href : "";
   } catch { return ""; }
 }

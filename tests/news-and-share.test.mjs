@@ -17,14 +17,6 @@ test("feed parser strips arbitrary HTML and rejects malicious links", () => {
   assert.ok(!/[<>]/.test(plainText("<img src=x onerror=alert(1)>", 30)));
 });
 
-test("aggregated public feed resolves the original HTTPS source", () => {
-  const original = "https%3A%2F%2Fwww.gov.br%2Fcidades%2Fpt-br%2Fnoticias%2Fhabitacao-segura";
-  const xml = `<rss><channel><item><title>Financiamento habitacional seguro</title><description>Crédito para casa própria</description><News:Source>Ministério das Cidades</News:Source><pubDate>Fri, 09 Oct 2026 12:00:00 GMT</pubDate><link>http://www.bing.com/news/apiclick.aspx?url=${original}&amp;c=1</link></item></channel></rss>`;
-  const [item] = parseFeed(xml, { name: "Fontes públicas", category: "Habitação" });
-  assert.equal(item.url, "https://www.gov.br/cidades/pt-br/noticias/habitacao-segura");
-  assert.equal(item.fonte, "Ministério das Cidades");
-});
-
 test("shared property helper always uses the canonical public URL", async () => {
   let shared;
   const context = vm.createContext({
