@@ -1,0 +1,17 @@
+[
+  {
+    "id":"e2e-alfa","codigo":"VCI990001","slug":"casa-teste-alfa","ativo":true,"destaque":true,
+    "titulo":"Casa Teste Alfa","tipo":"Casa","finalidade":"venda","preco":450000,
+    "cidade":"Cidade Teste","estado":"MT","bairro":"Bairro Alfa","enderecoExibir":"Endereço demonstrativo Alfa",
+    "descricao":"Imóvel sintético para validação automatizada.","areaConstruida":120,"areaTotal":240,
+    "quartos":3,"banheiros":2,"vagas":2,"caracteristicas":["Jardim de teste"],
+    "imagens":["./crm/icons/icon-192.png"],"imagensAlt":["Imagem demonstrativa Alfa"],"dataPublicacao":"2026-01-01"
+  },
+  {
+    "id":"e2e-beta","codigo":"VCI990002","slug":"apartamento-teste-beta","ativo":true,"destaque":false,
+    "titulo":"Apartamento Teste Beta","tipo":"Apartamento","finalidade":"venda","preco":250000,
+    "cidade":"Cidade Teste","estado":"MT","bairro":"Bairro Beta","descricao":"Segundo imóvel sintético.",
+    "areaConstruida":65,"quartos":2,"banheiros":1,"vagas":1,"caracteristicas":[],
+    "imagens":["./crm/icons/icon-192.png"],"imagensAlt":["Imagem demonstrativa Beta"],"dataPublicacao":"2026-01-02"
+  }
+]

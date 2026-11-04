@@ -10,7 +10,7 @@ const files = walk('tests').filter(file => file.endsWith('.test.mjs')).filter(fi
   return group === 'all' || group === 'unit' && !database || group === 'db' && database || group === 'stabilization' && file.startsWith('tests/stabilization/');
 });
 const result = spawnSync(process.execPath, ['--import', './tests/helpers/no-network.mjs', '--test', '--test-concurrency=1', ...files], {
-  stdio: 'inherit', env: {...process.env, TZ:'America/Cuiaba', NODE_ENV:'test', VC_IMOB_TEST_RUN:'1', PGLITE_PACKAGE: resolve('node_modules/@electric-sql/pglite')}
+  stdio: 'inherit', env: {...process.env, TZ:'America/Cuiaba', NODE_ENV:'test', VC_IMOB_TEST_RUN:'1', VC_IMOB_ENVIRONMENT:'development', VC_IMOB_SUPABASE_URL:'', VC_IMOB_SUPABASE_PUBLISHABLE_KEY:'', VC_IMOB_SITE_ORIGIN:'', PGLITE_PACKAGE: resolve('node_modules/@electric-sql/pglite')}
 });
 if (result.error) throw result.error;
 process.exitCode = result.status ?? 1;
