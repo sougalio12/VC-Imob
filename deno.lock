@@ -19,7 +19,8 @@
         "npm:@capacitor/core@8.5.1",
         "npm:@capacitor/ios@8.5.1",
         "npm:@capacitor/network@8.0.1",
-        "npm:@electric-sql/pglite@0.5.8"
+        "npm:@electric-sql/pglite@0.5.8",
+        "npm:@playwright/test@1.56.1"
       ]
     }
   }

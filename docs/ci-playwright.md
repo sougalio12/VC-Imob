@@ -50,3 +50,9 @@ O passo `actions/upload-artifact` roda quando o job falha e publica essas pastas
 A primeira execução E2E falhou porque o setup tentava gravar localStorage em about:blank. Relatórios, screenshots, vídeos e traces foram produzidos; o setup passou a executar somente na origem local e a reexecução completa passou. Não foi necessário alterar o código funcional do site.
 
 A validação da execução real do Actions deve ser feita no SHA enviado, conferindo evento pull_request, PR #1 e os passos de Chromium. Um teste local aprovado não comprova uma execução remota.
+
+## Diagnóstico da execução remota
+
+Após o push de 4b7c62e, o GitHub confirmou o SHA na referência e dois commits na comparação com main, mas o PR ainda listava apenas 10374ae e não havia execução para o novo SHA. Fechar/reabrir o mesmo PR atualizou sua cabeça e gerou a execução pull_request [41814482742](https://github.com/sougalio12/VC-Imob/actions/runs/41814482742).
+
+Essa execução falhou no typecheck porque `deno.lock` também registra as dependências npm do workspace e ainda não incluía Playwright. O lockfile foi regenerado com Deno 2.5.6 e a checagem local `deno check --frozen supabase/functions/site-lead/index.ts` passou. A exigência `--frozen` do CI foi preservada. O resultado da execução posterior deve ser conferido no PR, sem usar os checks do commit anterior como evidência.
