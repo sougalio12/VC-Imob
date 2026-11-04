@@ -1,3 +1,5 @@
+import {assertLocalBackend} from "../helpers/local-backend.mjs";
+assertLocalBackend(process.env.SUPABASE_URL);
 import process from "node:process";
 
 const url = String(process.env.SUPABASE_URL || "").replace(/\/$/, "");
@@ -21,7 +23,7 @@ async function setTestLimit(limit) { const result = await request("/rest/v1/rpc/
 try {
   const page = await request("/auth/v1/admin/users?page=1&per_page=1000");
   for (const user of page.data?.users || []) if (Object.values(emails).includes(String(user.email).toLowerCase())) await request(`/auth/v1/admin/users/${user.id}`, { method: "DELETE" });
-  for (const [name, email] of Object.entries(emails)) { const created = await request("/auth/v1/admin/users", { method: "POST", body: { email, password, email_confirm: true, user_metadata: { full_name: `Phase D ${name}`, company_name: `[PHASE_D_TEST] ${name}` } } }); assert(created.ok, JSON.stringify(created.data)); users[name] = created.data.id; sessions[name] = await login(email); }
+  for (const [name, email] of Object.entries(emails)) { const created = await request("/auth/v1/admin/users", { method: "POST", body: { email, password, email_confirm: true, app_metadata: { vcimob_provisioning: "administrative" }, user_metadata: { full_name: `Phase D ${name}`, company_name: `[PHASE_D_TEST] ${name}` } } }); assert(created.ok, JSON.stringify(created.data)); users[name] = created.data.id; sessions[name] = await login(email); }
   const configured = await request("/rest/v1/rpc/phase_d_test_configure", { method: "POST", body: { owner_user: users.owner, manager_user: users.manager, agent1_user: users.agent1, agent2_user: users.agent2, disabled_user: users.disabled, outsider_user: users.outsider } });
   assert(configured.ok && configured.data?.[0]?.organization_a, JSON.stringify(configured.data)); orgA = configured.data[0].organization_a; orgB = configured.data[0].organization_b;
 

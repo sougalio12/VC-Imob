@@ -23,3 +23,11 @@ service-account*.json
 play-service-account*.json
 /output/pdf/*.pdf
 /tmp/pdfs/
+
+dist/
+.env
+.env.*
+!.env.example
+
+playwright-report/
+test-results/

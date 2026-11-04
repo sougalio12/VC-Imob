@@ -1,7 +1,7 @@
 /* Captura pública: apenas a Publishable Key é exposta; a função nunca recebe organization_id. */
 const PUBLIC_LEAD_CONFIG = {
-  supabaseUrl: "https://isbkhhobutbdtdtpaavn.supabase.co",
-  publishableKey: "sb_publishable_cGq_OqxifhWpbVEGobB-7Q_De9SuyBC"
+  supabaseUrl: window.VC_IMOB_CONFIG?.supabaseUrl || "",
+  publishableKey: window.VC_IMOB_CONFIG?.supabasePublishableKey || ""
 };
 
 (function () {
@@ -42,6 +42,8 @@ const PUBLIC_LEAD_CONFIG = {
   function close() {
     if (!modal || modal.hidden) return;
     modal.hidden = true;
+    modal._siteLeadState = null;
+    modal.querySelector("form").onsubmit = null;
     modal.querySelector("form").reset();
     lastFocusedElement?.focus?.();
   }
@@ -56,6 +58,7 @@ const PUBLIC_LEAD_CONFIG = {
   }
 
   async function sendLead(payload) {
+    if (!PUBLIC_LEAD_CONFIG.supabaseUrl || !PUBLIC_LEAD_CONFIG.publishableKey) throw new Error("Captação indisponível neste ambiente.");
     const response = await fetch(`${PUBLIC_LEAD_CONFIG.supabaseUrl}/functions/v1/site-lead`, {
       method: "POST",
       headers: { apikey: PUBLIC_LEAD_CONFIG.publishableKey, "Content-Type": "application/json" },
@@ -69,6 +72,7 @@ const PUBLIC_LEAD_CONFIG = {
     const dialog = ensureModal();
     const form = dialog.querySelector("form");
     const error = dialog.querySelector(".site-lead-error");
+    dialog._siteLeadState = { payload: null, onContinue };
     lastFocusedElement = document.activeElement;
     form.reset();
     error.textContent = "";

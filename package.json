@@ -11,7 +11,15 @@
     "test:phase-h": "node --test tests/phase-h/phase-h.test.mjs",
     "test:phase-i": "node --test tests/phase-i/phase-i.test.mjs",
     "test:phase-j": "node --test tests/phase-j/phase-j.test.mjs",
-    "release:check": "node scripts/check-release-readiness.mjs"
+    "release:check": "node scripts/check-release-readiness.mjs",
+    "test": "node scripts/run-tests.mjs",
+    "test:unit": "node scripts/run-tests.mjs unit",
+    "test:db": "node scripts/run-tests.mjs db",
+    "test:stabilization": "node scripts/run-tests.mjs stabilization",
+    "build:web": "node scripts/build-web.mjs",
+    "dev": "node scripts/dev.mjs",
+    "test:e2e": "node scripts/run-e2e.mjs",
+    "test:e2e:install": "playwright install chromium"
   },
   "dependencies": {
     "@capacitor/app": "8.1.1",
@@ -23,6 +31,11 @@
   "devDependencies": {
     "@capacitor/android": "8.5.1",
     "@capacitor/cli": "8.5.1",
-    "@capacitor/ios": "8.5.1"
+    "@capacitor/ios": "8.5.1",
+    "@electric-sql/pglite": "0.5.8",
+    "@playwright/test": "1.56.1"
+  },
+  "engines": {
+    "node": ">=22.13.0"
   }
 }

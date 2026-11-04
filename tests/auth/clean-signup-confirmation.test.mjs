@@ -45,7 +45,7 @@ test("CLEAN03 callback never accepts an arbitrary redirect and removes auth frag
 
 test("CLEAN04 hosted confirmation template is Portuguese, robust and repository-configured",()=>{
   assert.match(email,/Confirme seu e-mail/);assert.match(email,/Confirmar meu e-mail/);assert.match(email,/\.ConfirmationURL/);assert.match(email,/\.Data\.full_name/);
-  assert.doesNotMatch(email,/<script|@import|font-face/i);assert.match(config,/site_url = "https:\/\/valdineycapistranoimoveis\.com\.br\/crm\/"/);
+  assert.doesNotMatch(email,/<script|@import|font-face/i);assert.match(config,/site_url = "http:\/\/127\.0\.0\.1:4174\/crm\/"/);
   assert.match(config,/\[auth\.email\.template\.confirmation\]/);assert.match(config,/subject = "Confirme seu e-mail \| VC Imob"/);assert.match(config,/content_path = "\.\/supabase\/templates\/confirmation\.html"/);
 });
 
@@ -70,5 +70,5 @@ test("CLEAN08 screens have subtle contextual accents and Mais reuses the officia
   for(const view of ["leads","agenda","properties","acquisitions","proposals","documents","team","billing"])assert.match(clean,new RegExp(`data-view=\\"${view}\\"`));
   assert.match(index,/class="crm-brand crm-brand-app"[\s\S]*src="\.\/icons\/icon-192\.png"/);
   assert.match(serviceWorker,/"\.\/icons\/icon-192\.png"/);
-  assert.match(serviceWorker,/vc-imob-shell-final-audit-20260923/);
+  assert.match(serviceWorker,/vc-imob-shell-stabilization-20261104/);
 });

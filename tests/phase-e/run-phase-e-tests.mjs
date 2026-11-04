@@ -1,3 +1,5 @@
+import {assertLocalBackend} from "../helpers/local-backend.mjs";
+assertLocalBackend(process.env.SUPABASE_URL);
 import process from "node:process";
 const url=String(process.env.SUPABASE_URL||"").replace(/\/$/,""); const anon=process.env.SUPABASE_ANON_KEY; const service=process.env.SUPABASE_SERVICE_ROLE_KEY; const password=process.env.PHASE_E_TEST_PASSWORD;
 if(process.env.PHASE_E_CONFIRM!=="RUN_ON_LOCAL_ONLY"||!["http://127.0.0.1:54321","http://localhost:54321"].includes(url)) throw new Error("Phase E tests are local-only");
@@ -12,7 +14,7 @@ async function event(org,id,plan,status,extra={}){return rpc(service,"apply_bill
 const emails=["phase-e-owner@example.com","phase-e-agent@example.com"]; let owner,agent,org,otherOrg;
 try{
  const page=await request("/auth/v1/admin/users?page=1&per_page=1000"); for(const user of page.data?.users||[])if(emails.includes(String(user.email).toLowerCase()))await request(`/auth/v1/admin/users/${user.id}`,{method:"DELETE"});
- const ids={}; for(const [role,email] of [["owner",emails[0]],["agent",emails[1]]]){const c=await request("/auth/v1/admin/users",{method:"POST",body:{email,password,email_confirm:true,user_metadata:{full_name:`Phase E ${role}`,company_name:`[PHASE_E_TEST] ${role}`}}});assert(c.ok,JSON.stringify(c.data));ids[role]=c.data.id}
+ const ids={}; for(const [role,email] of [["owner",emails[0]],["agent",emails[1]]]){const c=await request("/auth/v1/admin/users",{method:"POST",body:{email,password,email_confirm:true,app_metadata:{vcimob_provisioning:"administrative"},user_metadata:{full_name:`Phase E ${role}`,company_name:`[PHASE_E_TEST] ${role}`}}});assert(c.ok,JSON.stringify(c.data));ids[role]=c.data.id}
  const agentProfile=await rpc(service,"phase_e_test_profile_organization",{target_user:ids.agent});assert(agentProfile.ok&&agentProfile.data,JSON.stringify(agentProfile.data));otherOrg=agentProfile.data;
  owner=await login(emails[0]); agent=await login(emails[1]); const configured=await rpc(service,"phase_e_test_add_agent",{owner_user:ids.owner,agent_user:ids.agent});assert(configured.ok,JSON.stringify(configured.data));org=configured.data;
  await test("new organization receives one START trial",async()=>{const r=await rpc(owner,"get_my_subscription",{target_organization:org});const days=(new Date(r.data[0].trial_ends_at)-new Date(r.data[0].trial_starts_at))/86400000;assert(r.ok&&r.data.length===1&&r.data[0].plan_code==="start"&&r.data[0].status==="trialing"&&days===7,JSON.stringify(r.data))});

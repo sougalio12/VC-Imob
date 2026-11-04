@@ -1,0 +1,52 @@
+name: Validar VC-Imob
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NODE_ENV: test
+      VC_IMOB_TEST_RUN: '1'
+      TZ: America/Cuiaba
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Instalar dependências fixadas
+        run: npm ci --ignore-scripts
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.5.6
+      - name: Verificar tipos da Edge Function (sem executar)
+        run: deno check --frozen supabase/functions/site-lead/index.ts
+      - name: Testes unitários
+        run: npm run test:unit
+      - name: Testes de banco em memória
+        run: npm run test:db
+      - name: Instalar Chromium e bibliotecas Linux
+        run: npx playwright install --with-deps chromium
+      - name: E2E com dados sintéticos e bloqueio de rede externa
+        run: npm run test:e2e
+      - name: Relatórios, screenshots, vídeos e traces de falhas
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-failures-${{ github.run_attempt }}
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore
+          retention-days: 7

@@ -22,7 +22,7 @@ test("UXAUDIT01 global responsive invariants contain pages, forms, grids and int
   assert.match(css, /\.lead-table-wrap,[\s\S]*\.kanban,[\s\S]*\.capture-board/);
   assert.match(css, /@media \(max-width:\s*560px\)[\s\S]*grid-template-columns:\s*1fr/);
   assert.ok(html.indexOf("responsive-system.css") > html.indexOf("assistant.css"));
-  assert.match(sw, /vc-imob-shell-final-audit-20260923/);
+  assert.match(sw, /vc-imob-shell-stabilization-20261104/);
   assert.match(sw, /\.\/css\/responsive-system\.css/);
 });
 
@@ -62,7 +62,7 @@ test("UXAUDIT04 campaign archive RPC is tenant-safe and keeps related lead histo
   const { PGlite } = await import(pathToFileURL(resolve(pkg, "dist/index.js")));
   const { pgcrypto } = await import(pathToFileURL(resolve(pkg, "dist/contrib/pgcrypto.js")));
   const db = new PGlite({ extensions: { pgcrypto } });
-  await db.exec(`create role anon; create role authenticated; create role service_role bypassrls; create schema auth; create schema extensions; create table auth.users(id uuid primary key,email text,raw_user_meta_data jsonb default '{}'); create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$; grant usage on schema public,auth to anon,authenticated,service_role; create extension pgcrypto with schema extensions;`);
+  await db.exec(`create role anon; create role authenticated; create role service_role bypassrls; create schema auth; create schema extensions; create table auth.users(id uuid primary key,email text,raw_user_meta_data jsonb default '{}',raw_app_meta_data jsonb default '{"vcimob_provisioning":"administrative"}',invited_at timestamptz); create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$; grant usage on schema public,auth to anon,authenticated,service_role; create extension pgcrypto with schema extensions;`);
   for (const file of readdirSync("supabase/migrations").filter(name => name.endsWith(".sql") && name <= "20260916000000_global_mobile_crud_audit.sql").sort()) await db.exec(read(`supabase/migrations/${file}`));
   const ids = {
     owner: "56000000-0000-0000-0000-000000000001",
