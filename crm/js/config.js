@@ -1,15 +1,12 @@
-/* Configuração pública: use somente a Publishable Key do projeto Supabase. */
-const CRM_CONFIG = {
-  supabaseUrl: "https://isbkhhobutbdtdtpaavn.supabase.co",
-  supabasePublishableKey: "sb_publishable_cGq_OqxifhWpbVEGobB-7Q_De9SuyBC",
+/* Public configuration validated by js/runtime-config.js before any API request. */
+const CRM_CONFIG = Object.freeze({
+  supabaseUrl: window.VC_IMOB_CONFIG?.supabaseUrl || "",
+  supabasePublishableKey: window.VC_IMOB_CONFIG?.supabasePublishableKey || "",
+  environment: window.VC_IMOB_CONFIG?.environment || "development",
+  authRedirectUrl: window.VC_IMOB_CONFIG?.authRedirectUrl || "",
   propertiesPath: "../data/imoveis.json"
-};
+});
 
 function isSupabaseConfigured() {
-  return Boolean(
-    CRM_CONFIG.supabaseUrl &&
-    CRM_CONFIG.supabasePublishableKey &&
-    !CRM_CONFIG.supabaseUrl.startsWith("YOUR_") &&
-    !CRM_CONFIG.supabasePublishableKey.startsWith("YOUR_")
-  );
+  return Boolean(CRM_CONFIG.supabaseUrl && CRM_CONFIG.supabasePublishableKey);
 }

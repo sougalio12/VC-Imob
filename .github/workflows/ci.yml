@@ -1,0 +1,31 @@
+name: Validar VC-Imob
+on:
+  pull_request:
+  push:
+    branches: [main, fix/estabilizacao-vcimob]
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NODE_ENV: test
+      VC_IMOB_TEST_RUN: '1'
+      TZ: America/Cuiaba
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.5.6
+      - run: deno check --frozen supabase/functions/site-lead/index.ts
+      - run: npm test
+      - run: npm run build:web

@@ -26,8 +26,8 @@ port = 54324
 
 [auth]
 enabled = true
-site_url = "https://valdineycapistranoimoveis.com.br/crm/"
-additional_redirect_urls = ["https://valdineycapistranoimoveis.com.br/crm/", "https://valdineycapistranoimoveis.com.br/crm/confirm.html", "https://valdineycapistranoimoveis.com.br/crm/login.html", "http://127.0.0.1:3000", "http://127.0.0.1:3000/crm/confirm.html", "http://localhost:3000", "http://localhost:3000/crm/confirm.html"]
+site_url = "http://127.0.0.1:4174/crm/"
+additional_redirect_urls = ["http://127.0.0.1:4174/crm/confirm.html", "http://localhost:4174/crm/confirm.html", "http://127.0.0.1:3000/crm/confirm.html", "http://localhost:3000/crm/confirm.html"]
 enable_signup = true
 
 [auth.email]

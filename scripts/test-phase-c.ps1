@@ -72,6 +72,7 @@ function New-LocalTestUser {
         email = $Email
         password = $Password
         email_confirm = $true
+        app_metadata = @{ vcimob_provisioning = "administrative" }
         user_metadata = @{
             full_name = $Email.Split('@')[0]
             company_name = $company
@@ -238,22 +239,22 @@ try {
     $env:PHASE_C_TEST_PASSWORD = $password
 
     if (-not $SkipEdgeFunction) {
-        $catalog = Get-Content -LiteralPath (Join-Path $script:RepositoryRoot 'data/imoveis.json') -Raw | ConvertFrom-Json
-        $property = @($catalog) | Where-Object {
-            $_.ativo -eq $true -and [string]$_.codigo -match '^[A-Za-z0-9-]{3,32}$'
-        } | Select-Object -First 1
-        if (-not $property) { throw 'No active synthetic-testable property exists in data/imoveis.json.' }
-
-        Write-Host 'Starting local property fixture and site-lead Edge Function...' -ForegroundColor Cyan
-        Start-HiddenProcess -FilePath (Get-Command node).Source -ArgumentList @('scripts/local-property-server.mjs') -LogPrefix 'property-server' | Out-Null
-        Wait-HttpEndpoint 'http://127.0.0.1:4173/data/imoveis.json'
+        # Insert a synthetic published property only into the guarded local project.
+        Assert-LocalUrl $local.API_URL
+        $property = @{ codigo = 'VCI990001' }
+        $fixtureSql = Join-Path $script:RepositoryRoot 'supabase/.local/site-lead-property.sql'
+        [System.IO.File]::WriteAllText($fixtureSql, @"
+insert into public.properties(organization_id,code,title,slug,status,is_published)
+values('$organizationId'::uuid,'VCI990001','Phase C synthetic property','phase-c-synthetic','available',true)
+on conflict(organization_id,code) do update set status='available',is_published=true;
+"@, [System.Text.UTF8Encoding]::new($false))
+        Invoke-LocalSqlFile -Path $fixtureSql
 
         $envPath = Join-Path $script:RepositoryRoot 'supabase/.local/site-lead.env'
         $environmentLines = @(
             "SITE_LEAD_ORGANIZATION_ID=$organizationId"
             'SITE_LEAD_ALLOWED_ORIGINS=http://127.0.0.1:4173'
             'SITE_LEAD_RATE_LIMIT_SALT=local-phase-c-rate-limit-only'
-            'SITE_PUBLIC_URL=http://host.docker.internal:4173'
         )
         # Supabase CLI rejects an UTF-8 BOM as part of the first variable name.
         # Use an explicit BOM-less encoding across Windows PowerShell and pwsh.

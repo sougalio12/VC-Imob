@@ -8,7 +8,7 @@ const ui = readFileSync("crm/js/capture-marketing.js", "utf8");
 const html = readFileSync("crm/index.html", "utf8");
 const sw = readFileSync("crm/service-worker.js", "utf8");
 const publicLead = readFileSync("js/site-lead.js", "utf8");
-const edge = readFileSync("supabase/functions/site-lead/index.ts", "utf8");
+const edge = readFileSync("supabase/functions/site-lead/handler.ts", "utf8");
 const qrSource = readFileSync("crm/js/vendor/qrcode-generator.js", "utf8");
 
 test("CAP01 pipeline, owner 360 and marketing views are wired", () => {
@@ -39,8 +39,8 @@ test("CAP03 write access is RPC-only and tenant references are validated", () =>
 
 test("CAP04 UTM capture is normalized, bounded and cannot grant private access", () => {
   assert.match(publicLead, /\^\[a-z0-9\._~-\]\+\$/);
-  assert.match(edge, /capture_site_lead_attributed/);
-  assert.match(edge, /parsed\.hostname === "valdineycapistranoimoveis\.com\.br"/);
+  assert.match(edge, /capture_published_site_lead/);
+  assert.match(edge, /parsed\.origin === allowedOrigin/);
   assert.match(migration, /grant execute on function public\.capture_site_lead_attributed[\s\S]+to service_role/);
   assert.match(migration, /revoke all on function public\.capture_site_lead_attributed[\s\S]+from public,anon,authenticated/);
 });

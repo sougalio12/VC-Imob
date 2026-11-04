@@ -7,7 +7,7 @@ import {pgcrypto} from "@electric-sql/pglite/contrib/pgcrypto";
 const db=new PGlite({extensions:{pgcrypto}});
 await db.exec(`create role anon; create role authenticated; create role service_role bypassrls;
   create schema auth; create schema extensions;
-  create table auth.users(id uuid primary key,email text,raw_user_meta_data jsonb default '{}');
+  create table auth.users(id uuid primary key,email text,raw_user_meta_data jsonb default '{}',raw_app_meta_data jsonb default '{"vcimob_provisioning":"administrative"}',invited_at timestamptz);
   create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
   grant usage on schema public,auth to anon,authenticated,service_role;
   create extension pgcrypto with schema extensions;`);

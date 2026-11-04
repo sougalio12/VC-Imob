@@ -200,10 +200,10 @@ async function signUpPublicAccount(payload) {
 }
 
 function getAuthConfirmationRedirectUrl() {
+  if (CRM_CONFIG.authRedirectUrl) return CRM_CONFIG.authRedirectUrl;
   const official = "https://valdineycapistranoimoveis.com.br/crm/confirm.html";
   if (typeof window === "undefined") return official;
-  if (["localhost", "127.0.0.1"].includes(window.location.hostname)) return new URL("./confirm.html", window.location.href).href;
-  return official;
+  return new URL("./confirm.html", window.location.href).href;
 }
 
 async function resendSignupConfirmation(email) {

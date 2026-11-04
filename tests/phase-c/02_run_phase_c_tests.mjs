@@ -1,3 +1,6 @@
+import {assertLocalBackend} from "../helpers/local-backend.mjs";
+assertLocalBackend(process.env.SUPABASE_URL);
+if (process.env.PHASE_C_SITE_LEAD_URL && process.env.PHASE_C_SITE_LEAD_URL !== `${assertLocalBackend(process.env.SUPABASE_URL)}/functions/v1/site-lead`) throw new Error("Phase C Edge endpoint must use the local backend.");
 import process from "node:process";
 
 const PRODUCTION_PROJECT_REF = "isbkhhobutbdtdtpaavn";

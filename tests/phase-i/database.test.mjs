@@ -9,7 +9,7 @@ if (!pkg) throw Error('PGLITE_PACKAGE required');
 const { PGlite } = await import(pathToFileURL(resolve(pkg, 'dist/index.js')));
 const { pgcrypto } = await import(pathToFileURL(resolve(pkg, 'dist/contrib/pgcrypto.js')));
 const db = new PGlite({ extensions: { pgcrypto } });
-await db.exec(`create role anon;create role authenticated;create role service_role bypassrls;create schema auth;create schema extensions;create table auth.users(id uuid primary key,email text,raw_user_meta_data jsonb default '{}');create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;grant usage on schema public,auth to authenticated,anon,service_role;create extension pgcrypto with schema extensions;`);
+await db.exec(`create role anon;create role authenticated;create role service_role bypassrls;create schema auth;create schema extensions;create table auth.users(id uuid primary key,email text,raw_user_meta_data jsonb default '{}',raw_app_meta_data jsonb default '{}',invited_at timestamptz);create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;grant usage on schema public,auth to authenticated,anon,service_role;create extension pgcrypto with schema extensions;`);
 for (const file of readdirSync('supabase/migrations').filter(file => file.endsWith('.sql')).sort()) await db.exec(readFileSync(`supabase/migrations/${file}`, 'utf8'));
 
 const ids = { owner: '31000000-0000-0000-0000-000000000001', second: '31000000-0000-0000-0000-000000000002', outsider: '31000000-0000-0000-0000-000000000003' };
