@@ -1,0 +1,29 @@
+name: Quality gates
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: node --test tests/auth/*.test.mjs tests/public-site.test.mjs tests/news-and-share.test.mjs tests/final-round/platform-hardening.test.mjs tests/master-beta/frontend.test.mjs tests/phase-h/phase-h.test.mjs tests/phase-i/phase-i.test.mjs tests/phase-j/phase-j.test.mjs tests/vc-imob-2/fallback.test.mjs
+      - run: npx playwright install --with-deps chromium webkit
+      - name: Browser tests
+        run: |
+          python3 -m http.server 8000 > /tmp/vc-http.log 2>&1 &
+          node tests/vc-imob-2/browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: vc-imob-browser-evidence
+          path: artifacts/vc-imob-2

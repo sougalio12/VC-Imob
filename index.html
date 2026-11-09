@@ -119,6 +119,7 @@
   >
 
   <link rel="stylesheet" href="./css/site-lead.css">
+  <link rel="stylesheet" href="./css/vc-imob-2.css?v=vc2-etapa1-20261109">
 
 </head>
 
@@ -2218,7 +2219,7 @@
 <script src="./js/caps.js"></script>
 
 <script src="./js/site-lead.js"></script>
-<script src="./js/public-catalog.js?v=premium-beta-20260913"></script>
+<script src="./js/public-catalog.js?v=vc2-etapa1-20261109"></script>
 <script src="./js/property-share.js?v=share-20261010"></script>
 
 
@@ -2464,10 +2465,10 @@ function formatarPreco(
 
 
   if (
-    Number.isNaN(numero)
+    !Number.isFinite(numero) || numero <= 0
   ) {
 
-    return String(valor);
+    return "Consulte";
 
   }
 
@@ -2482,8 +2483,9 @@ function formatarPreco(
       currency:
         "BRL",
 
+      minimumFractionDigits: Number.isInteger(numero) ? 0 : 2,
       maximumFractionDigits:
-        0
+        2
 
     }
   ).format(
@@ -3880,6 +3882,7 @@ carregarNoticias();
 </script>
 
 
+<script src="./js/vc-imob-2.js?v=vc2-etapa1-20261109" defer></script>
 </body>
 
 </html>
