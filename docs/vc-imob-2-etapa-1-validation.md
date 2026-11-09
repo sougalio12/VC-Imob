@@ -10,6 +10,7 @@ Base: PR #3, `feat/vc-imob-2-minimal-warm`. PR #2 permanece separado; seu CSS n�
 - Cartões mantêm lead e compartilhamento, navegação sem links aninhados, fotos 4:3 e até três características disponíveis.
 - WhatsApp usa SITE_CONFIG; botão duplicado removido. Menu tem foco, teclado, Escape, clique externo, scroll lock e safe areas. Splash pode ser pulado, sai ao teclado, respeita sessão e movimento reduzido.
 - Formulário de proprietários preservado; links para seções ocultas removidos. Paleta, logotipo, hero e CTA aprovados mantidos.
+- Assets alterados usam versão na URL para invalidar caches anteriores. Preview imutável é usado para a inspeção final.
 - Workflow GitHub Actions produz o check obrigatório `tests`; nenhuma proteção de branch foi alterada.
 
 ## Evidências locais — 2026-11-09 UTC
