@@ -514,3 +514,7 @@ body.vc-catalog-full #imoveis {
   color: inherit;
   font: inherit;
 }
+
+/* Splash: enlarged logo without visible white JPEG background */
+.vc-welcome img{width:clamp(170px,32vw,240px);height:auto;max-height:240px;object-fit:contain;mix-blend-mode:multiply}
+.vc-welcome{gap:16px}
