@@ -515,6 +515,13 @@ body.vc-catalog-full #imoveis {
   font: inherit;
 }
 
-/* Splash: enlarged logo without visible white JPEG background */
-.vc-welcome img{width:clamp(170px,32vw,240px);height:auto;max-height:240px;object-fit:contain;mix-blend-mode:multiply}
-.vc-welcome{gap:16px}
+/* Keep the original artwork crisp; blend its white into the warm surface. */
+.vc-welcome img {
+  width: min(560px, 88vw);
+  height: clamp(96px, 24vw, 170px);
+  max-width: 100%;
+  object-fit: cover;
+  object-position: center;
+  mix-blend-mode: multiply;
+}
+.vc-welcome { gap: 16px; }
