@@ -28,7 +28,7 @@ const fixture = JSON.parse(
       await page.addInitScript(() => {
         const timer = window.setTimeout;
         window.setTimeout = (fn, ms, ...args) =>
-          timer(fn, ms === 3800 ? 15000 : ms, ...args);
+          timer(fn, ms === 5500 ? 15000 : ms, ...args);
       });
       await page.goto(base + "/index.html", { waitUntil: "domcontentloaded" });
       const splash = page.locator(".vc-welcome");
@@ -78,16 +78,28 @@ const fixture = JSON.parse(
           };
         });
       };
-      let state = await frame(600);
-      assert.ok(state.logo > 0.99);
-      assert.ok(state.title[0] > state.title.at(-1));
-      assert.ok(state.subtitle.every((v) => v === 0));
+      let state = await frame(500);
+      assert.ok(state.logo > 0 && state.logo < 1);
+      assert.ok([...state.title, ...state.subtitle].every((v) => v === 0));
       const initialHeight = state.height;
       state = await frame(1000);
+      assert.ok(state.logo > 0.99);
+      assert.ok([...state.title, ...state.subtitle].every((v) => v === 0));
+      state = await frame(1600);
+      assert.ok(state.title[0] > state.title.at(-1));
+      assert.ok(state.subtitle.every((v) => v === 0));
+      state = await frame(2200);
       assert.ok(state.title.every((v) => v > 0.99));
       assert.ok(state.subtitle.every((v) => v === 0));
-      state = await frame(2000);
-      assert.ok([...state.title, ...state.subtitle].every((v) => v > 0.99));
+      state = await frame(2800);
+      assert.ok(state.title.every((v) => v > 0.99));
+      assert.ok(state.subtitle[0] > state.subtitle.at(-1));
+      for (const time of [3400, 4000, 4500]) {
+        state = await frame(time);
+        assert.ok([...state.title, ...state.subtitle].every((v) => v > 0.99));
+        assert.ok(state.logo > 0.99);
+        assert.equal(state.background, 1);
+      }
       assert.equal(state.height, initialHeight);
       assert.equal(
         await page.evaluate(
@@ -98,15 +110,20 @@ const fixture = JSON.parse(
       await page.screenshot({
         path: `artifacts/vc-imob-2/welcome-${engine.name()}-${mobile ? "iphone" : "desktop"}-hold.png`,
       });
-      state = await frame(2550);
+      state = await frame(4650);
       assert.ok(state.title[0] < state.title.at(-1));
-      state = await frame(3050);
+      assert.ok(state.subtitle[0] < state.subtitle.at(-1));
+      assert.ok(state.logo > 0.99);
+      state = await frame(4900);
       assert.ok([...state.title, ...state.subtitle].every((v) => v < 0.01));
       assert.ok(state.logo > 0.99);
-      state = await frame(3300);
+      state = await frame(5050);
       assert.ok(state.logo > 0 && state.logo < 1);
       assert.equal(state.background, 1);
-      state = await frame(3600);
+      state = await frame(5200);
+      assert.ok(state.logo < 0.01);
+      assert.equal(state.background, 1);
+      state = await frame(5350);
       assert.ok(state.background > 0 && state.background < 1);
       assert.ok(state.logo < 0.01);
       await page.evaluate(() =>
@@ -148,13 +165,13 @@ const fixture = JSON.parse(
     await page.waitForFunction(
       () => window.welcomeTimes.length === 2,
       {},
-      { timeout: 6000 },
+      { timeout: 7500 },
     );
     const elapsed = await page.evaluate(
       () => welcomeTimes[1] - welcomeTimes[0],
     );
     assert.ok(
-      elapsed >= 3700 && elapsed < 5000,
+      elapsed >= 5400 && elapsed < 6500,
       `fallback duration ${elapsed}`,
     );
     await context.close();

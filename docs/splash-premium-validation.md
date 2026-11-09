@@ -6,13 +6,15 @@ Base: main após o PR #4 (merge 34fb548). Alteração limitada à abertura; CRM,
 
 A abertura contém apenas a marca original e os dois textos aprovados. O botão Pular, seu CSS e seus handlers foram removidos. A lógica foi isolada em `js/welcome.js`; não há dependências novas nem requisições de rede nesse módulo.
 
-- Logo: entrada de 620 ms, com opacidade e deslocamento vertical de 6 px.
-- Título: letras entram a partir de 250 ms, em intervalos de 18 ms.
-- Subtítulo: letras entram a partir de 1050 ms, após a entrada completa do título, em intervalos de 12 ms.
-- Permanência: todos os elementos ficam visíveis antes da saída.
-- Letras saem progressivamente a partir de 2400/2450 ms; logo sai a partir de 3100 ms.
-- Fundo #F5F1EA dissolve entre 3400 e 3750 ms.
-- Timer independente remove o overlay em 3800 ms mesmo com animações CSS desativadas. Retorno à aba também verifica o prazo.
+- 0–1000 ms: entrada suave da logo.
+- 1000–2200 ms: entrada progressiva das letras do título.
+- 2200–3400 ms: entrada progressiva das letras do subtítulo.
+- 3400–4500 ms: logo e textos totalmente visíveis.
+- 4500–4900 ms: saída progressiva das letras; 4900–5200 ms: saída da logo.
+- 5200–5500 ms: dissolução do fundo #F5F1EA.
+- Timer independente remove o overlay em 5500 ms mesmo com animações CSS desativadas. Retorno à aba também verifica o prazo.
+
+O intervalo entre letras é calculado pela quantidade real de caracteres, incluindo a duração do fade dentro da janela de cada texto.
 
 Textos completos ficam disponíveis a leitores de tela; letras visuais usam `aria-hidden`. Abertura executa uma vez por sessão. Movimento reduzido ou armazenamento de sessão indisponível levam diretamente à home. O overlay não captura foco nem exige interação.
 
@@ -34,7 +36,7 @@ node tests/vc-imob-2/welcome.cjs
 
 Matriz existente aprovada em Chromium/WebKit, desktop/iPhone. Testes específicos aprovados nos quatro perfis: sequência de entrada/saída, opacidade progressiva, logo saindo por último, dissolução, ausência de botão, textos acessíveis, geometria estável, ausência de overflow e sessão única. Nos dois engines, também passaram timer com animações desativadas, movimento reduzido e storage bloqueado.
 
-Gravação real local: duração medida de 3800,6 ms; ao encerrar, documento `complete` e seis cartões carregados. Evidências locais em `artifacts/vc-imob-2/welcome-*` e vídeo em `artifacts/vc-imob-2/welcome-video/`. O CI publica screenshots como artefatos.
+A duração da versão de 5,5 segundos é conferida pelo teste de fallback e pelos limites de cada fase. A medição real e a verificação após deploy são registradas no PR correspondente. Evidências locais em `artifacts/vc-imob-2/welcome-*` e vídeo em `artifacts/vc-imob-2/welcome-video/`. O CI publica screenshots como artefatos.
 
 O ambiente cloud usa as bibliotecas WebKit temporárias previamente verificadas em `/tmp` e wrapper que preserva LD_LIBRARY_PATH. O CI instala dependências normalmente com Playwright.
 

@@ -2,7 +2,7 @@
 (() => {
   "use strict";
   const SESSION_KEY = "vcimob-welcome";
-  const MAX_DURATION = 3800;
+  const MAX_DURATION = 5500;
   let splash;
   let timeout;
   const close = () => {
@@ -15,7 +15,12 @@
     if (!document.hidden && performance.now() - startedAt >= MAX_DURATION)
       close();
   }
-  function textElement(tag, text, start, stagger, exitStart, exitStagger) {
+  function textElement(tag, text, start, enterEnd, exitStart, exitEnd) {
+    const count = Array.from(text.replace(/ /g, "")).length;
+    // Include the first and last letter's fade inside each requested interval.
+    const intervals = Math.max(1, count - 1);
+    const stagger = (enterEnd - start - 400) / intervals;
+    const exitStagger = (exitEnd - exitStart - 280) / intervals;
     const element = document.createElement(tag);
     const accessible = document.createElement("span");
     accessible.className = "visually-hidden";
@@ -63,14 +68,14 @@
     logo.decoding = "async";
     splash.append(
       logo,
-      textElement("h2", "Bem-vindo à VC Imob.", 250, 18, 2400, 8),
+      textElement("h2", "Bem-vindo à VC Imob.", 1000, 2200, 4500, 4900),
       textElement(
         "p",
         "Onde novos caminhos encontram seu endereço.",
-        1050,
-        12,
-        2450,
-        8,
+        2200,
+        3400,
+        4500,
+        4900,
       ),
     );
     startedAt = performance.now();
