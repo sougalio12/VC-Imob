@@ -83,7 +83,10 @@ const fixture = JSON.parse(
       assert.ok(state.title[0] > state.title.at(-1));
       assert.ok(state.subtitle.every((v) => v === 0));
       const initialHeight = state.height;
-      state = await frame(1750);
+      state = await frame(1000);
+      assert.ok(state.title.every((v) => v > 0.99));
+      assert.ok(state.subtitle.every((v) => v === 0));
+      state = await frame(2000);
       assert.ok([...state.title, ...state.subtitle].every((v) => v > 0.99));
       assert.equal(state.height, initialHeight);
       assert.equal(

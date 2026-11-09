@@ -8,7 +8,7 @@ A abertura contém apenas a marca original e os dois textos aprovados. O botão 
 
 - Logo: entrada de 620 ms, com opacidade e deslocamento vertical de 6 px.
 - Título: letras entram a partir de 250 ms, em intervalos de 18 ms.
-- Subtítulo: letras entram a partir de 800 ms, em intervalos de 12 ms.
+- Subtítulo: letras entram a partir de 1050 ms, após a entrada completa do título, em intervalos de 12 ms.
 - Permanência: todos os elementos ficam visíveis antes da saída.
 - Letras saem progressivamente a partir de 2400/2450 ms; logo sai a partir de 3100 ms.
 - Fundo #F5F1EA dissolve entre 3400 e 3750 ms.

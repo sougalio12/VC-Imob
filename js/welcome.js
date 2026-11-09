@@ -67,7 +67,7 @@
       textElement(
         "p",
         "Onde novos caminhos encontram seu endereço.",
-        800,
+        1050,
         12,
         2450,
         8,
