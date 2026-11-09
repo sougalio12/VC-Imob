@@ -222,49 +222,6 @@ body {
 .vc-whatsapp:focus-visible {
   outline: 3px solid #927448;
 }
-.vc-welcome {
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  background: #f5f1ea;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  gap: 12px;
-  text-align: center;
-  padding: 24px;
-  opacity: 1;
-  transition: opacity 0.4s;
-}
-.vc-welcome[hidden] {
-  display: none;
-}
-.vc-welcome.vc-out {
-  opacity: 0;
-  pointer-events: none;
-}
-.vc-welcome img {
-  width: 96px;
-  height: 96px;
-  object-fit: contain;
-}
-.vc-welcome h2 {
-  font-size: clamp(1.4rem, 4vw, 2rem);
-  margin: 0;
-}
-.vc-welcome p {
-  margin: 0;
-  color: #786b60;
-}
-.vc-welcome button {
-  margin-top: 18px;
-  background: none;
-  border: 1px solid #927448;
-  border-radius: 8px;
-  padding: 9px 16px;
-  color: #40352e;
-}
 .vc-mobile-open .vc-whatsapp {
   display: none;
 }
@@ -292,7 +249,6 @@ body {
   html {
     scroll-behavior: auto;
   }
-  .vc-welcome,
   .header-inner,
   .site-logo img {
     transition: none !important;
@@ -480,12 +436,6 @@ body.vc-catalog-full #imoveis {
   outline: 3px solid #927448;
   outline-offset: 3px;
 }
-.vc-welcome {
-  pointer-events: none;
-}
-.vc-welcome button {
-  pointer-events: auto;
-}
 #imoveis .property-badge {
   z-index: 3;
 }
@@ -515,7 +465,23 @@ body.vc-catalog-full #imoveis {
   font: inherit;
 }
 
-/* Keep the original artwork crisp; blend its white into the warm surface. */
+/* Welcome only: fixed geometry, composited movement, original brand artwork. */
+.vc-welcome {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 24px;
+  text-align: center;
+  background: #f5f1ea;
+  color: #40352e;
+  pointer-events: none;
+  animation: vc-welcome-dissolve 350ms 3400ms cubic-bezier(0.4, 0, 0.2, 1) both;
+}
 .vc-welcome img {
   width: min(560px, 88vw);
   height: clamp(96px, 24vw, 170px);
@@ -523,5 +489,68 @@ body.vc-catalog-full #imoveis {
   object-fit: cover;
   object-position: center;
   mix-blend-mode: multiply;
+  animation:
+    vc-welcome-enter 620ms cubic-bezier(0.2, 0.7, 0.2, 1) both,
+    vc-welcome-leave 270ms 3100ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
-.vc-welcome { gap: 16px; }
+.vc-welcome h2 {
+  margin: 0;
+  font-size: clamp(1.4rem, 4vw, 2rem);
+  line-height: 1.3;
+}
+.vc-welcome p {
+  margin: 0;
+  max-width: 38rem;
+  color: #786b60;
+  line-height: 1.6;
+}
+.vc-welcome__word {
+  display: inline-block;
+  white-space: nowrap;
+}
+.vc-welcome__letter {
+  display: inline-block;
+  animation:
+    vc-welcome-enter 400ms var(--vc-in-delay) cubic-bezier(0.2, 0.7, 0.2, 1)
+      both,
+    vc-welcome-leave 280ms var(--vc-out-delay) cubic-bezier(0.4, 0, 0.2, 1)
+      forwards;
+}
+@keyframes vc-welcome-enter {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 6px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+@keyframes vc-welcome-leave {
+  from {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    opacity: 0;
+    transform: translate3d(0, -3px, 0);
+  }
+}
+@keyframes vc-welcome-dissolve {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .vc-welcome {
+    display: none;
+    animation: none;
+  }
+  .vc-welcome img,
+  .vc-welcome__letter {
+    animation: none;
+  }
+}

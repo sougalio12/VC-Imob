@@ -425,31 +425,4 @@
     )
       closeMenu();
   });
-  try {
-    if (!sessionStorage.getItem("vcimob-welcome")) {
-      sessionStorage.setItem("vcimob-welcome", "1");
-      if (
-        !matchMedia("(prefers-reduced-motion: reduce)").matches &&
-        !window.location.pathname.includes("imovel")
-      ) {
-        const splash = document.createElement("div");
-        splash.className = "vc-welcome";
-        splash.setAttribute("role", "region");
-        splash.setAttribute("aria-label", "Boas-vindas à VC Imob");
-        splash.innerHTML =
-          '<img src="./assets/images/4d6f85cd-fe07-4c5c-bbbf-be216a48a1b1.jpeg" alt="VC Imob"><h2>Bem-vindo à VC Imob.</h2><p>Onde novos caminhos encontram seu endereço.</p><button type="button">Pular apresentação</button>';
-        document.body.appendChild(splash);
-        let done = false;
-        const close = () => {
-          if (done) return;
-          done = true;
-          splash.classList.add("vc-out");
-          setTimeout(() => splash.remove(), 420);
-        };
-        splash.querySelector("button").addEventListener("click", close);
-        document.addEventListener("keydown", close, { once: true });
-        setTimeout(close, 1800);
-      }
-    }
-  } catch {}
 })();

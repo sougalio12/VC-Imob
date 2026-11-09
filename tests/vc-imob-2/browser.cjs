@@ -195,7 +195,7 @@ const source = JSON.parse(
         await page.emulateMedia({ reducedMotion: "no-preference" });
         await page.evaluate(() => sessionStorage.removeItem("vcimob-welcome"));
         await page.reload();
-        await page.getByRole("button", { name: "Pular apresentação" }).click();
+        assert.equal(await page.locator(".vc-welcome button").count(), 0);
         await page.waitForFunction(
           () => !document.querySelector(".vc-welcome"),
         );
