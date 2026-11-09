@@ -514,3 +514,14 @@ body.vc-catalog-full #imoveis {
   color: inherit;
   font: inherit;
 }
+
+/* Keep the original artwork crisp; blend its white into the warm surface. */
+.vc-welcome img {
+  width: min(560px, 88vw);
+  height: clamp(96px, 24vw, 170px);
+  max-width: 100%;
+  object-fit: cover;
+  object-position: center;
+  mix-blend-mode: multiply;
+}
+.vc-welcome { gap: 16px; }
