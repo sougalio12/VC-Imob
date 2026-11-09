@@ -160,7 +160,7 @@ function renderProperty(property) {
         <h1 class="property-detail-title">${escapeHTML(property.titulo || "Imóvel à venda")}</h1>
         <p class="property-detail-location">${escapeHTML(propertyLocation(property) || "Localização não informada")}</p>
       </div>
-      <div class="property-detail-price"><small>Valor</small><strong>${formatPrice(property.preco)}</strong></div>
+      <div class="property-detail-price"><small>${property.finalidade === "locacao" ? "Aluguel mensal" : "Valor de venda"}</small><strong>${formatPrice(property.preco)}${property.finalidade === "locacao" && Number(property.preco) > 0 ? "/mês" : ""}</strong></div>
     </section>
 
     ${images.length ? `
