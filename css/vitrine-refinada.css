@@ -1,0 +1,31 @@
+/* VC Imob | Refinamento visual da vitrine pública. Escopo isolado. */
+:root { --container: 1240px; --radius-lg: 20px; --radius-md: 13px; --shadow-sm: 0 6px 24px rgba(15,23,42,.055); --shadow-md: 0 18px 42px rgba(15,23,42,.12); }
+body { background: #f8f9fa; }
+.site-header { box-shadow: 0 4px 24px rgba(0,0,0,.035); }
+.main-nav a { transition: color .2s ease; }
+.main-nav a:hover { color: #94723b; }
+.hero h1 { max-width: 760px; }
+.search-panel { border: 1px solid #e8e5df; box-shadow: 0 22px 65px rgba(20,24,29,.13); }
+.form-field:focus-within { border-color: #b99a65; box-shadow: 0 0 0 3px rgba(200,169,107,.13); }
+.search-tag:focus-visible,.btn:focus-visible { outline: 3px solid #b99a65; outline-offset: 3px; }
+.properties-grid { gap: 26px; }
+.property-card { border-color: #e9e9e6; box-shadow: 0 10px 28px rgba(15,23,42,.065); }
+.property-card:hover { transform: translateY(-4px); box-shadow: 0 18px 42px rgba(15,23,42,.12); }
+.property-card .property-image img { transition: transform .45s ease; }
+.property-card:hover .property-image img { transform: scale(1.035); }
+.property-card-header { background: #fff; }
+.section-header { gap: 18px; }
+.section-description { line-height: 1.7; }
+@media (max-width: 760px) {
+  .hero { min-height: 580px; }
+  .hero-content { padding-top: 76px; }
+  .search-wrapper { margin-top: -34px; }
+  .search-panel { padding: 16px; border-radius: 20px; }
+  .properties-grid { gap: 18px; }
+  .property-card { border-radius: 18px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .property-card,.property-card .property-image img,.btn { transition: none; }
+  .property-card:hover { transform: none; }
+  .property-card:hover .property-image img { transform: none; }
+}
