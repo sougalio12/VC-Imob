@@ -48,7 +48,8 @@
         if (!response.ok)
           throw new Error(`Catálogo remoto indisponível (${response.status}).`);
         const rows = await response.json();
-        if (!Array.isArray(rows)) throw new Error("Resposta inválida do catálogo.");
+        if (!Array.isArray(rows))
+          throw new Error("Resposta inválida do catálogo.");
         const properties = normalizeRows(rows);
         {
           try {

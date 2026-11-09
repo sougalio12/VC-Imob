@@ -2465,10 +2465,10 @@ function formatarPreco(
 
 
   if (
-    Number.isNaN(numero)
+    !Number.isFinite(numero) || numero <= 0
   ) {
 
-    return String(valor);
+    return "Consulte";
 
   }
 
@@ -2483,8 +2483,9 @@ function formatarPreco(
       currency:
         "BRL",
 
+      minimumFractionDigits: Number.isInteger(numero) ? 0 : 2,
       maximumFractionDigits:
-        0
+        2
 
     }
   ).format(

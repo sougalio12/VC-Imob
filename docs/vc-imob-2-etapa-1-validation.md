@@ -6,7 +6,7 @@ Base: PR #3, `feat/vc-imob-2-minimal-warm`. PR #2 permanece separado; seu CSS n�
 
 - RPC pública é prioritária, inclusive quando retorna catálogo vazio. Erros usam cache por até 24 horas e depois o JSON original, com aviso de contingência. Timeout de oito segundos. Preview oficial consulta o hostname canônico sem alterar o banco.
 - Home limita seis anúncios; catálogo, modalidades, bairro, tipo e histórico preservam parâmetros de URL e estados vazios.
-- Aluguel usa preço real e `/mês`, sem inventar condomínio. Detalhe também identifica aluguel mensal.
+- Aluguel usa preço real e `/mês`, preservando centavos e tratando preços ausentes ou inválidos sem inventar condomínio. Detalhe também identifica aluguel mensal.
 - Cartões mantêm lead e compartilhamento, navegação sem links aninhados, fotos 4:3 e até três características disponíveis.
 - WhatsApp usa SITE_CONFIG; botão duplicado removido. Menu tem foco, teclado, Escape, clique externo, scroll lock e safe areas. Splash pode ser pulado, sai ao teclado, respeita sessão e movimento reduzido.
 - Formulário de proprietários preservado; links para seções ocultas removidos. Paleta, logotipo, hero e CTA aprovados mantidos.
@@ -27,7 +27,7 @@ python3 -m http.server 8000
 node tests/vc-imob-2/browser.cjs
 ```
 
-Matriz Chromium e WebKit, desktop e iPhone 13: filtros, preço, histórico, menu/Escape, lead sem envio, âncoras e estados vazios. Desktop também testa home com sete registros exclusivamente na fixture de teste, catálogo completo, RPC vazia, rede lenta (750 ms), falha remota com cache e JSON, splash/Pular/sessão. Todos os contextos iniciais usam `prefers-reduced-motion: reduce`.
+Matriz Chromium e WebKit, desktop e iPhone 13: filtros, preço, histórico, menu visível, Tab/Shift+Tab, Escape, backdrop, fechamento por link, ausência de overflow, lead sem envio, âncoras e estados vazios. Desktop também testa home com sete registros exclusivamente na fixture de teste, catálogo completo, RPC vazia, rede lenta (750 ms), falha remota com cache e JSON, splash/Pular/sessão. Todos os contextos iniciais usam `prefers-reduced-motion: reduce`.
 
 As fixtures são snapshots públicos de leitura, nunca enviadas ao banco. Nenhum lead fictício foi criado. Screenshots ficam em `artifacts/vc-imob-2` e são publicados como artefato do workflow.
 
@@ -45,4 +45,10 @@ Referências: [RLS sem policies](https://supabase.com/docs/guides/database/datab
 
 ## Publicação
 
-Ainda depende da validação do preview correspondente ao commit final, check `tests` verde e fluxo normal do PR protegido. Este documento não afirma publicação nem teste autenticado de uma conta real do CRM. Nenhum merge deve acontecer antes dos gates finais.
+Preview de branch: https://feat-vc-imob-2-minimal-warm.valdiney-im-veis.pages.dev
+
+O preview de `ff4c13a` foi validado com RPC real em Chromium/WebKit, desktop/iPhone: VCI000007, preço, detalhe, home, WhatsApp e redirect do CRM para login. A rodada adicional de foco identificou e corrigiu a regra antiga `display:none` e o breakpoint 1100px; o drawer fechado também não deixa área rolável lateral. A matriz local ampliada passou após esta correção.
+
+O check `tests` de `ff4c13a` passou no GitHub: https://github.com/sougalio12/VC-Imob/actions/runs/42712897822
+
+O commit final também exige check verde e smoke do preview antes do merge protegido. Resultado final de publicação e verificação pública será registrado no PR #3. Nenhum teste autenticado de conta real do CRM nem envio real de lead é afirmado; a entrada protegida e a regressão do código preservado são verificadas sem criar dados.

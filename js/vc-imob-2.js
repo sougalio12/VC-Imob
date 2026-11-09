@@ -96,11 +96,14 @@
             price.textContent =
               p.preco == null || p.preco === ""
                 ? "Consulte o valor"
-                : Number(p.preco) > 0
+                : Number.isFinite(Number(p.preco)) && Number(p.preco) > 0
                   ? new Intl.NumberFormat("pt-BR", {
                       style: "currency",
                       currency: "BRL",
-                      maximumFractionDigits: 0,
+                      minimumFractionDigits: Number.isInteger(Number(p.preco))
+                        ? 0
+                        : 2,
+                      maximumFractionDigits: 2,
                     }).format(Number(p.preco)) + "/mês"
                   : "Consulte o valor";
           }
@@ -375,6 +378,10 @@
       'a[href="#categorias"],a[href="#noticias"],a[href="#financiamento"]',
     )
     .forEach((a) => a.closest("li")?.remove());
+  document.querySelectorAll(".footer-column").forEach((column) => {
+    const list = column.querySelector("ul");
+    if (list && !list.children.length) column.remove();
+  });
   const menu = byId("mobileMenuButton");
   const nav = byId("mainNav");
   const closeMenu = () => {
@@ -384,7 +391,9 @@
     if (nav?.contains(document.activeElement)) menu?.focus();
   };
   menu?.setAttribute("aria-expanded", "false");
-  addEventListener("resize", () => { if (innerWidth > 900) closeMenu(); });
+  addEventListener("resize", () => {
+    if (innerWidth > 1100) closeMenu();
+  });
   menu?.setAttribute("aria-controls", "mainNav");
   menu?.addEventListener("click", () => {
     setTimeout(() => {
@@ -401,15 +410,11 @@
     if (e.key === "Escape") closeMenu();
     if (e.key === "Tab" && nav?.classList.contains("is-open")) {
       const nodes = [menu, ...nav.querySelectorAll("a")];
-      const first = nodes[0],
-        last = nodes.at(-1);
-      if (e.shiftKey && document.activeElement === first) {
-        e.preventDefault();
-        last.focus();
-      } else if (!e.shiftKey && document.activeElement === last) {
-        e.preventDefault();
-        first.focus();
-      }
+      e.preventDefault();
+      const index = nodes.indexOf(document.activeElement);
+      const next =
+        (index + (e.shiftKey ? -1 : 1) + nodes.length) % nodes.length;
+      nodes[next].focus();
     }
   });
   document.addEventListener("click", (e) => {
