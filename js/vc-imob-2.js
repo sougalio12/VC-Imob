@@ -15,12 +15,12 @@ try {
     originalRender(items);
     const lookup=new Map((Array.isArray(items)?items:[]).map(p=>[String(p.codigo),p]));
     document.querySelectorAll('#propertiesGrid .property-card').forEach(card=>{
-      const code=card.querySelector('.property-code')?.textContent?.replace(/Código:\\s*/i,'').trim();
+      const code=card.querySelector('.property-code')?.textContent?.replace(/Código:\s*/i,'').trim();
       const p=lookup.get(code);if(!p)return;
       const rent=String(p.finalidade||p.purpose||'venda').toLowerCase().includes('loc');
       const badge=card.querySelector('.property-badge');if(badge){badge.textContent=rent?'PARA ALUGAR':'À VENDA';badge.classList.toggle('vc-rental-badge',rent)}
       const small=card.querySelector('.property-price small');if(small)small.textContent=rent?'Aluguel mensal':'Valor de venda';
-      const price=card.querySelector('.property-price strong');if(price&&rent){price.textContent=(p.preco==null||p.preco==='')?'Consulte o valor':new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:0}).format(Number(p.preco))+'/mês'+(p.condominioValor||p.valorCondominio?' + condomínio':' + condomínio');}
+      const price=card.querySelector('.property-price strong');if(price&&rent){price.textContent=(p.preco==null||p.preco==='')?'Consulte o valor':new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:0}).format(Number(p.preco))+'/mês'+' + condomínio';}
       const title=card.querySelector('.property-title');const image=card.querySelector('.property-image');if(title&&image){const link=document.createElement('a');link.href=image.href;link.textContent=title.textContent;title.replaceChildren(link);}
     });
   };
