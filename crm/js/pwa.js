@@ -20,6 +20,14 @@
     const offsetTop = Math.round(viewport?.offsetTop || 0);
     document.documentElement.style.setProperty("--visual-viewport-height", `${height}px`);
     document.documentElement.style.setProperty("--visual-viewport-offset-top", `${offsetTop}px`);
+    const keyboardOpen = Boolean(viewport && window.innerHeight - viewport.height > 120);
+    document.documentElement.classList.toggle("has-virtual-keyboard", keyboardOpen);
+  }
+
+  function revealFocusedModalControl() {
+    const active = document.activeElement;
+    if (!active?.matches?.(".crm-modal input, .crm-modal select, .crm-modal textarea")) return;
+    requestAnimationFrame(() => requestAnimationFrame(() => active.scrollIntoView({ block: "center", inline: "nearest", behavior: "auto" })));
   }
 
   function ensureInstallButton() {
@@ -161,7 +169,8 @@
         card?.setAttribute("tabindex", "-1");
         if (!wasOpen) {
           returnFocus = document.activeElement;
-          queueMicrotask(() => (modal.querySelector("input, select, textarea, button:not([data-modal-close]), [tabindex='0']") || card)?.focus());
+          const mobilePropertyEditor = window.matchMedia("(max-width: 820px)").matches && card?.classList.contains("property-editor");
+          queueMicrotask(() => (mobilePropertyEditor ? card : (modal.querySelector("input, select, textarea, button:not([data-modal-close]), [tabindex='0']") || card))?.focus());
         }
       } else if (wasOpen && returnFocus instanceof HTMLElement) {
         returnFocus.focus();
@@ -169,6 +178,9 @@
       wasOpen = open;
     });
     observer.observe(modal, { attributes: true, attributeFilter: ["class"], childList: true, subtree: true });
+    modal.addEventListener("focusin", event => {
+      if (event.target.matches("input, select, textarea")) revealFocusedModalControl();
+    });
     document.addEventListener("keydown", event => {
       if (event.key === "Escape" && modal.classList.contains("is-open") && typeof closeModal === "function") closeModal();
       if (event.key !== "Tab" || !modal.classList.contains("is-open")) return;
@@ -189,8 +201,8 @@
   window.addEventListener("online", setConnectivity);
   window.addEventListener("offline", setConnectivity);
   window.addEventListener("resize", syncVisualViewport, { passive: true });
-  window.visualViewport?.addEventListener("resize", syncVisualViewport, { passive: true });
-  window.visualViewport?.addEventListener("scroll", syncVisualViewport, { passive: true });
+  window.visualViewport?.addEventListener("resize", () => { syncVisualViewport(); revealFocusedModalControl(); }, { passive: true });
+  window.visualViewport?.addEventListener("scroll", () => { syncVisualViewport(); revealFocusedModalControl(); }, { passive: true });
   document.addEventListener("DOMContentLoaded", () => {
     setConnectivity();
     syncVisualViewport();

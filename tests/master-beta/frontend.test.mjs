@@ -13,7 +13,7 @@ const signupHtml = read("crm/signup.html");
 const supabase = read("crm/js/supabase.js");
 const pwa = read("crm/js/pwa.js");
 const serviceWorker = read("crm/service-worker.js");
-const css = read("crm/css/premium.css");
+const css = read("crm/css/premium.css") + read("crm/css/responsive-system.css");
 const intelligence = read("crm/js/premium-intelligence.js");
 const dashboard = read("crm/js/dashboard.js");
 const insights = read("crm/js/lead-insights.js");
@@ -110,7 +110,9 @@ test("UI15 iPhone modal tracks the visual viewport and safe areas", () => {
   assert.match(pwa, /window\.visualViewport/);
   assert.match(css, /--visual-viewport-height/);
   assert.match(css, /safe-area-inset-top/);
-  assert.match(css, /\.modal-card>h2\{position:sticky/);
+  assert.match(css, /\.property-editor-form[\s\S]*overflow-y:\s*auto/);
+  assert.match(pwa, /revealFocusedModalControl/);
+  assert.match(pwa, /mobilePropertyEditor/);
 });
 
 test("UI16 intentional Kanban horizontal scrolling remains preserved", () => {
@@ -146,8 +148,15 @@ test("UI20 PWA caches only same-origin public shell assets", () => {
 test("UI21 new assets have explicit cache-busting in the CRM shell", () => {
   assert.match(crm, /premium-intelligence\.js\?v=master-beta-20260913/);
   assert.match(crm, /premium\.css\?v=master-beta-20260914/);
-  assert.match(crm, /pwa\.js\?v=premium-20260922/);
-  assert.match(crm, /responsive-system\.css\?v=mobile-fields-20260916b/);
+  assert.match(crm, /pwa\.js\?v=property-ux-20261110/);
+  assert.match(crm, /responsive-system\.css\?v=property-ux-20261110/);
+});
+
+test("UI23 property type previews an automatic reference while persisted codes stay read-only", () => {
+  assert.match(properties, /preview_next_property_reference/);
+  assert.match(properties, /PROPERTY_TYPES = \["Casa", "Terreno", "Apartamento", "Comercial", "Chácara", "Outros"\]/);
+  assert.match(properties, /control\.readOnly = true/);
+  assert.match(premiumData, /code: existing \?/);
 });
 
 test("UI22 no generative provider, fake push or store billing was introduced", () => {

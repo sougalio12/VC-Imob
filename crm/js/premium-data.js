@@ -21,7 +21,7 @@ async function loadManagedProperties() {
 
 async function saveManagedProperty(values, existing, mediaItems = []) {
   const org = await getActiveOrganizationId();
-  const payload = { code: values.code.trim().toUpperCase(), title: values.title.trim(), slug: slugify(values.slug || values.title),
+  const payload = { code: existing ? values.code.trim().toUpperCase() : null, title: values.title.trim(), slug: slugify(values.slug || values.title),
     purpose: values.purpose, property_type: cleanValue(values.property_type), description: cleanValue(values.description), price: numericValue(values.price),
     city: cleanValue(values.city), state: cleanValue(values.state)?.toUpperCase(), neighborhood: cleanValue(values.neighborhood), public_address: cleanValue(values.public_address),
     total_area: numericValue(values.total_area), total_area_unit: cleanValue(values.total_area_unit) || "m²", built_area: numericValue(values.built_area),

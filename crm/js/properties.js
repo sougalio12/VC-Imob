@@ -1,4 +1,5 @@
 const PROPERTY_STATUS = { draft: "Rascunho", available: "Disponível", reserved: "Reservado", sold: "Vendido", inactive: "Inativo" };
+const PROPERTY_TYPES = ["Casa", "Terreno", "Apartamento", "Comercial", "Chácara", "Outros"];
 
 function propertyMediaUrl(path) {
   const value = String(path || "").trim().replace(/\\/g, "/");
@@ -97,8 +98,8 @@ async function openPropertyModal(property) {
   form.append(progress);
   const values = property?._row || {}, controls = {};
   const specs = [
-    ["code", "Código VCI", "text", true, primary.grid], ["title", "Título", "text", true, primary.grid], ["slug", "Slug", "text", false, primary.grid],
-    ["purpose", "Finalidade", "select", true, primary.grid], ["property_type", "Tipo", "text", false, primary.grid], ["price", "Preço", "currency", false, primary.grid], ["status", "Status", "select", true, primary.grid],
+    ["code", "Referência", "text", Boolean(property), primary.grid], ["title", "Título", "text", true, primary.grid], ["slug", "Slug", "text", false, primary.grid],
+    ["purpose", "Finalidade", "select", true, primary.grid], ["property_type", "Tipo", "select", true, primary.grid], ["price", "Preço", "currency", false, primary.grid], ["status", "Status", "select", true, primary.grid],
     ["city", "Cidade", "text", false, location.grid], ["state", "UF", "text", false, location.grid], ["neighborhood", "Bairro", "text", false, location.grid], ["public_address", "Localização pública", "text", false, location.grid],
     ["total_area", "Área total (m²)", "decimal", false, details.grid], ["built_area", "Área construída/privativa (m²)", "decimal", false, details.grid], ["bedrooms", "Quartos", "number", false, details.grid], ["suites", "Suítes", "number", false, details.grid], ["bathrooms", "Banheiros", "number", false, details.grid], ["parking_spaces", "Vagas", "number", false, details.grid]
   ];
@@ -108,13 +109,40 @@ async function openPropertyModal(property) {
     if (required) control.required = true;
     if (name === "purpose") [["venda", "Venda"], ["locacao", "Locação"], ["venda_locacao", "Venda ou locação"]].forEach(([value, text]) => control.append(new Option(text, value)));
     if (name === "status") Object.entries(PROPERTY_STATUS).forEach(([value, text]) => control.append(new Option(text, value)));
+    if (name === "property_type") {
+      control.append(new Option("Selecione o tipo", ""));
+      PROPERTY_TYPES.forEach(type => control.append(new Option(type, type)));
+      if (values[name] && !PROPERTY_TYPES.includes(values[name])) control.append(new Option(values[name], values[name]));
+    }
     control.value = values[name] ?? (name === "purpose" ? "venda" : name === "status" ? "draft" : name === "state" ? "MT" : "");
-    if (name === "code" && property) control.readOnly = true;
+    if (name === "code") { control.readOnly = true; if (!property) control.placeholder = "Gerada automaticamente ao salvar"; }
     if (kind === "currency") bindCurrencyInput(control);
     if (kind === "decimal") control.inputMode = "decimal";
     if (kind === "number") { control.inputMode = "numeric"; control.pattern = "[0-9]*"; }
     controls[name] = control; labelElement.append(control); host.append(labelElement);
   });
+  const referencePreview = createElement("p", { className: "property-reference-preview", attrs: { role: "status", "aria-live": "polite" } });
+  controls.code.closest("label").append(referencePreview);
+  let previewRequest = 0;
+  async function refreshReferencePreview() {
+    if (property) { referencePreview.textContent = "A referência é definitiva e não muda ao editar o tipo."; return; }
+    const propertyType = controls.property_type.value;
+    const request = ++previewRequest;
+    referencePreview.dataset.reference = "";
+    if (!propertyType) { referencePreview.textContent = "Selecione o tipo para visualizar a próxima referência."; return; }
+    referencePreview.textContent = "Calculando a próxima referência…";
+    try {
+      const result = await callCrmRpc("preview_next_property_reference", { target_organization: await getActiveOrganizationId(), target_property_type: propertyType });
+      if (request !== previewRequest) return;
+      const reference = Array.isArray(result) ? result[0] : result;
+      referencePreview.dataset.reference = reference || "";
+      referencePreview.textContent = reference ? `Prévia: ${reference}. A referência definitiva será confirmada ao salvar.` : "Referência gerada ao salvar.";
+    } catch {
+      if (request === previewRequest) referencePreview.textContent = "A referência será gerada com segurança ao salvar.";
+    }
+  }
+  controls.property_type.addEventListener("change", refreshReferencePreview);
+  refreshReferencePreview();
   form.append(primary.fieldset, location.fieldset, details.fieldset);
   const description = propertyTextArea("Descrição", "description", values.description), features = propertyTextArea("Características (uma por linha)", "features", (values.features || []).join("\n"));
   form.append(description.label, features.label);
@@ -151,19 +179,22 @@ async function openPropertyModal(property) {
   if (!property) {
     loadPropertyDraft(null).then(draft => {
       if (!draft?.payload || !window.confirm("Continuar o cadastro anterior?")) return;
-      Object.entries(draft.payload.fields || {}).forEach(([name, value]) => { if (controls[name]) controls[name].value = value ?? ""; });
+      Object.entries(draft.payload.fields || {}).forEach(([name, value]) => {
+        if (!controls[name]) return;
+        if (name === "property_type" && value && ![...controls[name].options].some(option => option.value === value)) controls[name].append(new Option(value, value));
+        controls[name].value = value ?? "";
+      });
       description.control.value = draft.payload.description || ""; features.control.value = draft.payload.features || "";
       published.control.checked = Boolean(draft.payload.is_published); featured.control.checked = Boolean(draft.payload.featured);
-      (draft.payload.media || []).forEach(item => media.push(item)); drawMedia();
+      (draft.payload.media || []).forEach(item => media.push(item)); drawMedia(); refreshReferencePreview();
     }).catch(() => {});
   }
+  const uploadReference = property?.codigo || `draft-${crypto.randomUUID()}`;
   fileInput.addEventListener("change", async () => {
-    const code = controls.code.value.trim().toUpperCase();
-    if (!/^VCI\d{6}$/.test(code)) { uploadStatus.textContent = "Informe primeiro um código VCI válido."; return; }
     fileInput.disabled = true;
     try {
       for (const file of fileInput.files) {
-        const url = await uploadPropertyPhoto(code, file, text => { uploadStatus.textContent = `${file.name}: ${text}`; });
+        const url = await uploadPropertyPhoto(uploadReference, file, text => { uploadStatus.textContent = `${file.name}: ${text}`; });
         media.push({ storage_path: url, alt_text: `${controls.title.value || "Imóvel"} — foto ${media.length + 1}`, media_kind: "photo" }); drawMedia();
       }
     } catch (error) { uploadStatus.textContent = error.message || "Não foi possível enviar a foto. Tente novamente."; }
@@ -198,7 +229,7 @@ async function openPropertyModal(property) {
       if (published.control.checked && missing.required.length) throw new Error(`Para publicar, informe: ${missing.required.join(", ")}.`);
       if (published.control.checked && form.dataset.publicationReviewed !== "yes") {
         publicationPreview.hidden = false;
-        publicationPreview.replaceChildren(createElement("h3", { text: "Revisão antes de publicar" }), media[0] ? createPropertyThumbnail(media[0].storage_path, payload.title) : createElement("span"), createElement("strong", { text: payload.title }), createElement("p", { text: `${payload.code} · ${[payload.neighborhood, payload.city].filter(Boolean).join(" · ")} · ${formatPrice(parseBrlNumber(payload.price))}` }), createElement("p", { className: "muted", text: missing.recommended.length ? `Recomendado completar: ${missing.recommended.join(", ")}.` : "Campos essenciais e recomendados preenchidos." }));
+        publicationPreview.replaceChildren(createElement("h3", { text: "Revisão antes de publicar" }), media[0] ? createPropertyThumbnail(media[0].storage_path, payload.title) : createElement("span"), createElement("strong", { text: payload.title }), createElement("p", { text: `${payload.code || referencePreview.dataset.reference || "Referência automática"} · ${[payload.neighborhood, payload.city].filter(Boolean).join(" · ")} · ${formatPrice(parseBrlNumber(payload.price))}` }), createElement("p", { className: "muted", text: missing.recommended.length ? `Recomendado completar: ${missing.recommended.join(", ")}.` : "Campos essenciais e recomendados preenchidos." }));
         form.dataset.publicationReviewed = "yes"; save.disabled = false; save.textContent = "Confirmar e publicar"; publicationPreview.scrollIntoView({ behavior: "auto", block: "nearest" }); return;
       }
       await saveManagedProperty(payload, property?._row, media); await deletePropertyDraft(draftKey);
@@ -210,7 +241,7 @@ async function openPropertyModal(property) {
 }
 
 function collectPropertyDraft(form, media) { const data = new FormData(form), fields = {}; for (const [key, value] of data) if (typeof value === "string") fields[key] = value; return { fields, description: form.elements.description?.value || "", features: form.elements.features?.value || "", is_published: form.querySelector('.property-flags input')?.checked || false, featured: form.querySelectorAll('.property-flags input')[1]?.checked || false, media: media.map(({ storage_path, alt_text, caption, media_kind }) => ({ storage_path, alt_text, caption, media_kind })) }; }
-function propertyPublicationRequirements(values, media) { const required = [], recommended = []; if (!String(values.title || "").trim()) required.push("título"); if (!/^VCI\d{6}$/.test(String(values.code || "").trim().toUpperCase())) required.push("código VCI válido"); if (!numericValue(values.price)) required.push("preço"); if (!String(values.city || "").trim()) required.push("cidade"); if (!media.length) required.push("ao menos uma foto"); if (!String(values.description || "").trim()) recommended.push("descrição"); if (!String(values.neighborhood || "").trim()) recommended.push("bairro"); return { required, recommended }; }
+function propertyPublicationRequirements(values, media) { const required = [], recommended = []; if (!String(values.title || "").trim()) required.push("título"); if (!String(values.property_type || "").trim()) required.push("tipo"); if (String(values.code || "").trim() && !/^(?:VCI\d{6}|(?:CA|TE|AP|CO|CH|OT)\d{4,})$/.test(String(values.code).trim().toUpperCase())) required.push("referência válida"); if (!numericValue(values.price)) required.push("preço"); if (!String(values.city || "").trim()) required.push("cidade"); if (!media.length) required.push("ao menos uma foto"); if (!String(values.description || "").trim()) recommended.push("descrição"); if (!String(values.neighborhood || "").trim()) recommended.push("bairro"); return { required, recommended }; }
 
 async function savePropertyDraft(propertyId, payload) { const org = await getActiveOrganizationId(), session = await getValidSession(); const query = `/rest/v1/property_drafts?user_id=eq.${encodeURIComponent(session.user.id)}&${propertyId ? `property_id=eq.${encodeURIComponent(propertyId)}` : "property_id=is.null"}&select=id`; const current = await supabaseRequest(query); const body = { organization_id: org, user_id: session.user.id, property_id: propertyId, payload, expires_at: new Date(Date.now() + 30 * 86400000).toISOString() }; return current[0] ? supabaseRequest(`/rest/v1/property_drafts?id=eq.${current[0].id}`, { method: "PATCH", body: JSON.stringify(body) }) : supabaseRequest("/rest/v1/property_drafts", { method: "POST", body: JSON.stringify([body]) }); }
 async function loadPropertyDraft(propertyId) { if (isDemoMode()) return null; const session = await getValidSession(); const rows = await supabaseRequest(`/rest/v1/property_drafts?user_id=eq.${encodeURIComponent(session.user.id)}&${propertyId ? `property_id=eq.${encodeURIComponent(propertyId)}` : "property_id=is.null"}&expires_at=gt.${encodeURIComponent(new Date().toISOString())}&select=*&limit=1`); return rows[0] || null; }

@@ -256,4 +256,46 @@ test("CRUD11 property and media mutation rolls back as one unit", async () => {
   assert.equal((await as("owner", "select title from properties where id=$1", [property.id])).rows[0].title, "Transação");
 });
 
+test("CRUD12 automatic references are independent by category and preserve legacy VCI", async () => {
+  const house1 = await saveProperty("owner", organization, null, null, { title: "Casa um", slug: "casa-um", property_type: "Casa" });
+  const house2 = await saveProperty("owner", organization, null, null, { title: "Casa dois", slug: "casa-dois", property_type: "Casa" });
+  const apartment = await saveProperty("owner", organization, null, null, { title: "Apartamento um", slug: "apartamento-um", property_type: "Apartamento" });
+  const farm = await saveProperty("owner", organization, null, null, { title: "Fazenda legada", slug: "fazenda-legada", property_type: "Fazenda" });
+  assert.equal(house1.code, "CA0001");
+  assert.equal(house2.code, "CA0002");
+  assert.equal(apartment.code, "AP0001");
+  assert.equal(farm.code, "OT0001");
+  assert.equal((await as("owner", "select code from properties where code='VCI999981'")).rows[0].code, "VCI999981");
+});
+
+test("CRUD13 preview follows type changes but the saved reference remains immutable", async () => {
+  const preview = (await as("owner", "select public.preview_next_property_reference($1,'Terreno') as code", [organization])).rows[0].code;
+  assert.equal(preview, "TE0001");
+  const property = await saveProperty("owner", organization, null, null, { title: "Terreno", slug: "terreno", property_type: "Terreno" });
+  assert.equal(property.code, "TE0001");
+  const updated = await saveProperty("owner", organization, property.id, property.updated_at, { property_type: "Casa", code: "CA9999" });
+  assert.equal(updated.code, "TE0001");
+  assert.equal(updated.property_type, "Casa");
+  await denied("owner", "update properties set code='CA9999' where id=$1", [property.id], ["22023"]);
+});
+
+test("CRUD14 concurrent inserts allocate unique increasing references", async () => {
+  const saved = await Promise.all(Array.from({ length: 8 }, (_, index) => saveProperty("manager", organization, null, null, {
+    title: `Comercial ${index}`,
+    slug: `comercial-concorrente-${index}`,
+    property_type: "Comercial"
+  })));
+  const codes = saved.map(row => row.code).sort();
+  assert.deepEqual(codes, ["CO0001","CO0002","CO0003","CO0004","CO0005","CO0006","CO0007","CO0008"]);
+  assert.equal(new Set(codes).size, codes.length);
+});
+
+test("CRUD15 deleted references are not reused", async () => {
+  const first = await saveProperty("owner", organization, null, null, { title: "Chácara removida", slug: "chacara-removida", property_type: "Chácara" });
+  assert.equal(first.code, "CH0001");
+  await as("owner", "delete from properties where id=$1", [first.id]);
+  const second = await saveProperty("owner", organization, null, null, { title: "Chácara seguinte", slug: "chacara-seguinte", property_type: "Chácara" });
+  assert.equal(second.code, "CH0002");
+});
+
 test.after(async () => db.close());
