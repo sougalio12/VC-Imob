@@ -50,7 +50,7 @@ test("MOBILEWIDTH04 horizontal scroll remains isolated to explicitly scrollable 
 });
 
 test("MOBILEWIDTH05 the final stylesheet and service worker use a fresh immutable revision", () => {
-  assert.ok(html.indexOf("responsive-system.css?v=mobile-fields-20260916b") > html.indexOf("assistant.css"));
-  assert.match(sw, /vc-imob-shell-final-audit-20260923/);
+  assert.ok(html.indexOf("responsive-system.css?v=property-ux-20261110") > html.indexOf("assistant.css"));
+  assert.match(sw, /vc-imob-shell-property-ux-20261110/);
   assert.match(sw, /\.\/css\/responsive-system\.css/);
 });

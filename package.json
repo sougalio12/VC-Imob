@@ -11,6 +11,7 @@
     "test:phase-h": "node --test tests/phase-h/phase-h.test.mjs",
     "test:phase-i": "node --test tests/phase-i/phase-i.test.mjs",
     "test:phase-j": "node --test tests/phase-j/phase-j.test.mjs",
+    "test:ux-mobile": "playwright test",
     "release:check": "node scripts/check-release-readiness.mjs"
   },
   "dependencies": {
@@ -23,6 +24,7 @@
   "devDependencies": {
     "@capacitor/android": "8.5.1",
     "@capacitor/cli": "8.5.1",
-    "@capacitor/ios": "8.5.1"
+    "@capacitor/ios": "8.5.1",
+    "@playwright/test": "1.56.1"
   }
 }

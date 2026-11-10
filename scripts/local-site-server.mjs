@@ -16,6 +16,7 @@ createServer(async (request, response) => {
     const info = await stat(filePath);
     if (!info.isFile()) throw new Error("Not a file");
     response.writeHead(200, { "Content-Type": `${mimeTypes[extname(filePath).toLowerCase()] || "application/octet-stream"}; charset=utf-8`, "Cache-Control": "no-store" });
+    if (request.method === "HEAD") { response.end(); return; }
     createReadStream(filePath).pipe(response);
   } catch { response.writeHead(404).end("Not found"); }
 }).listen(port, "127.0.0.1", () => console.log(`Local site listening on ${port}`));
